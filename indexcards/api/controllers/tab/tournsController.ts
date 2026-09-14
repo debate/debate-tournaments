@@ -7,7 +7,7 @@ import { db } from '../../data/database.js';
 async function getTourn(req: Request, res: Response) {
 	const { tournId } = req.params;
 	if(!tournId) return BadRequest(req,res,'Tournament ID is required');
-	const tourn = await tournRepo.getTourn(tournId as string, { settings: true, unpublished: true });
+	const tourn = await tournRepo.getTourn(db, tournId as string, { settings: true, unpublished: true });
 	if (!tourn) return NotFound(req, res, 'Tournament not found');
 	return res.json(tourn);
 }
@@ -15,15 +15,14 @@ async function getTourn(req: Request, res: Response) {
 async function createTourn(req: Request, res: Response) {
 	//TODO need to make the requesting user the owner of the tourn
 	const data = req.body;
-	const tournId = await tournRepo.createTourn(data);
-	//TODO this should be handled and validated by a middleware plugin
 	if(!req.actor.Person?.id) return BadRequest(req,res,'Actor person ID is required');
+	const tourn = await tournRepo.createTourn(db,data);
+	//TODO this should be handled and validated by a middleware plugin
 	await createPermission(db, {
-		tourn: tournId,
+		tourn: tourn.id,
 		person: req.actor.Person?.id,
 		tag: 'owner',
 	});
-	const tourn = await tournRepo.getTourn(tournId);
 	return res.status(201).json(tourn);
 }
 
@@ -36,7 +35,7 @@ async function updateTourn(req: Request, res: Response) {
 
 	await tournRepo.updateTourn(tournId, updates);
 
-	const updatedTourn = await tournRepo.getTourn(tournId as string);
+	const updatedTourn = await tournRepo.getTourn(db, tournId as string);
 	return res.json(updatedTourn);
 }
 

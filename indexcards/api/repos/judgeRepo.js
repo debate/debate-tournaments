@@ -1,5 +1,4 @@
 import db from '../data/db.js';
-import { schoolInclude } from './schoolRepo.js';
 import { ballotInclude } from './ballotRepo.js';
 import { toDomain, toPersistence, FIELD_MAP } from './mappers/judgeMapper.js';
 import { resolveAttributesFromFields } from './utils/repoUtils.js';
@@ -18,13 +17,6 @@ function buildJudgeQuery(opts = {}) {
 	if (opts.limit) query.limit = opts.limit;
 	if (opts.offset) query.offset = opts.offset;
 
-	if (opts.include?.School) {
-		query.include.push({
-			...schoolInclude(opts.include.School),
-			as: 'school_school',
-			required: false,
-		});
-	}
 	if(opts.include?.Ballots) {
 		query.include.push({
 			...ballotInclude(opts.include.Ballots),

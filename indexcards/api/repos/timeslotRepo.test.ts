@@ -15,11 +15,11 @@ describe('TimeslotRepo', () => {
 	});
 	describe('getTimeslots', () => {
 		it('retrieves all timeslots for a given tourn', async () => {
-			const { tournId } = await factories.tourn.createTestTourn();
-			const timeslot1 = await factories.timeslot.create({ tourn: tournId });
-			const timeslot2= await factories.timeslot.create({ tourn: tournId });
+			const tourn = await factories.tourn.create();
+			const timeslot1 = await factories.timeslot.create({ tourn: tourn.id });
+			const timeslot2= await factories.timeslot.create({ tourn: tourn.id });
 
-			const results = await timeslotRepo.getTimeslots(db, tournId);
+			const results = await timeslotRepo.getTimeslots(db, tourn.id);
 			expect(results).toBeDefined();
 			expect(results.length).toBe(2);
 			expect(results.map(s => s.id)).toEqual(expect.arrayContaining([timeslot1.id, timeslot2.id]));

@@ -1,17 +1,26 @@
 
 import categoryRepo from '../../repos/categoryRepo.js';
 import eventRepo from '../../repos/eventRepo.js';
-import sectionRepo from '../../repos/sectionRepo.js';
+import panelRepo from '../../repos/panelRepo.js';
 import roundRepo from '../../repos/roundRepo.js';
 import timeslotRepo from '../../repos/timeslotRepo.js';
 
 import { db } from '../../data/database.js';
 
-export async function buildTarget(resource, resourceId, targetCache) {
+export type Target = {
+	id: number;
+	resource: string;
+	tournId?: number;
+	categoryId?: number;
+	eventId?: number;
+	roundId?: number;
+};
+
+export async function buildTarget(resource: string, resourceId: number, targetCache: Map<string, Target>) {
 	const key = `${resource}:${resourceId}`;
 	if (targetCache.has(key)) return targetCache.get(key);
 
-	let target = { id: resourceId, resource };
+	let target: Target = { id: resourceId, resource };
 	//no parents to build
 	if(resource.startsWith('api_auth_')){
 		targetCache.set(key, target);
@@ -26,7 +35,7 @@ export async function buildTarget(resource, resourceId, targetCache) {
 	switch (resource) {
 		case 'category': {
 			const category = await categoryRepo.getCategory(db, resourceId);
-			if (category) {
+			if (category && category.tourn) {
 				target.tournId = category.tourn;
 				target ={
 					...await buildTarget('tourn', target.tournId, targetCache),
@@ -37,7 +46,7 @@ export async function buildTarget(resource, resourceId, targetCache) {
 		}
 		case 'event': {
 			const event = await eventRepo.getEvent(db,resourceId);
-			if (event) {
+			if (event && event.tourn && event.category) {
 				target.tournId = event.tourn;
 				target.categoryId = event.category;
 				target = {
@@ -49,7 +58,7 @@ export async function buildTarget(resource, resourceId, targetCache) {
 		}
 		case 'round': {
 			const round = await roundRepo.getRound(db, resourceId, { fields: ['event'] });
-			if (round) {
+			if (round && round.event) {
 				target.eventId = round.event;
 				target ={
 					...await buildTarget('event', target.eventId, targetCache),
@@ -59,9 +68,9 @@ export async function buildTarget(resource, resourceId, targetCache) {
 			break;
 		}
 		case 'section': {
-			const section = await sectionRepo.getSection(resourceId, { fields: ['roundId'] });
-			if (section) {
-				target.roundId = section.roundId;
+			const panel = await panelRepo.getSection(db,resourceId);
+			if (panel && panel.round) {
+				target.roundId = panel.round;
 				target ={
 					...await buildTarget('round', target.roundId, targetCache),
 					...target,
@@ -70,9 +79,9 @@ export async function buildTarget(resource, resourceId, targetCache) {
 			break;
 		}
 		case 'timeslot': {
-			const timeslot = await timeslotRepo.getTimeslot(resourceId, { fields: ['tournId'] });
-			if (timeslot) {
-				target.tournId = timeslot.tournId;
+			const timeslot = await timeslotRepo.getTimeslot(db, resourceId);
+			if (timeslot && timeslot.tourn) {
+				target.tournId = timeslot.tourn;
 				target ={
 					...await buildTarget('tourn', target.tournId, targetCache),
 					...target,

@@ -6,8 +6,8 @@ import { FileSchema } from '@tabroom/types';
 
 let testTourn;
 beforeAll(async () => {
-	({tournId: testTourn } = await factories.tourn.createTestTourn());
-	await factories.file.createTestFile({ tournId: testTourn, published: true });
+	({tournId: testTourn } = await factories.tourn.create());
+	await factories.file.create({ tourn: testTourn, published: true });
 });
 
 describe('GET /rest/tourns', () => {
@@ -17,7 +17,7 @@ describe('GET /rest/tourns', () => {
 		const startAfter = faker.date.past();
 		const tournDate = faker.date.between({from: startAfter, to: startBefore});
 		const { circuitId } = await factories.circuit.createTestCircuit();
-		const { tournId } = await factories.tourn.createTestTourn({ circuit: circuitId, start: tournDate });
+		const { tournId } = await factories.tourn.create({ circuit: circuitId, start: tournDate });
 		await factories.event.create({ tourn: tournId, abbr: 'ABBR' });
 		const res = await request(server)
             .get(`/v1/rest/tourns?circuit=${circuitId}&startAfter=${startAfter.toISOString()}&startBefore=${startBefore.toISOString()}&fields[events]=abbr,type&limit=10`)
@@ -40,7 +40,7 @@ describe('GET /rest/tourns', () => {
 		const startBefore = faker.date.future();
 		const startAfter = faker.date.past();
 		const tournDate = faker.date.between({from: startAfter, to: startBefore});
-		const { tournId } = await factories.tourn.createTestTourn({ start: tournDate });
+		const { tournId } = await factories.tourn.create({ start: tournDate });
 		await factories.resultSet.createTestResultSet({ tourn: tournId, published: 1 });
 		const res = await request(server)
             .get(`/v1/rest/tourns?startAfter=${startAfter.toISOString()}

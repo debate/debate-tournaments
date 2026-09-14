@@ -2,7 +2,6 @@ import db from '../data/db.js';
 import { withSettingsInclude, saveSettings } from './utils/settings.js';
 import { FIELD_MAP, toDomain, toPersistence } from './mappers/circuitMapper.js';
 import { resolveAttributesFromFields } from './utils/repoUtils.js';
-import { tournInclude } from './tournRepo.js';
 
 function buildCircuitQuery(opts = {}) {
 	const query = {
@@ -19,17 +18,6 @@ function buildCircuitQuery(opts = {}) {
 	}
 	if(opts.offset){
 		query.offset = opts.offset;
-	}
-	if (opts.include?.tourns) {
-		query.include.push({
-			model: db.tournCircuit,
-			as: 'tourn_circuits', // matches your existing association
-			required: false,       // optional, true if you only want circuits that have tourns
-			include: [{
-				...tournInclude(opts.include.tourns),
-				as: 'tourn_tourn',
-			}],
-		});
 	}
 
 	query.include.push(

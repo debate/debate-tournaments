@@ -37,7 +37,7 @@ describe('webpageRepo', () => {
 	describe('getWebpages', () => {
 		let tournId: number, sitewidePageId: number, tournPageId: number, publishedPageId: number, unpublishedPageId: number;
 		beforeAll(async () => {
-			const { tournId: createdTournId } = await factories.tourn.createTestTourn();
+			const { tournId: createdTournId } = await factories.tourn.create();
 			tournId = createdTournId;
 			const sitewide = await factories.webpage.create({ published: true, sitewide: true });
 			const tourn = await factories.webpage.create({ tourn: tournId, published: true });

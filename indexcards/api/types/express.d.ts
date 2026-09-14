@@ -1,4 +1,6 @@
 import type { ZodOpenApiOperationObject, ZodOpenApiPathItemObject } from 'zod-openapi';
+import type { Tourn } from '../data/schema.js';
+import type { Selectable } from 'kysely';
 
 export type RouteOpenApiConfig = (ZodOpenApiPathItemObject | ZodOpenApiOperationObject) & {
 	path: string;
@@ -22,6 +24,7 @@ declare module 'express-serve-static-core' {
 			// oxlint-disable-next-line typescript/no-explicit-any
 			query:any;
 		};
+		tourn?: Selectable<Tourn>;
 	}
 }
 

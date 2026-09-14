@@ -2,6 +2,7 @@
 import circuitRepo, { circuitInclude} from './circuitRepo.js';
 import { faker } from '@faker-js/faker';
 import factories from '../../tests/factories';
+import { db } from '../data/database.js';
 
 describe('circuitRepo', () => {
 	describe('buildCircuitQuery', () => {
@@ -16,20 +17,9 @@ describe('circuitRepo', () => {
 			expect(circuit.section).toBeUndefined();
 			expect(circuit.scores).toBeUndefined();
 		});
-		it('includes tourns when requested', async () => {
-			const circuitId = await circuitRepo.createCircuit();
-			const circuit = await circuitRepo.getCircuit(
-				circuitId,
-				{ include: { tourns: true } }
-			);
-
-			expect(circuit).toBeDefined();
-			expect(circuit.tourns).toBeDefined();
-			expect(Array.isArray(circuit.tourns)).toBe(true);
-		});
 		it('includes settings when requested', async () => {
 			const settings = { exampleSetting: 'exampleValue' };
-			const circuitId = await circuitRepo.createCircuit({ settings });
+			const circuitId = await circuitRepo.createCircuit(db,{ settings });
 			const circuit = await circuitRepo.getCircuit(
 				circuitId,
 				{ settings: true }
@@ -67,8 +57,8 @@ describe('circuitRepo', () => {
 	describe('getActiveCircuits', () => {
 		it('should return active circuits within a date range', async () => {
 			const { circuitId } = await factories.circuit.createTestCircuit();
-			await factories.tourn.createTestTourn({ circuit: circuitId, start: new Date() });
-			await factories.tourn.createTestTourn({ circuit: circuitId, start: new Date() });
+			await factories.tourn.create({ circuit: circuitId, start: new Date() });
+			await factories.tourn.create({ circuit: circuitId, start: new Date() });
 			const circuits = await circuitRepo.getActiveCircuits({ startDate: faker.date.past(), endDate: faker.date.future() });
 			expect(Array.isArray(circuits)).toBe(true);
 			const circuit = circuits.find(c => c.id === circuitId);
@@ -82,13 +72,13 @@ describe('circuitRepo', () => {
 				country: null,
 				state: null,
 			});
-			await factories.tourn.createTestTourn({ circuit: noLocale, start: new Date() });
+			await factories.tourn.create({ circuit: noLocale, start: new Date() });
 			const { circuitId: rightState } = await factories.circuit.createTestCircuit({ state: 'MN', country: 'US'});
-			await factories.tourn.createTestTourn({ circuit: rightState, start: new Date() });
+			await factories.tourn.create({ circuit: rightState, start: new Date() });
 			const { circuitId: wrongState } = await factories.circuit.createTestCircuit({ state: 'WI', country: 'US'});
-			await factories.tourn.createTestTourn({ circuit: wrongState, start: new Date() });
+			await factories.tourn.create({ circuit: wrongState, start: new Date() });
 			const { circuitId: wrongCountry } = await factories.circuit.createTestCircuit({ state: 'MN', country: 'CA'});
-			await factories.tourn.createTestTourn({ circuit: wrongCountry, start: new Date() });
+			await factories.tourn.create({ circuit: wrongCountry, start: new Date() });
 
 			let res = await circuitRepo.getActiveCircuits({
 				startDate: faker.date.past(),
@@ -127,7 +117,7 @@ describe('circuitRepo', () => {
 		});
 		it('does not return circuits outside the date range', async () => {
 			const { circuitId } = await factories.circuit.createTestCircuit();
-			await factories.tourn.createTestTourn({ circuit: circuitId, start: new Date() });
+			await factories.tourn.create({ circuit: circuitId, start: new Date() });
 			const circuits = await circuitRepo.getActiveCircuits({ startDate: faker.date.future(), endDate: faker.date.future() });
 			expect(circuits.some(c => c.id === circuitId)).toBe(false);
 		});
@@ -154,7 +144,7 @@ describe('circuitRepo', () => {
 		});
 		it('should create a circuit with settings and retrieve it', async () => {
 			const settings = { exampleSetting: 'exampleValue' };
-			const circuitId = await circuitRepo.createCircuit({ settings });
+			const circuitId = await circuitRepo.createCircuit(db, { settings });
 			const circuit = await circuitRepo.getCircuit(
 				circuitId,
 				{ settings: true }

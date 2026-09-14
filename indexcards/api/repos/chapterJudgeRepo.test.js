@@ -13,8 +13,8 @@ describe('chapterJudgeRepo', () => {
 			const { chapterJudgeId, getChapterJudge } = await factories.chapterJudge.create();
 			const cj = await getChapterJudge();
 
-			const { tournId } = await factories.tourn.createTestTourn();
-			const category = await factories.category.create({ tourn: tournId });
+			const tourn = await factories.tourn.create();
+			const category = await factories.category.create({ tourn: tourn.id });
 			await factories.judge.createTestJudge({ chapter_judge: chapterJudgeId, category: category.id });
 
 			const results = await chapterJudgeRepo.unlinkedSearch({ first: cj.first, last: cj.last });
@@ -31,10 +31,10 @@ describe('chapterJudgeRepo', () => {
 			const { chapterJudgeId, getChapterJudge } = await factories.chapterJudge.create();
 			const cj = await getChapterJudge();
 
-			const { tournId: tournId1 } = await factories.tourn.createTestTourn();
-			const { tournId: tournId2 } = await factories.tourn.createTestTourn();
-			const cat1 = await factories.category.create({ tourn: tournId1 });
-			const cat2 = await factories.category.create({ tourn: tournId2 });
+			const tourn1 = await factories.tourn.create();
+			const tourn2 = await factories.tourn.create();
+			const cat1 = await factories.category.create({ tourn: tourn1.id });
+			const cat2 = await factories.category.create({ tourn: tourn2.id });
 
 			await factories.judge.createTestJudge({ chapter_judge: chapterJudgeId, category: cat1.id });
 			await factories.judge.createTestJudge({ chapter_judge: chapterJudgeId, category: cat2.id });

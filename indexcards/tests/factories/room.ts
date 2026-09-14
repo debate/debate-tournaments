@@ -13,16 +13,13 @@ export function createRoomData(overrides = {}) {
 	};
 }
 
-export async function createTestRoom(overrides = {}) {
+export async function create(overrides = {}) {
 	const data = createRoomData(overrides);
 	const roomId = await roomRepo.createRoom(data);
 
-	return {
-		roomId,
-		getRoom: () => roomRepo.getRoom(roomId),
-	};
+	return roomRepo.getRoom(roomId);
 }
 export default {
 	createRoomData,
-	createTestRoom,
+	create,
 };

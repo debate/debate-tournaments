@@ -57,15 +57,15 @@ describe('judgesRouter', () => {
 	});
 	describe("GET /user/judges/history", () => {
 		it('should return the judge history for the logged in user', async () => {
-			const { tournId } = await factories.tourn.createTestTourn(); // start is past by default
-			const category = await factories.category.create({ tourn: tournId });
+			const tourn = await factories.tourn.create(); // start is past by default
+			const category = await factories.category.create({ tourn: tourn.id });
 			const { judgeId } = await factories.judge.createTestJudge({ person: personId, category: category.id });
 
 			// Create event → round → panel → ballot chain
 			const { eventId } = await factories.event.create({ category: category.id });
 			const { roundId } = await factories.round.create({ event: eventId, published: true });
-			const { sectionId } = await factories.section.create({ round: roundId });
-			await factories.ballot.create({ sectionId, judgeId });
+			const panel = await factories.section.create({ round: roundId });
+			await factories.ballot.create({ panel: panel.id, judge:judgeId });
 			
 			const res = await request(server)
 				.get('/v1/user/judges/history')
@@ -100,7 +100,7 @@ describe('judgesRouter', () => {
 	});
 	describe("GET /user/judges/livedocs", () => {
 		it('should return the live docs for the logged in user', async () => {
-			const { tournId } = await factories.tourn.createTestTourn();
+			const { tournId } = await factories.tourn.create();
 			const category = await factories.category.create({
 				tourn: tournId,
 				settings: {

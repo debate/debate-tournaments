@@ -5,14 +5,15 @@ import { ToPublicPage } from '../mappers/pageMapper.js';
 import fileRepo from '../../repos/fileRepo.js';
 
 //TODO remove all references
-import db from '../../data/db.js';
+import { db }  from '../../data/database.js';
+import type { Request, Response } from 'express';
 
-export async function getTourn(req, res) {
+export async function getTourn(req: Request, res: Response) {
 	var tourn = req.tourn;
 	return res.status(200).json(tourn);
 };
 
-export async function getTourns(req,res) {
+export async function getTourns(req: Request, res: Response) {
 	const fields = {};
 	//These should probably be handled by a distinct function in the future RCT
 	if(req.valid.query.fields){
@@ -61,10 +62,9 @@ export async function getTourns(req,res) {
 	}));
 }
 
-export async function getTournInvite(req, res) {
-	var invite = {};
+export async function getTournInvite(req: Request, res: Response) {
 
-	invite = await tournRepo.getTourn(req.params.tournId, {
+	let invite = await tournRepo.getTourn(db, req.params.tournId, {
 		include: {
 			webpages: true,
 			files: true,
@@ -97,17 +97,17 @@ export async function getTournInvite(req, res) {
 	return res.status(200).json(invite);
 };
 
-export async function getSchedule(req,res){
-	const schedule = await tournRepo.getSchedule(req.params.tournId);
+export async function getSchedule(req: Request, res: Response){
+	const schedule = await tournRepo.getSchedule(db, req.params.tournId);
 	return res.status(200).json(schedule);
 };
 
-export async function getPublishedFiles(req, res) {
-	const files = await fileRepo.getFiles({ tournId: req.valid.params.tournId });
+export async function getPublishedFiles(req: Request, res: Response) {
+	const files = await fileRepo.getFiles(db, { tourn: req.valid.params.tournId });
 	return res.status(200).json(files);
 };
 
-export async function getTournPublishedResults(req,res) {
+export async function getTournPublishedResults(req: Request, res: Response) {
 	const results = await db.sequelize.query(`
 			select
 				result_set.id, result_set.label name, result_set.bracket, result_set.generated,

@@ -1,8 +1,8 @@
 import con from './ballotsController.js';
-import sectionRepo from '../../../repos/sectionRepo.js';
+import panelRepo from '../../../repos/panelRepo.js';
 import { createContext } from '../../../../tests/httpMocks.js';
 
-vi.mock('../../../repos/sectionRepo.js');
+vi.mock('../../../repos/panelRepo.js');
 
 
 describe('getCurrent', () => {
@@ -11,7 +11,7 @@ describe('getCurrent', () => {
 		const mockBallots = [
 			{ Round: { published: false } },
 		];
-		vi.spyOn(sectionRepo, 'getCurrentBallots').mockResolvedValueOnce(mockBallots);
+		vi.spyOn(panelRepo, 'getCurrentBallots').mockResolvedValueOnce(mockBallots);
 
 		// Mock request and response
 		const {req, res } = createContext({ actor: { Person: { id: 123 } } });
@@ -67,7 +67,7 @@ describe('getCurrent', () => {
 				Entries: [],
 		},
 		];
-		vi.spyOn(sectionRepo, 'getCurrentBallots').mockResolvedValueOnce(mockBallots);
+		vi.spyOn(panelRepo, 'getCurrentBallots').mockResolvedValueOnce(mockBallots);
 
 		// Mock request and response
 		const {req, res } = createContext({ actor: { Person: { id: 123 } } });

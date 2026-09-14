@@ -7,7 +7,7 @@ describe('Judge Record Service', async () => {
 	beforeAll(async () => {
 		({ personId } = await factories.person.create());
 		({ judgeId } = await factories.judge.createTestJudge({ person: personId }));
-		({ tournId } = await factories.tourn.createTestTourn({ hidden: 0 })); //public tourn
+		({ tournId } = await factories.tourn.create({ hidden: 0 })); //public tourn
 		({ eventId } = await factories.event.create({ tournId }));
 		({ roundId } = await factories.round.create({
 			event: eventId,
@@ -23,14 +23,14 @@ describe('Judge Record Service', async () => {
 		entryId = entry.id;
 	});
 	it('returns the public judging record of a person', async () => {
-		const { ballotId } = await factories.ballot.create({
+		const ballot = await factories.ballot.create({
 			section: sectionId,
 			judge: judgeId,
 			entry: entryId,
 			side: 1,
 		});
-		const { scoreId } = await factories.score.createTestScore({
-			ballot: ballotId,
+		const { scoreId } = await factories.score.create({
+			ballot: ballot.id,
 			tag: 'winloss',
 			value: 1,
 		});

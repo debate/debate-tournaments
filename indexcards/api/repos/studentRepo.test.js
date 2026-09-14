@@ -70,12 +70,12 @@ describe('unlinkedSearch', () => {
 			chapter: chapterId,
 		});
 
-		const { tournId: tournA } = await factories.tourn.createTestTourn({ name: `Tourn A ${stamp}` });
-		const { tournId: tournB } = await factories.tourn.createTestTourn({ name: `Tourn B ${stamp}` });
+		const tournA = await factories.tourn.create({ name: `Tourn A ${stamp}` });
+		const tournB = await factories.tourn.create({ name: `Tourn B ${stamp}` });
 
-		const { eventId: eventA1 } = await factories.event.create({ tourn: tournA, name: `EA1 ${stamp}` });
-		const { eventId: eventA2 } = await factories.event.create({ tourn: tournA, name: `EA2 ${stamp}` });
-		const { eventId: eventB1 } = await factories.event.create({ tourn: tournB, name: `EB1 ${stamp}` });
+		const { eventId: eventA1 } = await factories.event.create({ tourn: tournA.id, name: `EA1 ${stamp}` });
+		const { eventId: eventA2 } = await factories.event.create({ tourn: tournA.id, name: `EA2 ${stamp}` });
+		const { eventId: eventB1 } = await factories.event.create({ tourn: tournB.id, name: `EB1 ${stamp}` });
 
 		const entryA1 = await factories.entry.create({ event: eventA1 });
 		const entryA2 = await factories.entry.create({ event: eventA2 });

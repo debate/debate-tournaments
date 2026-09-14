@@ -32,20 +32,20 @@ describe('getCategory', () => {
 });
 describe('getCategories', () => {
 	it('retrieves all categories for a given tournament', async () => {
-		const { tournId } = await factories.tourn.createTestTourn();
-		const category1Data = factories.category.createCategoryData({ tourn: tournId, name: `Cat1 ${tournId}` });
-		const category2Data = factories.category.createCategoryData({ tourn: tournId, name: `Cat2 ${tournId}` });
+		const tourn = await factories.tourn.create();
+		const category1Data = factories.category.createCategoryData({ tourn: tourn.id, name: `Cat1 ${tourn.id}` });
+		const category2Data = factories.category.createCategoryData({ tourn: tourn.id, name: `Cat2 ${tourn.id}` });
 
 		await categoryRepo.createCategory(db,category1Data);
 		await categoryRepo.createCategory(db,category2Data);
-		const results = await categoryRepo.getCategories(db,{ tournId });
+		const results = await categoryRepo.getCategories(db,{ tournId: tourn.id });
 		expect(results).toBeDefined();
 		expect(results.length).toBeGreaterThanOrEqual(2);
 
 		expect(results).toEqual(
 			expect.arrayContaining([
-				expect.objectContaining({ tourn: tournId }),
-				expect.objectContaining({ tourn: tournId }),
+				expect.objectContaining({ tourn: tourn.id }),
+				expect.objectContaining({ tourn: tourn.id }),
 			]),
 		);
 		expect(results.map(c => c.name)).toEqual(expect.arrayContaining([category1Data.name, category2Data.name]));

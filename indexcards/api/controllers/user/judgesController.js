@@ -10,6 +10,7 @@ import { Op } from 'sequelize';
 import { notify } from '../../helpers/blast.js';
 import logger from '../../helpers/logger.js';
 import { db } from '../../data/database.js';
+import { db as kyselyDb } from '../../data/database.js';
 
 async function linkRequests(req, res) {
 
@@ -157,7 +158,7 @@ async function updateParadigm(req, res) {
 		return Forbidden(req, res, 'You must confirm your email before saving a paradigm');
 
 	//check word count limits
-	const tabSettings = await tabroomRepo.getSettings([
+	const tabSettings = await tabroomRepo.getSettings(kyselyDb,[
 		'paradigm_word_limit',
 	]);
 	if(tabSettings.filter(s => s.tag === 'paradigm_word_limit')[0]?.value > 0){

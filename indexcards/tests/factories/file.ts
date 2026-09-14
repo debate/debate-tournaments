@@ -1,5 +1,6 @@
 import { faker } from '@faker-js/faker';
 import fileRepo from '../../api/repos/fileRepo.js';
+import { db } from '../../api/data/database.js';
 
 export function buildFileData(overrides = {}) {
 	return {
@@ -9,15 +10,10 @@ export function buildFileData(overrides = {}) {
 	};
 }
 
-export async function createTestFile(overrides = {}) {
+export async function create(overrides = {}) {
 	const data = buildFileData(overrides);
-	const fileId = await fileRepo.createFile(data);
-
-	return {
-		fileId,
-		getFile: () => fileRepo.getFile(fileId),
-	};
+	return await fileRepo.createFile(db, data);
 }
 export default {
-	createTestFile,
+	create,
 };

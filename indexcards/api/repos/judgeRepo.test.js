@@ -111,7 +111,7 @@ describe('judgeRepo', () => {
 		});
 
 		it('returns active unlinked judges with tournament and school names', async () => {
-			const { tournId } = await factories.tourn.createTestTourn({name: 'Test Tournament'});
+			const { tournId } = await factories.tourn.create({name: 'Test Tournament'});
 			const category = await factories.category.create({ tourn: tournId });
 			const { schoolId } = await factories.school.createTestSchool({ name: 'Central High' });
 
@@ -142,11 +142,11 @@ describe('judgeRepo', () => {
 			const otherRequesterId = (await factories.person.create()).personId;
 			const now = new Date();
 
-			const { tournId: activeTournId } = await factories.tourn.createTestTourn({
+			const { tournId: activeTournId } = await factories.tourn.create({
 				start: new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000),
 				end: new Date(now.getTime() + 2 * 24 * 60 * 60 * 1000),
 			});
-			const { tournId: endedTournId } = await factories.tourn.createTestTourn({
+			const { tournId: endedTournId } = await factories.tourn.create({
 				start: new Date(now.getTime() - 4 * 24 * 60 * 60 * 1000),
 				end: new Date(now.getTime() - 24 * 60 * 60 * 1000),
 			});
@@ -187,15 +187,15 @@ describe('judgeRepo', () => {
 	describe('getJudgeHistory', () => {
 		it('returns judge history for a person', async () => {
 			const { personId } = await factories.person.create();
-			const { tournId } = await factories.tourn.createTestTourn(); // start is past by default
+			const { tournId } = await factories.tourn.create(); // start is past by default
 			const category = await factories.category.create({ tourn: tournId });
 			const { judgeId } = await factories.judge.createTestJudge({ person: personId, category: category.id });
 
 			// Create event → round → panel → ballot chain
 			const { eventId } = await factories.event.create({ category: category.id });
 			const { roundId } = await factories.round.create({ event: eventId, published: true });
-			const { sectionId } = await factories.section.create({ round: roundId });
-			await factories.ballot.create({ sectionId, judgeId });
+			const section = await factories.section.create({ round: roundId });
+			await factories.ballot.create({ section: section.id, judge: judgeId });
 			const history = await judgeRepo.getJudgeHistory(personId, 10, 0);
 
 			expect(history.length).toBeGreaterThan(0);
@@ -205,7 +205,7 @@ describe('judgeRepo', () => {
 	});
 	describe('getLiveDocs', async () => {
 		it('returns the correct shape for livedocs', async () => {
-			const { tournId, getTourn } = await factories.tourn.createTestTourn();
+			const { tournId, getTourn } = await factories.tourn.create();
 			const category = await factories.category.create({
 				tourn: tournId,
 				settings: {
@@ -234,7 +234,7 @@ describe('judgeRepo', () => {
 		});
 		it('does not return tourns out of range', async () => {
 			//only should return docs from tourns that have not ended and started within 7 days
-			const { tournId } = await factories.tourn.createTestTourn({ end: new Date(Date.now() - 10000) });
+			const { tournId } = await factories.tourn.create({ end: new Date(Date.now() - 10000) });
 			const category = await factories.category.create({
 				tourn: tournId,
 				settings: {
@@ -248,7 +248,7 @@ describe('judgeRepo', () => {
 			expect(res).toBeInstanceOf(Array);
 			expect(res.length).toBe(0);
 
-			const { tournId: tourn2Id } = await factories.tourn.createTestTourn({ start: faker.date.past() });
+			const { tournId: tourn2Id } = await factories.tourn.create({ start: faker.date.past() });
 			const category2 = await factories.category.create({
 				tourn: tourn2Id,
 				settings: {
@@ -263,7 +263,7 @@ describe('judgeRepo', () => {
 			expect(res2.length).toBe(0);
 		});
 		it('does not return hidden tourns', async () => {
-			const { tournId } = await factories.tourn.createTestTourn({ hidden: 1 });
+			const { tournId } = await factories.tourn.create({ hidden: 1 });
 			const category = await factories.category.create({
 				tourn: tournId,
 				settings: {
@@ -278,7 +278,7 @@ describe('judgeRepo', () => {
 			expect(res.length).toBe(0);
 		});
 		it('does not return results without a livedoc url', async () => {
-			const { tournId } = await factories.tourn.createTestTourn({ hidden: 1 });
+			const { tournId } = await factories.tourn.create({ hidden: 1 });
 			const category = await factories.category.create({
 				tourn: tournId,
 				settings: {

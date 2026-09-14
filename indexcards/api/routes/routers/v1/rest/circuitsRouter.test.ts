@@ -6,8 +6,8 @@ import { ActiveCircuitsResponseSchema, RestCircuitSchema } from '@tabroom/types'
 describe('GET /rest/circuits/active', () => {
 	it('Returns active circuits for the current school year', async () => {
 		const { circuitId } = await factories.circuit.createTestCircuit();
-		await factories.tourn.createTestTourn({ circuit: circuitId, start: new Date() });
-		await factories.tourn.createTestTourn({ circuit: circuitId, start: new Date() });
+		await factories.tourn.create({ circuit: circuitId, start: new Date() });
+		await factories.tourn.create({ circuit: circuitId, start: new Date() });
 		const res = await request(server)
             .get(`/v1/rest/circuits/active`)
             .set('Accept', 'application/json')

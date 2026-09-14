@@ -1,6 +1,5 @@
 import type { DBSchema, Database } from '../data/database.js';
 import { flattenSettings, saveSettings } from './utils/settings.js';
-import db from '../data/db.js';
 import type { Person } from '../data/schema.js';
 import type { Insertable, Selectable, ExpressionBuilder } from 'kysely';
 
@@ -268,14 +267,6 @@ export async function createPerson(db: Database, data: CreatePersonData) {
 		return personId;
 	});
 }
-
-export async function personInclude() {
-	return {
-		model: db.person,
-		as: 'persons',
-	};
-}
-
 
 // export the  data functions NOT the mappers
 export default {
