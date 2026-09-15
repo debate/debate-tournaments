@@ -21,15 +21,15 @@ describe('SiteRepo', () => {
 	});
 	describe('getSites', () => {
 		it('retrieves all sites for a given circuit', async () => {
-			const { circuitId } = await factories.circuit.createTestCircuit();
-			const site1 = await factories.site.create({ circuit: circuitId });
-			const site2 = await factories.site.create({ circuit: circuitId });
+			const Circuit = await factories.circuit.create();
+			const site1 = await factories.site.create({ circuit: Circuit.id });
+			const site2 = await factories.site.create({ circuit: Circuit.id });
 
-			const results = await siteRepo.getSites(db, { circuit: circuitId });
+			const results = await siteRepo.getSites(db, { circuit: Circuit.id });
 			expect(results).toBeDefined();
 			expect(results.length).toBeGreaterThanOrEqual(2);
 			results.forEach(s => {
-				expect(s.circuit, `expected circuitId to be ${circuitId} but was ${s.circuit}`).toBe(circuitId);
+				expect(s.circuit, `expected circuitId to be ${Circuit.id} but was ${s.circuit}`).toBe(Circuit.id);
 			});
 			expect(results.map(s => s.id)).toEqual(expect.arrayContaining([site1.id, site2.id]));
 		});

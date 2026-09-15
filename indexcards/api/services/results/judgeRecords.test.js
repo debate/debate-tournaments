@@ -6,7 +6,7 @@ describe('Judge Record Service', async () => {
 	let entryId;
 	beforeAll(async () => {
 		({ personId } = await factories.person.create());
-		({ judgeId } = await factories.judge.createTestJudge({ person: personId }));
+		({ judgeId } = await factories.judge.create({ person: personId }));
 		({ tournId } = await factories.tourn.create({ hidden: 0 })); //public tourn
 		({ eventId } = await factories.event.create({ tournId }));
 		({ roundId } = await factories.round.create({
@@ -14,7 +14,7 @@ describe('Judge Record Service', async () => {
 			published: true,
 			post_primary: 3,
 		})); //published round with public primary results
-		({ sectionId } = await factories.section.create({ round: roundId }));
+		({ sectionId } = await factories.panel.create({ round: roundId }));
 		const entry = await db.entry.create({
 			event: eventId,
 			tourn: tournId,

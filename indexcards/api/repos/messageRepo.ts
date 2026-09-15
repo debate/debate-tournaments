@@ -125,8 +125,10 @@ async function getMessages(db: Database, personId: number,opts: {
 }
 
 async function createMessage(db: Database, data: Insertable<Message>) {
-	const dataResult = await db.insertInto('message').values(data).returning('id').executeTakeFirstOrThrow();
-	return dataResult.id;
+	return await db.insertInto('message')
+	.values(data)
+	.returningAll()
+	.executeTakeFirstOrThrow();
 };
 
 export default {

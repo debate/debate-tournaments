@@ -17,19 +17,12 @@ export function createData(overrides: Overrides = {}): Insertable<Session> {
 
 export async function create(overrides: Overrides = {}) {
 	if(!overrides.person || overrides.Person) {
-		const { personId } = await factories.person.create(overrides.Person);
-		overrides.person = personId as number;
+		const Person = await factories.person.create(overrides.Person);
+		overrides.person = Person.id;
 	}
 
 	const data = createData(overrides);
-	const {id: sessionId, userkey } = await sessionRepo.createSession(db,data);
-
-	return {
-		sessionId,
-		personId: overrides.person,
-		userkey,
-		getSession: () => sessionRepo.getSession(db, sessionId),
-	};
+	return await sessionRepo.createSession(db,data);
 }
 
 export default {

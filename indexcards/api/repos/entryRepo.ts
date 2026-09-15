@@ -1,4 +1,5 @@
-import { flattenSettingsFromJson, settingsRowsJsonSelect } from './utils/settings.js';
+import { saveSettings, selectSettings } from './utils/settings.js';
+import type { Settings } from './utils/settings.js';
 import type { Insertable } from 'kysely';
 import type { Entry } from '../data/schema.js';
 
@@ -9,25 +10,22 @@ type entryOpts = {
 	offset?: number,
 	settings?: boolean | string[]
 }
-function buildEntryQuery(db: Database, opts:entryOpts = {}) {
-	let query = db.selectFrom('entry');
-	if(opts.limit){
-		query = query.limit(opts.limit)
-	}
-	if(opts.offset){
-		query = query.offset(opts.offset)
-	}
-	if (opts.settings) {
-		return query
-			.select(
-				settingsRowsJsonSelect({
-					table: 'entry_setting',
-					ownerKey: 'entry',
-					ownerRef: 'entry.id',
-					settings: opts.settings,
-				}).as('settings')
-			);
-	}
+function buildEntryQuery(db: Database, opts: entryOpts = {}) {
+	let query = db.selectFrom('entry')
+	.$if(opts.settings !== undefined && opts.settings !== false, (qb) => qb.select(selectSettings({
+			table: 'entry',
+			settings: opts.settings ?? false,
+		}
+	)))
+
+	query = opts.limit
+		? query.limit(opts.limit)
+		: query;
+
+	query = opts.offset
+		? query.offset(opts.offset)
+		: query;
+
 	return query;
 }
 
@@ -42,21 +40,25 @@ async function getEntry(db: Database,id: number, opts: entryOpts = {}) {
 		return undefined;
 	}
 
-	if (opts.settings) {
-		return {
-			...row,
-			settings: flattenSettingsFromJson((row as { settings?: unknown }).settings),
-		};
-	}
-
 	return row;
 }
 
-async function createEntry(db: Database, data: Insertable<Entry>) {
-	return await db.insertInto('entry')
-		.values(data)
+async function createEntry(db: Database, data: Insertable<Entry> & { settings?: Settings }) {
+	const { settings, ...entryData } = data;
+	const res =  await db.insertInto('entry')
+		.values(entryData)
 		.returningAll()
 		.executeTakeFirstOrThrow();
+
+	if (settings) {
+		saveSettings({db, table: 'entry', ownerId: res.id, settings});
+		return {
+			...res,
+			settings,
+		};
+	}
+
+	return res;
 }
 
 export default {

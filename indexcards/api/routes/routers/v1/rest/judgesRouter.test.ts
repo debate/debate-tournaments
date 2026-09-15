@@ -13,7 +13,7 @@ describe('GET /rest/judges/unlinked/search', () => {
 	let cjLast: string;
 
 	beforeAll(async () => {
-		const { getJudge } = await factories.judge.createTestJudge();
+		const { getJudge } = await factories.judge.create();
 		const judge = await getJudge() as { first: string; last: string };
 		first = judge.first;
 		last = judge.last;

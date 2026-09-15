@@ -1,53 +1,142 @@
-import logger from '../../helpers/logger.js';
-import { sql } from 'kysely';
-
+import { sql, type AliasedRawBuilder } from 'kysely';
 
 import type { Database } from '../../data/database.js';
+/** Possible types for a setting value. Can be a string, a Date, an object, or null.*/
+type SettingValue = string | number | Date | object | null;
+export type Settings = Record<string, SettingValue>;
+/** Tables that have a corresponding settings table */
+type SettingsTable = 
+	'category' |
+	'chapter' |
+	'circuit' |
+	'entry' |
+	'event' |
+	'jpool' |
+	'judge' |
+	'panel' |
+	'person' |
+	'protocol' |
+	'region' |
+	'round' |
+	'rpool' |
+	'school' |
+	'student' |
+	'tourn';
 
-type Settings = Record<string, unknown>;
-type FlattenedSettings = Record<string, string | number | Date | null>;
-type SettingsTable = 'person_setting' | 'category_setting' | 'round_setting' | 'event_setting' | 'entry_setting' | 'school_setting' | 'tourn_setting';
-type SettingsOwnerKey<T extends SettingsTable> =
-	T extends 'person_setting' ? 'person'
-		: T extends 'category_setting' ? 'category'
-			: T extends 'round_setting' ? 'round'
-				: T extends 'event_setting' ? 'event'
-				: T extends 'entry_setting' ? 'entry'
-				: T extends 'school_setting' ? 'school'
-				: 'tourn';
-type SettingsOwnerKeyValue = 'person' | 'category' | 'round' | 'event' | 'entry' | 'school' | 'tourn';
+type SaveSettingsArgs = {
+	db: Database;
+	table: SettingsTable;
+	settings: Settings;
+	/** the ID of the owner row in the corresponding table */
+	ownerId: number;
+};
 
-type SettingRow = {
+type SettingsSelectArgs = {
+	/** which table to select settings from */
+	table: SettingsTable;
+	/** if the table is aliased in the query, provide the alias here */
+	tableAs?: string;
+	/** what settings to select, either all (true) or specific keys (string[]) */
+	settings: boolean | string[];
+	/** what alias to use for the resulting settings column default: settings */
+	as?: string;
+};
+/**
+ * Represents an insertable row in a *_setting table
+ */
+type SettingInsert = {
 	value: string | null;
 	value_text: string | null;
 	value_date: Date | null;
 	tag: string;
+};
+type SettingRow = SettingInsert & {
 	created_at: Date | null;
 	timestamp: Date | null;
 };
 
-interface SaveSettingsOptions {
-	db: Database;
-	table: 'person_setting' | 'category_setting' | 'round_setting' | 'event_setting' | 'entry_setting' | 'school_setting' | 'tourn_setting';
-	settings: Settings;
-	ownerKey: string;
-	ownerId: number;
-}
+const settingConfig = {
+	category: {
+		table: "category_setting",
+		ownerKey: "category",
+	},
+	chapter: {
+		table: "chapter_setting",
+		ownerKey: "chapter",
+	},
+	circuit: {
+		table: "circuit_setting",
+		ownerKey: "circuit",
+	},
+	entry: {
+		table: "entry_setting",
+		ownerKey: "entry",
+	},
+	event: {
+		table: "event_setting",
+		ownerKey: "event",
+	},
+	jpool: {
+		table: "jpool_setting",
+		ownerKey: "jpool",
+	},
+	judge: {
+		table: "judge_setting",
+		ownerKey: "judge",
+	},
+	panel: {
+		table: "panel_setting",
+		ownerKey: "panel",
+	},
+	person: {
+		table: "person_setting",
+		ownerKey: "person",
+	},
+	protocol: {
+		table: "protocol_setting",
+		ownerKey: "protocol",
+	},
+	region: {
+		table: "region_setting",
+		ownerKey: "region",
+	},
+	round: {
+		table: "round_setting",
+		ownerKey: "round",
+	},
+	rpool: {
+		table: "rpool_setting",
+		ownerKey: "rpool",
+	},
+	school: {
+		table: "school_setting",
+		ownerKey: "school",
+	},
+	student: {
+		table: "student_setting",
+		ownerKey: "student",
+	},
+	tourn: {
+		table: "tourn_setting",
+		ownerKey: "tourn",
+	},
+} as const;
 
+
+/**
+ * Saves settings for a specific owner in the corresponding *_setting table
+ */
 export async function saveSettings({
 	db,
 	table,
 	settings,
-	ownerKey,
 	ownerId,
-}: SaveSettingsOptions) {
-	if (!settings || !Object.keys(settings).length) {
-		return;
-	}
+}: SaveSettingsArgs) {
+	const config = settingConfig[table];
 
 	const rows = buildSettingsRows({
 		settings,
-		ownerKey,
+		ownerKey: config.ownerKey,
 		ownerId,
 	});
 
@@ -56,7 +145,7 @@ export async function saveSettings({
 	}
 
 	await db
-		.insertInto(table)
+		.insertInto(config.table)
 		.values(rows)
 		.onDuplicateKeyUpdate({
 			value: sql`VALUES(value)`,
@@ -65,51 +154,48 @@ export async function saveSettings({
 		})
 		.execute();
 }
-/**
- * Build a Sequelize include for settings based on requested settings tags
+
+/** 
+ * Generates a SQL snippet for selecting settings as a JSON object from a *_setting table.
  */
-export function withSettingsInclude({
-	model,
-	as,
-	settings,
-}: {
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	model: any;
-	as: string;
-	settings: true | string[];
-}) {
-	// no settings requested => no include
-	if (!settings) return [];
-
-	const include = {
-		model,
+export function selectSettings<A extends string = 'settings'>(
+	{
+		table,
+		tableAs,
+		settings,
 		as,
-		required: false,
-		where: {},
-	};
+	}: SettingsSelectArgs & { as?: A },
+): AliasedRawBuilder<Record<string, string> | null, A> {
+	const config = settingConfig[table];
+	const ownerRefResolved = tableAs ? `${tableAs}.id` : `${table}.id`;
+	const alias = as ?? 'settings';
+	const tags = Array.isArray(settings) ? settings : undefined;
 
-	// true = include all settings
-	if (settings === true) {
-		return [include];
-	}
+	const tagFilter = tags?.length
+		? sql` AND setting_row_internal.tag IN (${sql.join(tags)})`
+		: sql``;
 
-	// array = include only specific tags
-	if (Array.isArray(settings)) {
-		include.where = {
-			tag: settings,
-		};
-		return [include];
-	}
-
-	throw new Error(
-		`settings must be true or an array of tags`
-	);
+	return sql<Record<string, string> | null>`(
+		SELECT JSON_OBJECTAGG(
+			setting_row_internal.tag,
+			CASE
+				WHEN setting_row_internal.value = 'date' THEN setting_row_internal.value_date
+				WHEN setting_row_internal.value = 'text' THEN setting_row_internal.value_text
+				WHEN setting_row_internal.value = 'json' AND JSON_VALID(setting_row_internal.value_text)
+					THEN JSON_EXTRACT(setting_row_internal.value_text, '$')
+				WHEN setting_row_internal.value = 'json' THEN setting_row_internal.value_text
+				ELSE setting_row_internal.value
+			END
+		)
+		FROM ${sql.table(config.table)} setting_row_internal
+		WHERE ${sql.ref(`setting_row_internal.${config.ownerKey}`)} = ${sql.ref(ownerRefResolved)}
+		${tagFilter}
+	)`.as(alias as A);
 }
-
 /**
  * Build rows for bulk upsert into a *_setting table
  */
-export function buildSettingsRows({
+function buildSettingsRows({
 	settings,
 	ownerKey,
 	ownerId,
@@ -117,7 +203,7 @@ export function buildSettingsRows({
 	settings: Settings;
 	ownerKey: string;
 	ownerId: number;
-}) {
+}): SettingInsert[] {
 	if (!settings || typeof settings !== 'object') return [];
 
 	return Object.entries(settings).map(([tag, value]) => ({
@@ -125,277 +211,6 @@ export function buildSettingsRows({
 		tag,
 		...encodeSettingValue(value, tag),
 	}));
-}
-/**
- * converts setting rows from DB into a simple key-value object
- * @param {Array} settingRows - rows from DB
- * @returns {Object} settings key-value pairs
- */
-export function flattenSettings(settingRows: SettingRow[]) {
-	if (!settingRows) return;
-
-	const out: FlattenedSettings = {};
-
-	for (const setting of settingRows) {
-
-		if (setting.value === 'text' || setting.value === 'json') {
-			if(setting.value === 'json') {
-				try {
-					out[setting.tag] = JSON.parse(setting.value_text ?? 'null');
-				} catch (e) {
-					logger.warn(`Failed to parse JSON setting for tag ${setting.tag} with value ${setting.value_text}:`, e);
-					out[setting.tag] = setting.value_text;
-				}
-			} else {
-				out[setting.tag] = setting.value_text;
-			}
-			continue;
-		}
-
-		if (setting.value === 'date') {
-			out[setting.tag] = setting.value_date;
-			continue;
-		}
-
-		// default column: try number, fall back to string
-		if (setting.value !== null && setting.value !== undefined) {
-			const num = Number(setting.value);
-			out[setting.tag] = Number.isNaN(num)
-				? setting.value
-				: num;
-		} else {
-			out[setting.tag] = setting.value;
-		}
-	}
-
-	return out;
-}
-
-export function settingsRowsJsonSelect({
-	table,
-	ownerKey,
-	ownerRef,
-	settings,
-}: {
-	table: SettingsTable;
-	ownerKey: SettingsOwnerKeyValue;
-	ownerRef: string;
-	settings: true | string[];
-}) {
-	const tags = Array.isArray(settings) ? settings : undefined;
-	const tagFilter = tags?.length
-		? sql` AND s.tag IN (${sql.join(tags)})`
-		: sql``;
-
-	return sql<string | null>`(
-		SELECT JSON_OBJECTAGG(
-			s.tag,
-			CASE
-				WHEN s.value = 'date' THEN s.value_date
-				WHEN s.value = 'text' THEN s.value_text
-				WHEN s.value = 'json' AND JSON_VALID(s.value_text) THEN JSON_EXTRACT(s.value_text, '$')
-				WHEN s.value = 'json' THEN s.value_text
-				ELSE s.value
-			END
-		)
-		FROM ${sql.table(table)} s
-		WHERE ${sql.ref(`s.${ownerKey}`)} = ${sql.ref(ownerRef)}
-		${tagFilter}
-	)`;
-}
-
-export function flattenSettingsFromJson(settingRowsJson: unknown): FlattenedSettings {
-	if (!settingRowsJson) {
-		return {};
-	}
-
-	try {
-		let parsed: unknown;
-
-		if (typeof settingRowsJson === 'string') {
-			parsed = JSON.parse(settingRowsJson);
-		} else if (settingRowsJson instanceof Uint8Array) {
-			parsed = JSON.parse(Buffer.from(settingRowsJson).toString('utf8'));
-		} else {
-			parsed = settingRowsJson;
-		}
-
-		// Legacy shape: [{ tag, value, value_text, value_date, ... }]
-		if (Array.isArray(parsed)) {
-			const settingRows: SettingRow[] = parsed.map((row) => {
-				const payload = row as Record<string, unknown>;
-				return {
-					tag: typeof payload.tag === 'string' ? payload.tag : '',
-					value: typeof payload.value === 'string' || payload.value === null ? payload.value : String(payload.value),
-					value_text: typeof payload.value_text === 'string' || payload.value_text === null ? payload.value_text : String(payload.value_text),
-					value_date: payload.value_date ? new Date(String(payload.value_date)) : null,
-					created_at: payload.created_at ? new Date(String(payload.created_at)) : null,
-					timestamp: payload.timestamp ? new Date(String(payload.timestamp)) : null,
-				};
-			}).filter((row) => row.tag.length > 0);
-
-			return flattenSettings(settingRows) ?? {};
-		}
-
-		// Optimized shape: { [tag]: { value, value_text, value_date } }
-		if (parsed && typeof parsed === 'object') {
-			const entries = Object.entries(parsed as Record<string, unknown>);
-
-			// Most optimized shape: { [tag]: resolvedScalarOrJson }
-			if (entries.every(([, row]) => row === null || typeof row !== 'object' || row instanceof Date)) {
-				return Object.fromEntries(entries) as FlattenedSettings;
-			}
-
-			const settingRows: SettingRow[] = entries.map(([tag, row]) => {
-				const payload = (row && typeof row === 'object')
-					? (row as Record<string, unknown>)
-					: {};
-				return {
-					tag,
-					value: typeof payload.value === 'string' || payload.value === null ? payload.value : String(payload.value ?? ''),
-					value_text: typeof payload.value_text === 'string' || payload.value_text === null ? payload.value_text : String(payload.value_text ?? ''),
-					value_date: payload.value_date ? new Date(String(payload.value_date)) : null,
-					created_at: null,
-					timestamp: null,
-				};
-			}).filter((row) => row.tag.length > 0);
-
-			return flattenSettings(settingRows) ?? {};
-		}
-
-		return {};
-	} catch (error) {
-		logger.warn('Failed to parse settings JSON payload:', error);
-		return {};
-	}
-}
-
-export async function attachSettingsToRows<
-	TRow extends Record<string, unknown>,
-	TTable extends SettingsTable,
-	TRowIdKey extends keyof TRow,
->({
-	db,
-	rows,
-	table,
-	ownerKey,
-	rowIdKey,
-	tags,
-	settingsKey = 'settings',
-}: {
-	db: Database;
-	rows: TRow[];
-	table: TTable;
-	ownerKey: SettingsOwnerKey<TTable>;
-	rowIdKey: TRowIdKey;
-	tags?: string[];
-	settingsKey?: string;
-}): Promise<Array<TRow & { settings: FlattenedSettings }>> {
-	if (!rows.length) {
-		return [];
-	}
-
-	const ids = rows
-		.map(row => Number(row[rowIdKey]))
-		.filter(id => Number.isInteger(id));
-
-	if (!ids.length) {
-		return rows.map(row => ({
-			...row,
-			[settingsKey]: {},
-		})) as Array<TRow & { settings: FlattenedSettings }>;
-	}
-
-	let settingRows: Array<Record<string, unknown>> = [];
-
-	if (table === 'person_setting') {
-		let query = db
-			.selectFrom('person_setting')
-			.selectAll()
-			.where('person', 'in', ids);
-
-		if (tags?.length) {
-			query = query.where('tag', 'in', tags);
-		}
-
-		settingRows = await query.execute();
-	} else if (table === 'category_setting') {
-		let query = db
-			.selectFrom('category_setting')
-			.selectAll()
-			.where('category', 'in', ids);
-
-		if (tags?.length) {
-			query = query.where('tag', 'in', tags);
-		}
-
-		settingRows = await query.execute();
-	} else if (table === 'round_setting') {
-		let query = db
-			.selectFrom('round_setting')
-			.selectAll()
-			.where('round', 'in', ids);
-
-		if (tags?.length) {
-			query = query.where('tag', 'in', tags);
-		}
-
-		settingRows = await query.execute();
-	} else {
-		let query = db
-			.selectFrom('event_setting')
-			.selectAll()
-			.where('event', 'in', ids);
-
-		if (tags?.length) {
-			query = query.where('tag', 'in', tags);
-		}
-
-		settingRows = await query.execute();
-	}
-	const settingsByOwner = new Map<number, SettingRow[]>();
-
-	for (const row of settingRows) {
-		const ownerId = Number(row[ownerKey] as unknown);
-		if (!Number.isInteger(ownerId) || typeof row.tag !== 'string') {
-			continue;
-		}
-
-		const arr = settingsByOwner.get(ownerId);
-		if (arr) {
-			arr.push(row as SettingRow);
-		} else {
-			settingsByOwner.set(ownerId, [row as SettingRow]);
-		}
-	}
-
-	return rows.map(row => {
-		const ownerId = Number(row[rowIdKey]);
-		const ownerRows = settingsByOwner.get(ownerId) ?? [];
-		return {
-			...row,
-			[settingsKey]: flattenSettings(ownerRows) ?? {},
-		};
-	}) as Array<TRow & { settings: FlattenedSettings }>;
-}
-/**
- * Converts setting rows from DB into an object mapping tag to { createdAt, updatedAt }
- * @param {Array} settingRows - rows from DB
- * @returns {Object} { tag: { createdAt, updatedAt }, ... }
- */
-export function flattenSettingsTimestamps(settingRows: SettingRow[]) {
-	if (!settingRows) return;
-
-	const out: Record<string, { created_at: Date | null; timestamp: Date | null }> = {};
-
-	for (const setting of settingRows) {
-		out[setting.tag] = {
-			created_at: setting.created_at,
-			timestamp: setting.timestamp,
-		};
-	}
-
-	return out;
 }
 
 /**

@@ -59,12 +59,12 @@ describe('judgesRouter', () => {
 		it('should return the judge history for the logged in user', async () => {
 			const tourn = await factories.tourn.create(); // start is past by default
 			const category = await factories.category.create({ tourn: tourn.id });
-			const { judgeId } = await factories.judge.createTestJudge({ person: personId, category: category.id });
+			const { judgeId } = await factories.judge.create({ person: personId, category: category.id });
 
 			// Create event → round → panel → ballot chain
 			const { eventId } = await factories.event.create({ category: category.id });
 			const { roundId } = await factories.round.create({ event: eventId, published: true });
-			const panel = await factories.section.create({ round: roundId });
+			const panel = await factories.panel.create({ round: roundId });
 			await factories.ballot.create({ panel: panel.id, judge:judgeId });
 			
 			const res = await request(server)

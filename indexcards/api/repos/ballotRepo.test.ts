@@ -9,7 +9,7 @@ let section: Selectable<Panel> | null = null;
 
 describe('ballotRepo', async () => {
 	beforeAll(async () => {
-		section = await factories.section.create();
+		section = await factories.panel.create();
 	});
 	describe('getBallots', async () => {
 

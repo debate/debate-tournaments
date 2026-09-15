@@ -1,41 +1,46 @@
-import { saveSettings } from './utils/settings.js';
+import { saveSettings, selectSettings } from './utils/settings.js';
 
 import type { Database } from '../data/database.js';
 import type { Insertable, Updateable } from 'kysely';
 import type { Panel } from '../data/schema.js';
 
 type queryOpts = {
+	settings?: boolean | string[];
 	round?: number;
 }
-function buildSectionQuery(db: Database, opts: queryOpts){
-	let query  = db.selectFrom('panel');
+function buildPanelQuery(db: Database, opts: queryOpts){
+	let query  = db.selectFrom('panel')
+	.$if(opts.settings !== undefined && opts.settings !== false, (q) => q.select(selectSettings({
+		table: 'panel',
+		settings: opts.settings ?? false,
+	})))
 
 	query = opts.round ? query.where('panel.round', '=', opts.round) : query;
 
 	return query;
 }
 
-async function getSection(db: Database, id: number, opts: queryOpts = {}){
-	return await buildSectionQuery(db, opts)
+async function getPanel(db: Database, id: number, opts: queryOpts = {}){
+	return await buildPanelQuery(db, opts)
 	.where('panel.id', '=', id)
 	.selectAll('panel')
 	.executeTakeFirst();
 }
 
-async function getSections(db: Database, opts: queryOpts = {}) {
-	return await buildSectionQuery(db, opts).selectAll('panel').execute();
+async function getPanels(db: Database, opts: queryOpts = {}) {
+	return await buildPanelQuery(db, opts).selectAll('panel').execute();
 }
 async function createPanel(db: Database, data: Insertable<Panel> & { settings?: Record<string, unknown> }){
-	const { settings, ...sectionData } = data;
+	const { settings, ...panelData } = data;
 
 	return await db.transaction().execute(async (trx) => {
-		if (Object.keys(sectionData).length === 0) {
-			throw new Error('createPanel requires section data');
+		if (Object.keys(panelData).length === 0) {
+			throw new Error('createPanel requires panel data');
 		}
 
-		const section = await trx
+		const panel = await trx
 			.insertInto('panel')
-			.values(sectionData)
+			.values(panelData)
 			.returningAll()
 			.executeTakeFirstOrThrow();
 
@@ -45,22 +50,22 @@ async function createPanel(db: Database, data: Insertable<Panel> & { settings?: 
 				table: 'panel_setting',
 				settings,
 				ownerKey: 'panel',
-				ownerId: section.id,
+				ownerId: panel.id,
 			});
 		}
 
-		return section;
+		return panel;
 	});
 }
 
-async function updateSection(db: Database, id: number, data: Updateable<Panel> & { settings?: Record<string, unknown> }){
-	const { settings, ...sectionData } = data;
+async function updatePanel(db: Database, id: number, data: Updateable<Panel> & { settings?: Record<string, unknown> }){
+	const { settings, ...panelData } = data;
 
 	return await db.transaction().execute(async (trx) => {
-		if (Object.keys(sectionData).length > 0) {
+		if (Object.keys(panelData).length > 0) {
 			await trx
 				.updateTable('panel')
-				.set(sectionData)
+				.set(panelData)
 				.where('id', '=', id)
 				.executeTakeFirstOrThrow();
 		}
@@ -79,7 +84,7 @@ async function updateSection(db: Database, id: number, data: Updateable<Panel> &
 	});
 }
 
-async function deleteSection(db: Database, id: number){
+async function deletePanel(db: Database, id: number){
 	return await db.deleteFrom('panel')
 		.where('id', '=', id)
 		.executeTakeFirst();
@@ -359,10 +364,10 @@ async function getCurrentBallots(db: Database, personId: number, tournId: number
 	return [...panels.values()];
 }
 export default {
-	getSection,
-	getSections,
-	updateSection,
+	getPanel,
+	getPanels,
+	updatePanel,
 	createPanel,
-	deleteSection,
+	deletePanel,
 	getCurrentBallots,
 };

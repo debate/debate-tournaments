@@ -1,7 +1,5 @@
 import db from '../data/db.js';
 import { schoolYearDateRange } from '../helpers/dateTime.js';
-import { FIELD_MAP, toDomain, toPersistence } from './mappers/studentMapper.js';
-import { resolveAttributesFromFields } from './utils/repoUtils.js';
 
 function buildStudentQuery(opts = {}) {
 	const query = {

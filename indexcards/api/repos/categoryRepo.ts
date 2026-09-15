@@ -1,92 +1,38 @@
 
-import { saveSettings, settingsRowsJsonSelect, flattenSettingsFromJson } from './utils/settings.js';
+import { saveSettings, selectSettings } from './utils/settings.js';
 
 import type { Database } from '../data/database.js';
 import type { Category } from '../data/schema.js';
-import type { Updateable, Insertable, Selectable } from 'kysely';
+import type { Updateable, Insertable } from 'kysely';
+import type { Settings } from './utils/settings.js';
 
 type CategoryOpts = {
 	settings?: boolean | string[];
 };
 
-type CategoryWithSettings = Selectable<Category> & {
-	settings: Record<string, unknown>;
-};
-
-type CategoryResult<TOpts extends CategoryOpts> =
-	TOpts['settings'] extends true | string[]
-		? CategoryWithSettings
-		: Selectable<Category>;
-
-function wantsSettings(opts: CategoryOpts): opts is CategoryOpts & { settings: true | string[] } {
-	return opts.settings === true || Array.isArray(opts.settings);
-}
-
 function buildCategoryQuery<TOpts extends CategoryOpts>(db: Database, opts: TOpts) {
-	if (wantsSettings(opts)) {
-		return db
-			.selectFrom('category')
-			.selectAll('category')
-			.select(
-				settingsRowsJsonSelect({
-					table: 'category_setting',
-					ownerKey: 'category',
-					ownerRef: 'category.id',
-					settings: opts.settings,
-				}).as('settings')
-			);
-	}
-
-	return db
-		.selectFrom('category')
-		.selectAll('category');
+	let query = db.selectFrom('category')
+	.$if(opts.settings !== undefined && opts.settings !== false, (q) => q.select(selectSettings({
+		table: 'category',
+		settings: opts.settings ?? false,
+	})))
+	return query;
 }
 
-export async function getCategory<TOpts extends CategoryOpts = CategoryOpts>(
-	db: Database,
-	id: number,
-	opts: TOpts = {} as TOpts,
-): Promise<CategoryResult<TOpts> | undefined> {
+export async function getCategory(db: Database, id: number, opts: CategoryOpts = {}) {
 	const query = buildCategoryQuery(db,opts)
 	.where('category.id', '=', id);
-
-	const row = await query.executeTakeFirst();
-
-	if (!row) {
-		return undefined;
-	}
-
-	if (wantsSettings(opts)) {
-		return {
-			...row,
-			settings: flattenSettingsFromJson((row as { settings?: unknown }).settings),
-		} as CategoryResult<TOpts>;
-	}
-
-	return row as CategoryResult<TOpts>;
+	return await query.selectAll('category').executeTakeFirst();
 }
-async function getCategories<TOpts extends CategoryOpts = CategoryOpts>(
-	db: Database,
-	scope: { tournId?: number } = {},
-	opts: TOpts = {} as TOpts,
-): Promise<Array<CategoryResult<TOpts>>> {
+async function getCategories(db: Database, scope: { tournId?: number } = {},opts: CategoryOpts = {}) {
 	let query = buildCategoryQuery(db,opts);
 	if (scope?.tournId) {
 		query = query.where('category.tourn', '=', scope.tournId);
 	}
 
-	const rows = await query.execute();
-
-	if (wantsSettings(opts)) {
-		return rows.map((row) => ({
-			...row,
-			settings: flattenSettingsFromJson((row as { settings?: unknown }).settings),
-		})) as Array<CategoryResult<TOpts>>;
-	}
-
-	return rows as Array<CategoryResult<TOpts>>;
+	return await query.selectAll('category').execute();
 }
-async function createCategory(db: Database, data: Insertable<Category> & { settings?: Record<string, unknown> }, opts = {}) {
+async function createCategory(db: Database, data: Insertable<Category> & { settings?: Settings }, opts = {}) {
 	const { settings, ...categoryData } = data;
 
 	return await db.transaction().execute(async (trx) => {
@@ -103,9 +49,8 @@ async function createCategory(db: Database, data: Insertable<Category> & { setti
 		if (settings) {
 			await saveSettings({
 				db: trx,
-				table: 'category_setting',
+				table: 'category',
 				settings,
-				ownerKey: 'category',
 				ownerId: category.id,
 			});
 		}
@@ -114,7 +59,7 @@ async function createCategory(db: Database, data: Insertable<Category> & { setti
 	});
 }
 
-async function updateCategory(db: Database, id: number, data: Updateable<Category> & { settings?: Record<string, unknown> }, opts = {}) {
+async function updateCategory(db: Database, id: number, data: Updateable<Category> & { settings?: Settings }, opts = {}) {
 	const { settings, ...categoryData } = data;
 
 	return await db.transaction().execute(async (trx) => {
@@ -129,9 +74,8 @@ async function updateCategory(db: Database, id: number, data: Updateable<Categor
 		if (settings) {
 			await saveSettings({
 				db: trx,
-				table: 'category_setting',
+				table: 'category',
 				settings,
-				ownerKey: 'category',
 				ownerId: id,
 			});
 		}

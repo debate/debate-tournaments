@@ -15,9 +15,7 @@ export function createRoomData(overrides = {}) {
 
 export async function create(overrides = {}) {
 	const data = createRoomData(overrides);
-	const roomId = await roomRepo.createRoom(data);
-
-	return roomRepo.getRoom(roomId);
+	return await roomRepo.createRoom(data);
 }
 export default {
 	createRoomData,

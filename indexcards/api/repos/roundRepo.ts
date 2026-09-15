@@ -1,10 +1,11 @@
-import { saveSettings, settingsRowsJsonSelect, flattenSettingsFromJson } from './utils/settings.js';
+import { saveSettings, selectSettings } from './utils/settings.js';
 
 import type { Database } from '../data/database.js';
 import type { Round } from '../data/schema.js';
-import type { Insertable, Selectable } from 'kysely';
+import type { Insertable } from 'kysely';
+import type { Settings } from './utils/settings.js';
 
-type RoundOpts = {
+type queryOpts = {
 	settings?: boolean | string[];
 	fields?: string[];
 	unpublished?: boolean;
@@ -15,43 +16,12 @@ type RoundScope = {
 	tournId?: number;
 };
 
-type RoundWithSettings = Selectable<Round> & {
-	settings: Record<string, unknown>;
-	eventId?: number | null;
-	roundId?: number;
-};
-
-type RoundResult<TOpts extends RoundOpts> =
-	TOpts['settings'] extends true | string[]
-		? RoundWithSettings
-		: Selectable<Round> & {
-			eventId?: number | null;
-			roundId?: number;
-		};
-
-function wantsSettings(opts: RoundOpts): opts is RoundOpts & { settings: true | string[] } {
-	return opts.settings === true || Array.isArray(opts.settings);
-}
-
-function normalizeRoundRow<TOpts extends RoundOpts>(row: Record<string, unknown>, opts: TOpts): RoundResult<TOpts> {
-	const next: Record<string, unknown> = { ...row };
-
-	if (wantsSettings(opts)) {
-		next.settings = flattenSettingsFromJson(next.settings);
-	}
-
-	if (next.event !== undefined && next.eventId === undefined) {
-		next.eventId = next.event as number | null;
-	}
-	if (next.id !== undefined && next.roundId === undefined) {
-		next.roundId = next.id as number;
-	}
-
-	return next as RoundResult<TOpts>;
-}
-
-function buildRoundQuery<TOpts extends RoundOpts>(db: Database, opts: TOpts) {
-	let query = db.selectFrom('round').selectAll('round');
+function buildRoundQuery(db: Database, opts: queryOpts) {
+	let query = db.selectFrom('round')
+	.$if(opts.settings !== undefined && opts.settings !== false, (q) => q.select(selectSettings({
+		table: 'round',
+		settings: opts.settings ?? false,
+	})))
 
 	if (!opts.unpublished) {
 		query = query.where('round.published', '=', 1);
@@ -63,41 +33,25 @@ function buildRoundQuery<TOpts extends RoundOpts>(db: Database, opts: TOpts) {
 			.where('round.published', '>', 0);
 	}
 
-	if (wantsSettings(opts)) {
-		query = query.select(
-			settingsRowsJsonSelect({
-				table: 'round_setting',
-				ownerKey: 'round',
-				ownerRef: 'round.id',
-				settings: opts.settings,
-			}).as('settings')
-		);
-	}
-
 	return query;
 }
 
-export async function getRound<TOpts extends RoundOpts = RoundOpts>(
+export async function getRound(
 	db: Database,
 	roundId: number,
-	opts: TOpts = {} as TOpts,
-): Promise<RoundResult<TOpts> | null> {
-	const baseRow = await buildRoundQuery(db, opts)
+	opts: queryOpts,
+) {
+	return await buildRoundQuery(db, opts)
 		.where('round.id', '=', roundId)
+		.selectAll('round')
 		.executeTakeFirst();
-
-	if (!baseRow) {
-		return null;
-	}
-
-	return normalizeRoundRow<TOpts>(baseRow as Record<string, unknown>, opts);
 }
 
-export async function getRounds<TOpts extends RoundOpts = RoundOpts>(
+export async function getRounds(
 	db: Database,
 	scope: RoundScope = {},
-	opts: TOpts = {} as TOpts,
-): Promise<Array<RoundResult<TOpts>>> {
+	opts: queryOpts = {},
+) {
 	let query = buildRoundQuery(db, opts);
 
 	if (scope.tournId) {
@@ -106,11 +60,10 @@ export async function getRounds<TOpts extends RoundOpts = RoundOpts>(
 			.where('event.tourn', '=', scope.tournId);
 	}
 
-	const rows = await query.execute();
-	return rows.map((row: Record<string, unknown>) => normalizeRoundRow<TOpts>(row, opts));
+	return await query.selectAll('round').execute();
 }
 
-export async function createRound(db: Database, data: Insertable<Round> & { settings?: Record<string, unknown> }) {
+export async function createRound(db: Database, data: Insertable<Round> & { settings?: Settings }) {
 	const { settings, ...roundData } = data;
 
 	return await db.transaction().execute(async (trx) => {
@@ -127,9 +80,8 @@ export async function createRound(db: Database, data: Insertable<Round> & { sett
 		if (settings) {
 			await saveSettings({
 				db: trx,
-				table: 'round_setting',
+				table: 'round',
 				settings,
-				ownerKey: 'round',
 				ownerId: round.id,
 			});
 		}

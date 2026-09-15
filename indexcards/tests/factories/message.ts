@@ -1,6 +1,7 @@
 import messageRepo from '../../api/repos/messageRepo.js';
 import { faker } from '@faker-js/faker';
 import { db } from '../../api/data/database.js';
+
 export function createMessageData(overrides = {}) {
 	return {
 		subject: faker.lorem.sentence(),
@@ -15,12 +16,7 @@ export async function create(overrides = {}) {
 		...overrides,
 	});
 
-	const messageId = await messageRepo.createMessage(db,data);
-
-	return {
-		messageId,
-		getMessage: () => messageRepo.getMessage(db, messageId),
-	};
+	return await messageRepo.createMessage(db,data);
 }
 
 export default {

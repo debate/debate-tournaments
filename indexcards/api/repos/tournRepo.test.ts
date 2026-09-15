@@ -30,7 +30,7 @@ describe('tournRepo', () => {
 
 			expect(fetchedTourn).toBeDefined();
 			expect(fetchedTourn?.settings).toBeDefined();
-			expect(fetchedTourn?.settings.testSetting).toBe(settings.testSetting);
+			expect(fetchedTourn?.settings!.testSetting).toBe(settings.testSetting);
 		});
 		it('applies limit and offset when specified', async () => {
 			await factories.tourn.create();
@@ -90,8 +90,8 @@ describe('tournRepo', () => {
 			expect(tourn).toBeDefined();
 			const result = await tournRepo.getTourn(db, tourn.id, { settings: true });
 			expect(result).toBeDefined();
-			expect(result.settings).toBeDefined();
-			expect(result.settings.testSetting).toBe(tournData.settings.testSetting);
+			expect(result!.settings).toBeDefined();
+			expect(result!.settings!.testSetting).toBe(tournData.settings!.testSetting);
 		});
 	});
 	describe('updateTourn', () => {
@@ -107,12 +107,11 @@ describe('tournRepo', () => {
 			const data = factories.tourn.createTournData({ settings: { testSetting: 'oldValue' } });
 			const tourn = await tournRepo.createTourn(db, data);
 			const updates = { ...data, settings: { testSetting: 'newValue' } };
-			const result = await tournRepo.updateTourn(db, tourn.id, updates);
-			expect(result).toBe(true);
+			await tournRepo.updateTourn(db, tourn.id, updates);
 
 			const updatedTourn = await tournRepo.getTourn(db, tourn.id, { settings: true });
 			expect(updatedTourn?.settings).toBeDefined();
-			expect(updatedTourn?.settings.testSetting).toBe(updates.settings.testSetting);
+			expect(updatedTourn?.settings!.testSetting).toBe(updates.settings.testSetting);
 		});
 	});
 	describe('deleteTourn', () => {

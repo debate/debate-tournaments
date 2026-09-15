@@ -1,36 +1,9 @@
 import type { DBSchema, Database } from '../data/database.js';
-import { flattenSettings, saveSettings } from './utils/settings.js';
+import { saveSettings, selectSettings, type Settings } from './utils/settings.js';
 import type { Person } from '../data/schema.js';
-import type { Insertable, Selectable, ExpressionBuilder } from 'kysely';
+import type { Insertable, ExpressionBuilder } from 'kysely';
 
-
-
-async function getPersonSettings(db: Database, personId: number, tags?: string[]) {
-	let query = await db
-		.selectFrom('person_setting')
-		.selectAll()
-		.where('person', '=', personId)
-
-	if (tags) {
-		query = query.where('tag', 'in', tags);
-	}
-		const rows = await query.execute();
-
-		return {
-			settings: flattenSettings(rows),
-			settingsTimestamps: Object.fromEntries(
-				rows.map(row => [
-					row.tag,
-					{
-						createdAt: row.created_at,
-						updatedAt: row.timestamp,
-					},
-				])
-			),
-		};
-}
-
-type GetPersonOptions = {
+type queryOpts = {
 	settings?: boolean | string[];
 	excludeBanned?: boolean;
 	excludeUnconfirmedEmail?: boolean;
@@ -40,8 +13,14 @@ type GetPersonOptions = {
 	offset?: number;
 };
 
-async function personQuery(db: Database, opts: GetPersonOptions = {}) {
-	let query = db.selectFrom('person');
+async function buildPersonQuery(db: Database, opts: queryOpts = {}) {
+	let query = db.selectFrom('person')
+	.$if(opts.settings !== undefined && opts.settings !== false, (qb) => 
+		qb.select(selectSettings({
+			table: 'person',
+			settings: opts.settings ?? false
+		}))
+	)
 	if(opts.excludeBanned)
 		query = query.where(isNotBanned);
 	if(opts.excludeUnconfirmedEmail)
@@ -129,60 +108,14 @@ async function validParadigmCondition(db: Database) {
         );
 }
 
-type PersonWithSettings = Selectable<Person> & {
-	settings: Record<string, unknown>;
-	settingsTimestamps: Record<string, { updatedAt: Date }>;
-};
-
-export async function getPerson(
-	db: Database,
-	personId: number,
-	opts: GetPersonOptions & { settings: true | string[] },
-): Promise<PersonWithSettings | undefined>;
-
-export async function getPerson(
-	db: Database,
-	personId: number,
-	opts?: GetPersonOptions & { settings?: false },
-): Promise<Selectable<Person> | undefined>;
-
-export async function getPerson(
-	db: Database,
-	personId: number,
-	opts: GetPersonOptions = {},
-) {
-	let query = (await personQuery(db, opts))
-		.where('person.id', '=', personId);
-
-
-	const person = await query.selectAll('person').executeTakeFirst();
-
-	if (!person) {
-		return undefined;
-	}
-
-	if (opts.settings) {
-		const { settings, settingsTimestamps } = await getPersonSettings(
-			db,
-			personId,
-			opts.settings === true ? undefined : opts.settings,
-		);
-	
-		return {
-			...person,
-			settings,
-			settingsTimestamps,
-		};
-	}
-
-	return person;
+export async function getPerson(db: Database, id: number, opts: queryOpts = {}) {
+	return await (await buildPersonQuery(db, opts))
+		.where('person.id', '=', id)
+		.selectAll('person')
+		.executeTakeFirst();
 }
 
-export async function personSearch(
-	db: Database,
-	term: string,
-	opts: GetPersonOptions = {},
-) {
+export async function personSearch(db: Database, term: string, opts: queryOpts = {},) {
 	const sanitize = (term: string) => {
 		if (!term) return '';
 		return term.replace(/[^a-zA-Z0-9\-\s]/g, '').trim();
@@ -191,7 +124,7 @@ export async function personSearch(
 	const cleanTerm = sanitize(term);
 	const words = cleanTerm.split(/\s+/).filter((w) => w.length > 0);
 
-	let query = await personQuery(db, opts);
+	let query = await buildPersonQuery(db, opts);
 	if (words.length) {
 		query = query.where((eb) =>
 			eb.and(
@@ -208,15 +141,15 @@ export async function personSearch(
 	return await query.selectAll('person').execute();
 }
 
-export async function getPersonByUsername(db: Database, username: string, opts: GetPersonOptions = {}) {
-	return (await personQuery(db, opts))
+export async function getPersonByUsername(db: Database, username: string, opts: queryOpts = {}) {
+	return (await buildPersonQuery(db, opts))
 		.where('person.email', '=', username)
 		.selectAll('person')
 		.executeTakeFirst();
 }
 
 type CreatePersonData = Insertable<Person> & {
-	settings?: Record<string, unknown>;
+	settings?: Settings;
 };
 export async function updatePerson(db: Database, personId: number, data: Partial<CreatePersonData>) {
 	const { settings, ...personData } = data;
@@ -233,9 +166,8 @@ export async function updatePerson(db: Database, personId: number, data: Partial
 		if (settings) {
 			await saveSettings({
 				db: trx,
-				table: 'person_setting',
+				table: 'person',
 				settings,
-				ownerKey: 'person',
 				ownerId: personId,
 			});
 		}
@@ -250,25 +182,22 @@ export async function createPerson(db: Database, data: CreatePersonData) {
 		const person = await trx
 			.insertInto('person')
 			.values(personData)
+			.returningAll()
 			.executeTakeFirstOrThrow();
-
-		const personId = Number(person.insertId);
 
 		if (settings) {
 			await saveSettings({
 				db: trx,
-				table: 'person_setting',
+				table: 'person',
 				settings,
-				ownerKey: 'person',
-				ownerId: personId,
+				ownerId: person.id,
 			});
 		}
 
-		return personId;
+		return person;
 	});
 }
 
-// export the  data functions NOT the mappers
 export default {
 	getPerson,
 	personSearch,

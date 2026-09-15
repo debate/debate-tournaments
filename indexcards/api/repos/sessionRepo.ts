@@ -85,23 +85,23 @@ export const createSession = async (
 	const created = await db
 		.insertInto('session')
 		.values(session)
+		.returningAll()
 		.executeTakeFirstOrThrow();
 
-	const id = Number(created.insertId);
 
 	const userkey = encrypt(
-		`${id}${config.shared_secret}`,
+		`${created.id}${config.shared_secret}`,
 		`$6$${userSalt}`,
 	);
 
 	await db
 		.updateTable('session')
 		.set({ userkey })
-		.where('id', '=', id)
+		.where('id', '=', created.id)
 		.executeTakeFirstOrThrow();
 
 	return {
-		id,
+		...created,
 		userkey,
 	};
 };

@@ -4,9 +4,10 @@ import tournRepo from '../../api/repos/tournRepo.js';
 import { db } from '../../api/data/database.js';
 import factories from './index.js';
 import type { Tourn, Event, Timeslot, Round } from '../../api/data/schema.js';
+import type { Settings } from '../../api/repos/utils/settings.js';
 import type { Insertable } from 'kysely';
 
-export function createTournData(overrides: Partial<Insertable<Tourn>> = {}) {
+export function createTournData(overrides: Partial<Insertable<Tourn>> & { settings?: Settings } = {}) {
 	const name = overrides.name ?? fakeTournName();
 	const country = overrides.country ?? 'US';
 	return {
@@ -31,9 +32,9 @@ export function createTournData(overrides: Partial<Insertable<Tourn>> = {}) {
 	};
 }
 
-export async function create(overrides: Partial<Insertable<Tourn>> & { circuit?: number } = {}) {
-	const { circuit, ...tournOverrides } = overrides;
-	const data = createTournData(tournOverrides);
+export async function create(overrides: Partial<Insertable<Tourn>> & { circuit?: number, settings?: Settings } = {}) {
+	const { circuit, settings, ...tournOverrides } = overrides;
+	const data = createTournData({ ...tournOverrides, settings });
 	const tourn = await tournRepo.createTourn(db, data);
 
 	if(circuit) {

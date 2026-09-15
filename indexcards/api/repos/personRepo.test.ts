@@ -77,7 +77,7 @@ describe('PersonRepo', () => {
 			await setTabroomDateSetting('paradigm_review_start', reviewStart);
 			await setTabroomDateSetting('paradigm_review_cutoff', cutoffInFuture);
 
-			const { personId } = await factories.person.create({
+			const Person = await factories.person.create({
 				settings: {
 					paradigm: 'Legacy paradigm text',
 				},
@@ -86,14 +86,14 @@ describe('PersonRepo', () => {
 			const staleTimestamp = new Date(reviewStart.getTime() - 24 * 60 * 60 * 1000);
 			await db.updateTable('person_setting')
 				.set({ timestamp: staleTimestamp })
-				.where('person', '=', personId)
+				.where('person', '=', Person.id)
 				.where('tag','=', 'paradigm')
 				.execute();
 
-			const person = await personRepo.getPerson(db, personId, { hasValidParadigm: true });
+			const person = await personRepo.getPerson(db, Person.id, { hasValidParadigm: true });
 
 			expect(person).toBeDefined();
-			expect(person?.id).toBe(personId);
+			expect(person?.id).toBe(Person.id);
 		});
 
 		it('excludes paradigm older than review start once cutoff is active', async () => {
@@ -104,7 +104,7 @@ describe('PersonRepo', () => {
 			await setTabroomDateSetting('paradigm_review_start', reviewStart);
 			await setTabroomDateSetting('paradigm_review_cutoff', cutoffInPast);
 
-			const { personId } = await factories.person.create({
+			const Person = await factories.person.create({
 				settings: {
 					paradigm: 'Stale paradigm text',
 				},
@@ -113,11 +113,11 @@ describe('PersonRepo', () => {
 			const staleTimestamp = new Date(reviewStart.getTime() - 24 * 60 * 60 * 1000);
 			await db.updateTable('person_setting')
 				.set({ timestamp: staleTimestamp })
-				.where('person', '=', personId)
+				.where('person', '=', Person.id)
 				.where('tag','=', 'paradigm')
 				.execute();
 
-			const person = await personRepo.getPerson(db, personId, { hasValidParadigm: true });
+			const person = await personRepo.getPerson(db, Person.id, { hasValidParadigm: true });
 
 			expect(person).toBeUndefined();
 		});
@@ -130,7 +130,7 @@ describe('PersonRepo', () => {
 			await setTabroomDateSetting('paradigm_review_start', reviewStart);
 			await setTabroomDateSetting('paradigm_review_cutoff', cutoffInPast);
 
-			const { personId } = await factories.person.create({
+			const Person = await factories.person.create({
 				settings: {
 					paradigm: 'Fresh paradigm text',
 				},
@@ -139,14 +139,14 @@ describe('PersonRepo', () => {
 			const freshTimestamp = new Date(now.getTime() - 60 * 1000);
 			await db.updateTable('person_setting')
 				.set({ timestamp: freshTimestamp })
-				.where('person', '=', personId)
+				.where('person', '=', Person.id)
 				.where('tag','=', 'paradigm')
 				.execute();
 
-			const person = await personRepo.getPerson(db, personId, { hasValidParadigm: true });
+			const person = await personRepo.getPerson(db, Person.id, { hasValidParadigm: true });
 
 			expect(person).toBeDefined();
-			expect(person?.id).toBe(personId);
+			expect(person?.id).toBe(Person.id);
 		});
 	});
 
@@ -213,9 +213,9 @@ describe('PersonRepo', () => {
 		it('returns persons matching the search query', async () => {
 			// Arrange
 			const personData = factories.person.createPersonData();
-			const { personId } = await factories.person.create(personData);
+			const Person = await factories.person.create(personData);
 			//person must have judged at least once to be included in search results
-			await factories.judge.createTestJudge({ person: personId });
+			await factories.judge.create({ person: Person.id });
 
 			// Act
 			const results = await personRepo.personSearch(db, `${personData.first} ${personData.last}`);
@@ -223,7 +223,7 @@ describe('PersonRepo', () => {
 			// Assert: expect the search results to include the created person
 			expect(Array.isArray(results)).toBe(true);
 			expect(results.length).toBeGreaterThan(0);
-			expect(results[0].id).toBe(personId);
+			expect(results[0].id).toBe(Person.id);
 		});
 		it('returns an empty array when no persons match the search query', async () => {
 			// Arrange
@@ -254,15 +254,14 @@ describe('PersonRepo', () => {
 	describe('getPersonByUsername', () => {
 		it('returns the person when the username is valid', async () => {
 			// Arrange
-			const { personId, getPerson } = await factories.person.create();
-			const person = await getPerson();
+			const Person = await factories.person.create();
 
 			// Act
-			const result = await personRepo.getPersonByUsername(db,person?.email ?? '');
+			const result = await personRepo.getPersonByUsername(db,Person?.email ?? '');
 
 			// Assert
 			expect(result).not.toBeNull();
-			expect(result?.id).toBe(personId);
+			expect(result?.id).toBe(Person.id);
 		});
 	});
 
@@ -271,10 +270,10 @@ describe('PersonRepo', () => {
 			// Arrange
 			const personData = factories.person.createPersonData();
 			// Act
-			const newPersonId = await personRepo.createPerson(db, personData);
+			const newPerson = await personRepo.createPerson(db, personData);
 			// Assert
-			expect(newPersonId).toBeDefined();
-			const person = await personRepo.getPerson(db, newPersonId);
+			expect(newPerson).toBeDefined();
+			const person = await personRepo.getPerson(db, newPerson.id);
 			expect(person).not.toBeNull()
 			expect(person?.first).toBe(personData.first);
 		});
@@ -286,71 +285,70 @@ describe('PersonRepo', () => {
 				},
 			});
 			// Act
-			const newPersonId = await personRepo.createPerson(db, personData);
+			const newPerson = await personRepo.createPerson(db, personData);
 			// Assert
-			expect(newPersonId).toBeDefined();
-			const person = await personRepo.getPerson(db, newPersonId, { settings: true });
-			expect(person).not.toBeNull();
-			expect(person?.settings.paradigm).toBe('Test paradigm');
+			expect(newPerson).toBeDefined();
+			const person = await personRepo.getPerson(db, newPerson.id, { settings: true });
+			expect(person).not.toBeUndefined();
+			expect(person?.settings!.paradigm).toBe('Test paradigm');
 		});
 	});
 
 	describe('updatePerson', () => {
 		it('updates a person row with new data', async () => {
-			const { personId } = await factories.person.create();
+			const Person = await factories.person.create();
 			const updates = { first: 'UpdatedFirstName' };
 
-			const result = await personRepo.updatePerson(db, personId, updates);
-			expect(result).toBe(personId);
+			await personRepo.updatePerson(db, Person.id, updates);
 
-			const updated = await personRepo.getPerson(db, personId);
+			const updated = await personRepo.getPerson(db, Person.id);
 			expect(updated?.first).toBe(updates.first);
 		});
 		it('saves person settings for an existing person', async () => {
-			const { personId } = await factories.person.create();
+			const Person = await factories.person.create();
 			const now = new Date();
 
-			await personRepo.updatePerson(db, personId, {
+			await personRepo.updatePerson(db, Person.id, {
 				settings: {
 					student_search_count: 3,
 					last_student_search: now,
 				}
 			});
 
-			const updated = await personRepo.getPerson(db, personId, {
+			const updated = await personRepo.getPerson(db, Person.id, {
 				settings: true,
 			});
 
-			expect(updated?.settings.student_search_count).toBe(3);
-			expect(updated?.settings.last_student_search).toEqualDate(now);
+			expect(Number(updated!.settings!.student_search_count)).toBe(3);
+			expect(updated!.settings!.last_student_search).toEqualDate(now);
 		});
 
 		it('updates existing person settings on subsequent saves', async () => {
-			const { personId } = await factories.person.create();
+			const Person = await factories.person.create();
 			const firstDate = new Date(Date.now() - 60 * 60 * 1000);
 			const secondDate = new Date();
 
 			
-			await personRepo.updatePerson(db, personId, {
+			await personRepo.updatePerson(db, Person.id, {
 				settings: {
 					student_search_count: 1,
 					last_student_search: firstDate,
 				}
 			});
 
-			await personRepo.updatePerson(db, personId, {
+			await personRepo.updatePerson(db, Person.id, {
 				settings: {
 					student_search_count: 7,
 					last_student_search: secondDate,
 				}
 			});
 
-			const updated = await personRepo.getPerson(db, personId, {
+			const updated = await personRepo.getPerson(db, Person.id, {
 				settings: true,
 			});
 
-			expect(updated?.settings.student_search_count).toBe(7);
-			expect(updated?.settings.last_student_search).toEqualDate(secondDate);
+			expect(Number(updated?.settings!.student_search_count)).toBe(7);
+			expect(updated?.settings!.last_student_search).toEqualDate(secondDate);
 		});
 	});
 });

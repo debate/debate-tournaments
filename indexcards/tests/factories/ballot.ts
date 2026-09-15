@@ -14,7 +14,7 @@ export async function create(overrides = {}) {
 	let panelId = overrides.panel;
 
 	if (!overrides.panel) {
-		const panel = await factories.section.create();
+		const panel = await factories.panel.create();
 		panelId = panel.id;
 	}
 
@@ -23,12 +23,7 @@ export async function create(overrides = {}) {
 		panel: panelId,
 	});
 
-	const ballot = await ballotRepo.createBallot(db,data);
-
-	return {
-		ballot,
-		panel: panelId,
-	};
+	return await ballotRepo.createBallot(db,data);
 }
 
 export default {

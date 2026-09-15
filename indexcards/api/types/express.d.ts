@@ -12,8 +12,13 @@ declare module 'express-serve-static-core' {
 	}
 	interface Request {
 		actor: {
+			su: number | null;
 			Person?: {
 				id: number;
+			};
+			Su?: {
+				id: number;
+				email: string;
 			};
 		}; // Replace `any` with the actual type of `actor` if available
 		valid: {

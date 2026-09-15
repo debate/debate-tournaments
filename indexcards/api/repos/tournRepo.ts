@@ -1,4 +1,4 @@
-import { saveSettings } from './utils/settings.js';
+import { saveSettings, selectSettings, type Settings } from './utils/settings.js';
 import type { Database } from '../data/database.js';
 import type { Insertable, Updateable } from 'kysely';
 import type { Tourn } from '../data/schema.js';
@@ -15,7 +15,13 @@ type queryOpts = {
 };
 
 function buildTournQuery(db: Database, opts: queryOpts = {}) {
-	let query = db.selectFrom('tourn');
+	let query = db.selectFrom('tourn')
+	.$if(opts.settings !== undefined && opts.settings !== false, (qb) =>
+		qb.select(selectSettings({
+			table: 'tourn',
+			settings: opts.settings ?? false,
+		}))
+	);
 	if(opts.limit) {
 		query = query.limit(opts.limit);
 	}
@@ -71,19 +77,17 @@ async function getTourn(db: Database, id: number| string,opts = {}) {
 	}
 
 	return await query
-	.selectAll()
+	.selectAll('tourn')
 	.executeTakeFirst();
 
 }
 async function getTourns(db: Database, opts: queryOpts = {}) {
-	let query = buildTournQuery(db, opts);
-	
-	return await query
+	return await buildTournQuery(db, opts)
 		.selectAll('tourn')
 		.execute();
 }
 
-async function createTourn(db: Database, data: Insertable<Tourn> & { settings?: Record<string, unknown> } = {}) {
+async function createTourn(db: Database, data: Insertable<Tourn> & { settings?: Settings } = {}) {
 	const { settings, ...tournData } = data;
 
 	return await db.transaction().execute(async (trx) => {
@@ -100,9 +104,8 @@ async function createTourn(db: Database, data: Insertable<Tourn> & { settings?: 
 		if (settings) {
 			await saveSettings({
 				db: trx,
-				table: 'tourn_setting',
+				table: 'tourn',
 				settings,
-				ownerKey: 'tourn',
 				ownerId: tourn.id,
 			});
 		}
@@ -111,8 +114,8 @@ async function createTourn(db: Database, data: Insertable<Tourn> & { settings?: 
 	});
 }
 
-async function updateTourn(db: Database, id: number, data: Updateable<Tourn> & { settings?: Record<string, unknown> }) {
-	const { settings, ...tournData } = data;
+			async function updateTourn(db: Database, id: number, data: Updateable<Tourn> & { settings?: Settings }) {
+				const { settings, ...tournData } = data;
 
 	return await db.transaction().execute(async (trx) => {
 		if (Object.keys(tournData).length > 0) {
@@ -126,9 +129,8 @@ async function updateTourn(db: Database, id: number, data: Updateable<Tourn> & {
 		if (settings) {
 			await saveSettings({
 				db: trx,
-				table: 'tourn_setting',
+				table: 'tourn',
 				settings,
-				ownerKey: 'tourn',
 				ownerId: id,
 			});
 		}

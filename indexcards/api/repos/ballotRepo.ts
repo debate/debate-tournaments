@@ -11,29 +11,10 @@ function buildBallotQuery(db: Database, opts: queryOpts = {}){
 
 	query = opts.panel ? query.where('panel', '=', opts.panel) : query;
 	if (opts.winnerBallot) {
-		const existing = query.include.find(i => i.as === 'scores');
-
-		if (existing) {
-			existing.required = true;
-			existing.where = {
-				...existing.where,
-				tag: 'winloss',
-				value: 1,
-			};
-		} else {
-			query.include.push({
-				model: db.score,
-				as: 'ballot_scores',
-				attributes: [],
-				required: true,
-				where: {
-					tag: 'winloss',
-					value: 1,
-				},
-			});
-		}
+		query = query.innerJoin('score', 'ballot.id', 'score.ballot')
+		.where('score.tag', '=', 'winloss')
+		.where('score.value', '=', 1);
 	}
-
 	return query;
 }
 

@@ -10,20 +10,20 @@ describe('unlinkedSearch', () => {
 		const schoolYear = new Date().getFullYear();
 		const { chapterId } = await factories.chapter.create();
 
-		const { studentId: includedId } = await factories.student.create({
+		const included = await factories.student.create({
 			first: `${firstPrefix}A`,
 			last: `${lastPrefix}A`,
 			chapter: chapterId,
 		});
 
-		const { studentId: linkedByPersonId } = await factories.student.create({
+		const linkedByPerson = await factories.student.create({
 			first: `${firstPrefix}B`,
 			last: `${lastPrefix}B`,
 			person: 123,
 			chapter: chapterId,
 		});
 
-		const { studentId: linkedByRequestId } = await factories.student.create({
+		const linkedByRequest = await factories.student.create({
 			first: `${firstPrefix}C`,
 			last: `${lastPrefix}C`,
 			person_request: 321,
@@ -50,12 +50,12 @@ describe('unlinkedSearch', () => {
 		});
 
 		expect(Array.isArray(results)).toBe(true);
-		expect(results.some(s => s.id === includedId)).toBe(true);
-		expect(results.some(s => s.id === linkedByPersonId)).toBe(false);
-		expect(results.some(s => s.id === linkedByRequestId)).toBe(false);
-		const included = results.find(s => s.id === includedId);
-		expect(included).toBeDefined();
-		expect(included.chapter_id).toBe(chapterId);
+		expect(results.some(s => s.id === included.id)).toBe(true);
+		expect(results.some(s => s.id === linkedByPerson.id)).toBe(false);
+		expect(results.some(s => s.id === linkedByRequest.id)).toBe(false);
+		const includedResult = results.find(s => s.id === included.id);
+		expect(includedResult).toBeDefined();
+		expect(includedResult.chapter_id).toBe(chapterId);
 	});
 
 	it('counts distinct tournaments for each matched student', async () => {
@@ -64,7 +64,7 @@ describe('unlinkedSearch', () => {
 		const lastPrefix = `TCL${stamp}`;
 		const schoolYear = new Date().getFullYear();
 		const { chapterId } = await factories.chapter.create();
-		const { studentId } = await factories.student.create({
+		const student = await factories.student.create({
 			first: `${firstPrefix}Main`,
 			last: `${lastPrefix}Main`,
 			chapter: chapterId,
@@ -81,9 +81,9 @@ describe('unlinkedSearch', () => {
 		const entryA2 = await factories.entry.create({ event: eventA2 });
 		const entryB1 = await factories.entry.create({ event: eventB1 });
 
-		await db.entryStudent.create({ entry: entryA1.id, student: studentId });
-		await db.entryStudent.create({ entry: entryA2.id, student: studentId });
-		await db.entryStudent.create({ entry: entryB1.id, student: studentId });
+		await db.entryStudent.create({ entry: entryA1.id, student: student.id });
+		await db.entryStudent.create({ entry: entryA2.id, student: student.id });
+		await db.entryStudent.create({ entry: entryB1.id, student: student.id });
 
 		const results = await studentRepo.unlinkedSearch({
 			first: firstPrefix,
@@ -92,7 +92,7 @@ describe('unlinkedSearch', () => {
 			schoolYear,
 		});
 
-		const studentResult = results.find(s => s.id === studentId);
+		const studentResult = results.find(s => s.id === student.id);
 		expect(studentResult).toBeDefined();
 		expect(Number(studentResult.tourn_count)).toBe(2);
 	});
@@ -108,7 +108,7 @@ describe('unlinkedSearch', () => {
 		const lastPrefix = `SYL${stamp}`;
 		const currentYear = new Date().getFullYear();
 		const { chapterId } = await factories.chapter.create();
-		const { studentId: includedId } = await factories.student.create({
+		const included = await factories.student.create({
 			first: `${firstPrefix}A`,
 			last: `${lastPrefix}A`,
 			chapter: chapterId,
@@ -125,7 +125,7 @@ describe('unlinkedSearch', () => {
 			last: lastPrefix,
 		});
 
-		expect(results.some(s => s.id === includedId)).toBe(true);
+		expect(results.some(s => s.id === included.id)).toBe(true);
 		expect(results.some(s => s.grad_year === currentYear - 1)).toBe(false);
 	});
 });
