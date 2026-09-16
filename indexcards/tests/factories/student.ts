@@ -1,5 +1,6 @@
 import { faker } from '@faker-js/faker';
 import studentRepo from '../../api/repos/studentRepo.js';
+import { db } from '../../api/data/database.js';
 
 export function buildStudentData(overrides = {}) {
 	return {
@@ -14,12 +15,7 @@ export function buildStudentData(overrides = {}) {
 export async function create(overrides = {}) {
 	const data = buildStudentData(overrides);
 
-	const studentId = await studentRepo.createStudent(data);
-
-	return {
-		studentId,
-		getStudent: () => studentRepo.getStudent(studentId),
-	};
+	return await studentRepo.createStudent(db, data);
 }
 
 export default {

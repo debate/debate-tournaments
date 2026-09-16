@@ -10,12 +10,7 @@ export function createRoundData(overrides = {}) {
 
 export async function create(overrides = {}) {
 	const data = createRoundData(overrides);
-	const Round = await roundRepo.createRound(db,data);
-
-	return {
-		roundId: Round.id,
-		getRound: () => roundRepo.getRound(db, Round.id, { settings: true }),
-	};
+	return await roundRepo.createRound(db,data);
 }
 
 export default {

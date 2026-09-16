@@ -57,7 +57,7 @@ export async function createBallot(overrides: Overrides & {
 	}));
 
 	const panel = await factories.panel.create({
-		round: tourn.roundId,
+		round: tourn.Round.id,
 	});
 
 	const entry1 = await factories.entry.create();

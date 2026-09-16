@@ -13,30 +13,30 @@ import { db } from '../../data/database.js';
 import type { Request, Response } from 'express';
 
 async function linkRequests(req: Request, res: Response) {
-
 	const [judges, chapterJudges] = await Promise.all([
-		judgeRepo.getJudges(db,{ where: { person_request: req.actor.id } }),
-		chapterJudgeRepo.getChapterJudges(db,{ where: { person_request: req.actor.id } }),
+		judgeRepo.getJudges(db, { person_request: req.actor.person! }),
+		chapterJudgeRepo.getChapterJudges(db, {
+			person_request: req.actor.person!,
+		}),
 	]);
-	let results = [];
-	judges.forEach(j => {
-		results.push({
+
+	const results = [
+		...judges.map((j) => ({
 			id: j.id,
-			type: 'judge',
+			type: 'judge' as const,
 			first: j.first,
 			last: j.last,
-		});
-	});
-	chapterJudges.forEach(cj => {
-		results.push({
+		})),
+		...chapterJudges.map((cj) => ({
 			id: cj.id,
-			type: 'chapter_judge',
+			type: 'chapter_judge' as const,
 			first: cj.first,
 			last: cj.last,
-		});
-	});
+		})),
+	];
+
 	return res.status(200).json(results);
-};
+}
 // handle a request to claim an unlinked judge or chapter judge.
 async function claimRequest(req: Request, res: Response) {
 	const { judgeId, chapterJudgeId } = req.valid.query;
@@ -50,20 +50,20 @@ async function claimRequest(req: Request, res: Response) {
 		if (!judge || !judge.category) {
 			return BadRequest(req, res, 'Invalid judge ID or judge has no category');
 		}
-		// search for other judges in the category the person has claimed or requested, error if any exist
-		const already = await judgeRepo.getJudges(db,{
-			where: {
-				category: judge.category,
-				[Op.or]: [
-					{ person: req.actor.id },
-					{ person_request: req.actor.id },
-				],
-			},
-		});
-		if (already.length > 0) {
+
+		const already = await db.selectFrom('judge')
+		.select('id')
+		.where('category', '=', judge.category)
+		.where((eb) => eb.or([
+			eb('person', '=', req.actor.person!),
+			eb('person_request', '=', req.actor.person!),
+		]))
+		.executeTakeFirst();
+
+		if (already) {
 			return BadRequest(req, res, `You are already linked to another ${judge.category} judge.  You may only link to one judge in a given tournament.  If you are trying to link yourself to all your school's judges, please DO NOT.  Every judge must be linked to their OWN Tabroom account.`);
 		}
-		await judgeRepo.updateJudge(db, judgeId, { person_request: req.actor.Person!.id });
+		await judgeRepo.updateJudge(db, judgeId, { person_request: req.actor.person! });
 		return res.status(200).json({
 			message: 'Judge claim request submitted',
 			detail: 'A message has been sent to your chapter admins to approve this request.',

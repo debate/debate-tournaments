@@ -12,6 +12,7 @@ declare module 'express-serve-static-core' {
 	}
 	interface Request {
 		actor: {
+			person: number | null;
 			su: number | null;
 			Person?: {
 				id: number;

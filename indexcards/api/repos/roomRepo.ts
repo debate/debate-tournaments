@@ -1,5 +1,6 @@
 import type { Database } from '../data/database.js';
-
+import type { Room } from '../data/schema.js';
+import type { Insertable } from 'kysely';
 type queryOpts = {
 	tourn?: number;
 	site?: number;
@@ -12,7 +13,7 @@ function buildRoomQuery(db: Database, opts: queryOpts = {}) {
 		.where('tourn_site.tourn', '=', opts.tourn);
 	}
 	if (opts.site) {
-		query = query.where('site', '=', opts.site);
+		query = query.where('room.site', '=', opts.site);
 	}
 
 	return query;
@@ -31,23 +32,24 @@ async function getRooms(db: Database, opts: queryOpts = {}) {
 	.execute();
 }
 
-async function createRoom(roomData) {
-	const persistenceData = toPersistence(roomData);
-	const newRoom = await db.room.create(persistenceData);
-	return newRoom.id;
+async function createRoom(db: Database, data: Insertable<Room>) {
+	return await db.insertInto('room')
+	.values(data)
+	.returningAll()
+	.executeTakeFirst();
 }
 
-async function updateRoom(id, roomData) {
-	if (!id) throw new Error('updateRoom: id is required');
-	const persistenceData = toPersistence(roomData);
-	const [rows] = await db.room.update(persistenceData, { where: { id } });
-	return rows > 0;
+async function updateRoom(db: Database, id: number, data: Insertable<Room>) {
+	return await db.updateTable('room')
+	.set(data)
+	.where('id', '=', id)
+	.execute();
 }
 
-async function deleteRoom(id) {
-	if (!id) throw new Error('deleteRoom: id is required');
-	const rows = await db.room.destroy({ where: { id } });
-	return rows > 0;
+async function deleteRoom(db: Database, id: number) {
+	return await db.deleteFrom('room')
+	.where('id', '=', id)
+	.execute();
 }
 
 export default {

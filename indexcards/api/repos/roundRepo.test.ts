@@ -22,10 +22,10 @@ describe('getRounds', () => {
 		var rounds = await roundRepo.getRounds(db, {tournId});
 
 		rounds.forEach((round, i) => {
-			assert.equal(round.published, 1, `Round at index ${i} (roundId=${round.roundId}) is not published`);
+			assert.equal(round.published, 1, `Round at index ${i} (roundId=${round.id}) is not published`);
 			assert.typeOf(round.id, 'number', `Round at index ${i} has no id`);
-			assert.typeOf(round.roundId, 'number', `Round at index ${i} has no roundId alias`);
-			assert.equal(round.roundId, round.id, `Round at index ${i} has inconsistent roundId alias`);
+			assert.typeOf(round.id, 'number', `Round at index ${i} has no roundId alias`);
+			assert.equal(round.id, round.id, `Round at index ${i} has inconsistent roundId alias`);
 		});
 	});
 	it('returns settings object when settings option is provided', async () => {

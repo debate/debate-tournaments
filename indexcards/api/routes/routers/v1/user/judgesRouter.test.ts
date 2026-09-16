@@ -3,21 +3,23 @@ import request from 'supertest';
 import server from '../../../../../app.js';
 import z from 'zod';
 import { JudgeHistorySchema } from '@tabroom/types';
+import personRepo from '../../../../repos/personRepo.js';
+import { db } from '../../../../../api/data/database.js';
 
 describe('judgesRouter', () => {
 	let personId : number;
 	let userkey: string;
 	beforeAll(async () => {
-		({ personId } = await factories.person.create());
+		({ id: personId } = await factories.person.create());
 		({ userkey } = await factories.session.create({ person: personId }));
 	});
 	describe("POST /user/judges/claim", () => {
 		it('should allow a user to claim a chapter judge', async () => {
 			//setup - create a chapter judge with no person_request
-			const { chapterId } = await factories.chapter.create();
+			const Chapter = await factories.chapter.create();
 			const { chapterJudgeId, getChapterJudge } = await factories.chapterJudge.create({
 				person_request: null,
-				chapter: chapterId,
+				chapter: Chapter.id,
 			});
 			//make the request to claim the chapter judge
 			await request(server)
@@ -32,12 +34,12 @@ describe('judgesRouter', () => {
 		});
 		it('should auto-approve a claim request if the user is a chapter admin', async () => {
 			//setup - create a chapter judge with no person_request
-			const { chapterId } = await factories.chapter.create();
+			const Chapter = await factories.chapter.create();
 			const { chapterJudgeId, getChapterJudge } = await factories.chapterJudge.create({
 				person_request: null,
-				chapter: chapterId,
+				chapter: Chapter.id,
 			});
-			await factories.permission.create({ person: personId, chapter: chapterId, tag: 'chapter' }); //give the user admin permissions for the chapter so they can receive the notification email
+			await factories.permission.create({ person: personId, chapter: Chapter.id, tag: 'chapter' }); //give the user admin permissions for the chapter so they can receive the notification email
 			//make the request to claim the chapter judge
 			await request(server)
 				.post('/v1/user/judges/claim')
@@ -62,10 +64,10 @@ describe('judgesRouter', () => {
 			const { judgeId } = await factories.judge.create({ person: personId, category: category.id });
 
 			// Create event → round → panel → ballot chain
-			const { eventId } = await factories.event.create({ category: category.id });
-			const { roundId } = await factories.round.create({ event: eventId, published: true });
-			const panel = await factories.panel.create({ round: roundId });
-			await factories.ballot.create({ panel: panel.id, judge:judgeId });
+			const Event = await factories.event.create({ category: category.id });
+			const Round = await factories.round.create({ event: Event.id, published: true });
+			const Panel = await factories.panel.create({ round: Round.id });
+			await factories.ballot.create({ panel: Panel.id, judge:judgeId });
 			
 			const res = await request(server)
 				.get('/v1/user/judges/history')
@@ -77,8 +79,8 @@ describe('judgesRouter', () => {
 	});
 	describe("POST /user/judges/paradigm", () => {
 		it('should update the users paradigm', async () => {
-			const { personId, getPerson } = await factories.person.create();
-			const { userkey } = await factories.session.create({ person: personId });
+			const Person = await factories.person.create();
+			const { userkey } = await factories.session.create({ person: Person.id });
 			const res = await request(server)
 				.post('/v1/user/judges/paradigm')
 				.set('Accept', 'application/json')
@@ -87,8 +89,8 @@ describe('judgesRouter', () => {
 				.expect(204);
 			expect(res).not.toBeProblemResponse();
 
-			const updatedPerson = await getPerson();
-			expect(updatedPerson?.settings.paradigm).toBe('word '.repeat(50));
+			const updatedPerson = await personRepo.getPerson(db, Person.id,{ settings: ['paradigm']});
+			expect(updatedPerson!.settings!.paradigm).toBe('word '.repeat(50));
 
 			const newParadigm = await request(server)
 				.get('/v1/user/judges/paradigm')

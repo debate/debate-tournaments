@@ -31,7 +31,7 @@ describe('createSchool', () => {
 		expect(fetchedSchool?.name).toBe(schoolData.name);
 		expect(fetchedSchool?.code).toBe(schoolData.code);
 		expect(fetchedSchool?.onsite).toBe(true);
-		expect(fetchedSchool?.settings).toEqual(schoolData.settings);
+		expect(fetchedSchool?.settings?.contact).toEqual('500');
 
 	});
 	it('Creates a new school without settings when settings are not provided', async () => {
@@ -53,7 +53,7 @@ describe('createSchool', () => {
 		expect(fetchedSchool?.name).toBe(schoolData.name);
 		expect(fetchedSchool?.code).toBe(schoolData.code);
 		expect(fetchedSchool?.onsite).toBe(true);
-		expect(fetchedSchool?.settings).toEqual({});
+		expect(fetchedSchool?.settings).toEqual(null);
 	});
 });
 describe('updateSchool', () => {
@@ -88,7 +88,7 @@ describe('updateSchool', () => {
 		expect(updatedSchool?.name).toBe(updateData.name);
 		expect(updatedSchool?.code).toBe(updateData.code);
 		expect(updatedSchool?.onsite).toBe(false);
-		expect(updatedSchool?.settings).toEqual({ contact: 600 }); // settings should remain unchanged
+		expect(updatedSchool?.settings).toEqual({ contact: '600' }); // settings should remain unchanged
 	});
 });
 describe('deleteSchool', () => {

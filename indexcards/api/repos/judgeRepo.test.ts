@@ -138,9 +138,9 @@ describe('judgeRepo', () => {
 			const Judge = await factories.judge.create({ person: Person.id, category: category.id });
 
 			// Create event → round → panel → ballot chain
-			const { eventId } = await factories.event.create({ category: category.id });
-			const { roundId } = await factories.round.create({ event: eventId, published: true });
-			const Panel = await factories.panel.create({ round: roundId });
+			const Event = await factories.event.create({ category: category.id });
+			const Round = await factories.round.create({ event: Event.id, published: true });
+			const Panel = await factories.panel.create({ round: Round.id });
 			await factories.ballot.create({ panel: Panel.id, judge: Judge.id });
 			const history = await judgeRepo.getJudgeHistory(db,Person.id, {limit: 10, offset: 0 });
 

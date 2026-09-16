@@ -1,4 +1,4 @@
-import { saveSettings } from './utils/settings.js';
+import { saveSettings, selectSettings, type Settings } from './utils/settings.js';
 import type { Insertable, Updateable } from 'kysely';
 import type { Database } from '../data/database.js';
 import type { School } from '../data/schema.js';
@@ -8,9 +8,16 @@ type queryOpts = {
 	chapter?: number;
 	region?: number;
 	district?: number;
+	settings?: boolean | string[]
 };
 function buildSchoolQuery(db: Database, opts: queryOpts = {}){
-	let query = db.selectFrom('school');
+	let query = db.selectFrom('school')
+	.$if(opts.settings !== undefined && opts.settings !== false, (qb) => 
+		qb.select(selectSettings({
+			table: 'school',
+			settings: opts.settings ?? false
+		}))
+	)
 	if (opts.tourn) {
 		query = query.where('tourn', '=', opts.tourn);
 	}
@@ -29,19 +36,19 @@ function buildSchoolQuery(db: Database, opts: queryOpts = {}){
 async function getSchool(db: Database, id: number, opts: queryOpts = {}) {
 	const res = await buildSchoolQuery(db, opts)
 	.where('id', '=', id)
-	.selectAll()
+	.selectAll('school')
 	.executeTakeFirst();
 	return res;
 }
 async function getSchools(db: Database, opts: queryOpts = {}) {
 	let query = buildSchoolQuery(db, opts)
-	.selectAll();
+	.selectAll('school');
 
 	const rows = await query.execute();
 
 	return rows;
 }
-async function createSchool(db: Database, data: Insertable<School> & { settings?: Record<string, unknown> }) {
+async function createSchool(db: Database, data: Insertable<School> & { settings?: Settings }) {
 	const { settings, ...schoolData } = data;
 
 	return await db.transaction().execute(async (trx) => {
@@ -55,9 +62,8 @@ async function createSchool(db: Database, data: Insertable<School> & { settings?
 		if (settings) {
 			await saveSettings({
 				db: trx,
-				table: 'school_setting',
+				table: 'school',
 				settings,
-				ownerKey: 'school',
 				ownerId: schoolId,
 			});
 		}
@@ -65,7 +71,7 @@ async function createSchool(db: Database, data: Insertable<School> & { settings?
 		return schoolId;
 	});
 }
-async function updateSchool(db: Database, id: number, data: Updateable<School> & { settings?: Record<string, unknown> }) {
+async function updateSchool(db: Database, id: number, data: Updateable<School> & { settings?: Settings }) {
 	const { settings, ...schoolData } = data;
 
 	return await db.transaction().execute(async (trx) => {
@@ -80,9 +86,8 @@ async function updateSchool(db: Database, id: number, data: Updateable<School> &
 		if (settings) {
 			await saveSettings({
 				db: trx,
-				table: 'school_setting',
+				table: 'school',
 				settings,
-				ownerKey: 'school',
 				ownerId: id,
 			});
 		}

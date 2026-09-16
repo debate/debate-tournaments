@@ -7,6 +7,8 @@ import type { Judge } from '../data/schema.js';
 type queryOpts = {
 	limit?: number;
 	offset?: number;
+	person?: number;
+	person_request?: number;
 	settings?: boolean | string[]
 }
 function buildJudgeQuery(db: Database, opts: queryOpts = {}) {
@@ -16,8 +18,10 @@ function buildJudgeQuery(db: Database, opts: queryOpts = {}) {
 			settings: opts.settings ?? false,
 		}
 	)))
-	query = opts.limit ? query.limit(opts.limit) : query;
-	query = opts.offset ? query.offset(opts.offset) : query;
+	if(opts.limit) query = query.limit(opts.limit);
+	if(opts.offset) query = query.offset(opts.offset);
+	if(opts.person) query = query.where('judge.person', '=', opts.person);
+	if(opts.person_request) query = query.where('judge.person_request', '=', opts.person_request);
 
 	return query;
 }

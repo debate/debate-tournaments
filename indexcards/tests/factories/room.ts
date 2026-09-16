@@ -1,6 +1,7 @@
 import roomRepo from '../../api/repos/roomRepo.js';
 import { fakeSchoolName } from './factoryUtils.js';
 import { faker } from '@faker-js/faker';
+import { db } from '../../api/data/database.js';
 
 export function createRoomData(overrides = {}) {
 	return {
@@ -15,7 +16,9 @@ export function createRoomData(overrides = {}) {
 
 export async function create(overrides = {}) {
 	const data = createRoomData(overrides);
-	return await roomRepo.createRoom(data);
+	const result = await roomRepo.createRoom(db,data);
+	if (!result) throw new Error('Failed to create room');
+	return result;
 }
 export default {
 	createRoomData,

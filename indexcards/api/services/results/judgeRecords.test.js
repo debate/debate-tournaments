@@ -2,19 +2,19 @@ import factories from '../../../tests/factories/index.js';
 import { judgeRecord } from './judgeRecords';
 import db from '../../data/db.js';
 describe('Judge Record Service', async () => {
-	let personId,judgeId, tournId, roundId, sectionId, eventId;
+	let personId,judgeId, tournId, roundId, panelId, eventId;
 	let entryId;
 	beforeAll(async () => {
-		({ personId } = await factories.person.create());
-		({ judgeId } = await factories.judge.create({ person: personId }));
-		({ tournId } = await factories.tourn.create({ hidden: 0 })); //public tourn
-		({ eventId } = await factories.event.create({ tournId }));
-		({ roundId } = await factories.round.create({
+		({ id: personId } = await factories.person.create());
+		({ id: judgeId } = await factories.judge.create({ person: personId }));
+		({ id: tournId } = await factories.tourn.create({ hidden: 0 })); //public tourn
+		({ id: eventId } = await factories.event.create({ tournId }));
+		({ id: roundId } = await factories.round.create({
 			event: eventId,
 			published: true,
 			post_primary: 3,
 		})); //published round with public primary results
-		({ sectionId } = await factories.panel.create({ round: roundId }));
+		({ id: panelId } = await factories.panel.create({ round: roundId }));
 		const entry = await db.entry.create({
 			event: eventId,
 			tourn: tournId,
@@ -24,7 +24,7 @@ describe('Judge Record Service', async () => {
 	});
 	it('returns the public judging record of a person', async () => {
 		const ballot = await factories.ballot.create({
-			section: sectionId,
+			section: panelId,
 			judge: judgeId,
 			entry: entryId,
 			side: 1,

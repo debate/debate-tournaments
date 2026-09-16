@@ -26,15 +26,15 @@ describe('panelRepo', () => {
 	});
 	describe('getPanels', () => {
 		it('retrieves all panels for a given round', async () => {
-			const { roundId } = await factories.round.create();
-			const panel1 = await factories.panel.create({ round: roundId });
-			const panel2 = await factories.panel.create({ round: roundId });
+			const Round = await factories.round.create();
+			const panel1 = await factories.panel.create({ round: Round.id });
+			const panel2 = await factories.panel.create({ round: Round.id });
 
-			const results = await panelRepo.getPanels(db,{ round: roundId });
+			const results = await panelRepo.getPanels(db,{ round: Round.id });
 			expect(results).toBeDefined();
 			expect(results.length).toBeGreaterThanOrEqual(2);
 			results.forEach(s => {
-				expect(s.round, `expected roundId to be ${roundId} but was ${s.round}`).toBe(roundId);
+				expect(s.round, `expected roundId to be ${Round.id} but was ${s.round}`).toBe(Round.id);
 			});
 			expect(results.map(s => s.id)).toEqual(expect.arrayContaining([panel1.id, panel2.id]));
 		});

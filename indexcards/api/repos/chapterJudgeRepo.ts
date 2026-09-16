@@ -6,6 +6,8 @@ import type { ChapterJudge } from '../data/schema.js';
 type queryOpts = {
 	limit?: number;
 	offset?: number;
+	person?: number;
+	person_request?: number;
 };
 
 function buildChapterJudgeQuery(db: Database, opts: queryOpts = {}) {
@@ -13,6 +15,8 @@ function buildChapterJudgeQuery(db: Database, opts: queryOpts = {}) {
 
 	if (opts.limit) query = query.limit(opts.limit);
 	if (opts.offset) query = query.offset(opts.offset);
+	if (opts.person) query = query.where('chapter_judge.person', '=', opts.person);
+	if (opts.person_request) query = query.where('chapter_judge.person_request', '=', opts.person_request);
 
 	return query;
 }

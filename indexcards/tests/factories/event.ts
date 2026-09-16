@@ -39,12 +39,7 @@ export function createEventData(overrides = {}) {
 
 export async function create(overrides = {}) {
 	const data = createEventData(overrides);
-	const event = await eventRepo.createEvent(db,data);
-
-	return {
-		eventId: event.id,
-		getEvent: () => event,
-	};
+	return await eventRepo.createEvent(db,data);
 }
 export default {
 	createEventData,
