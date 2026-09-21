@@ -3,13 +3,10 @@ import type { Updateable, Insertable } from 'kysely';
 import type { Webpage } from '../data/schema.js';
 
 type QueryOpts = {
-	unpublished?: boolean;
-};
-
-type WebpageScope = {
-	tournId?: number;
+	tourn?: number;
 	sitewide?: number | boolean;
 	slug?: string;
+	unpublished?: boolean;
 };
 
 function buildWebpageQuery(db: Database, opts: QueryOpts = {}) {
@@ -18,6 +15,20 @@ function buildWebpageQuery(db: Database, opts: QueryOpts = {}) {
 	if (!opts.unpublished) {
 		query = query.where('published', '=', 1);
 	}
+
+	if (opts.tourn !== undefined) {
+		query = query.where('tourn', '=', opts.tourn);
+	}
+
+	if (opts.sitewide !== undefined) {
+		const sitewide = typeof opts.sitewide === 'boolean' ? Number(opts.sitewide) : opts.sitewide;
+		query = query.where('sitewide', '=', sitewide);
+	}
+
+	if (opts.slug !== undefined) {
+		query = query.where('slug', '=', opts.slug);
+	}
+
 	return query;
 }
 
@@ -32,28 +43,8 @@ async function getWebpage(db: Database, webpageId: number, opts: QueryOpts = {})
 	return res;
 }
 
-async function getWebpages(db: Database, scope: WebpageScope = {}, opts: QueryOpts = {}) {
+async function getWebpages(db: Database, opts: QueryOpts = {}) {
 	let query = buildWebpageQuery(db, opts);
-	const validScopeKeys = new Set<keyof WebpageScope>(['tournId', 'sitewide', 'slug']);
-
-	for (const key of Object.keys(scope)) {
-		if (!validScopeKeys.has(key as keyof WebpageScope)) {
-			throw new Error(`Invalid webpage scope key: ${key}`);
-		}
-	}
-
-	if (scope.tournId !== undefined) {
-		query = query.where('tourn', '=', scope.tournId);
-	}
-
-	if (scope.sitewide !== undefined) {
-		const sitewide = typeof scope.sitewide === 'boolean' ? Number(scope.sitewide) : scope.sitewide;
-		query = query.where('sitewide', '=', sitewide);
-	}
-
-	if (scope.slug !== undefined) {
-		query = query.where('slug', '=', scope.slug);
-	}
 
 	const webpages = await query.selectAll().execute();
 	return webpages;

@@ -133,7 +133,8 @@ describe('Authentication Middleware', () => {
 			vi.spyOn(sessionRepo, 'findByUserKey').mockImplementationOnce(async () => {
 				return {
 					id          : 1,
-					person      : {
+					person: 69,
+					Person      : {
 						id          : 69,
 						site_admin   : false,
 						email       : '',
@@ -155,7 +156,7 @@ describe('Authentication Middleware', () => {
 			// Assert
 			expect(req.actor).toBeDefined();
 			const actor = req.actor;
-			expect(actor.id).toBe(69);
+			expect(actor.Person.id).toBe(69);
 		});
 
 	});

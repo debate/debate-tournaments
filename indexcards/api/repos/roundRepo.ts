@@ -39,7 +39,7 @@ function buildRoundQuery(db: Database, opts: queryOpts) {
 export async function getRound(
 	db: Database,
 	roundId: number,
-	opts: queryOpts,
+	opts: queryOpts = {},
 ) {
 	return await buildRoundQuery(db, opts)
 		.where('round.id', '=', roundId)

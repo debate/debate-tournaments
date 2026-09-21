@@ -41,10 +41,9 @@ async function getRoom(req: Request, res: Response) {
 	if (!req.params.roomId) return BadRequest(req,res,'roomId is required');
 	if (!req.params.siteId) return BadRequest(req,res,'siteId is required');
 	if (!req.params.tournId) return BadRequest(req,res,'tournId is required');
-	const room = await roomRepo.getRoom({
-		roomId: req.params.roomId,
-		siteId: req.params.siteId,
-		tournId: req.params.tournId,
+	const room = await roomRepo.getRoom(db,Number(req.params.roomId),{
+		site: Number(req.params.siteId),
+		tourn: Number(req.params.tournId),
 	});
 
 	if (!room) {
@@ -57,7 +56,7 @@ async function getRoom(req: Request, res: Response) {
 async function getRooms(req: Request, res: Response) {
 	if (!req.params.siteId) return BadRequest(req,res,'siteId is required');
 	if (!req.params.tournId) return BadRequest(req,res,'tournId is required');
-	const rooms = await roomRepo.getRooms({ siteId: req.params.siteId, tournId: req.params.tournId });
+	const rooms = await roomRepo.getRooms(db,{ site: Number(req.params.siteId), tourn: Number(req.params.tournId) });
 	if (!rooms) {
 		return NotFound(req,res,`No rooms found for tournId:${req.params.tournId} siteId:${req.params.siteId}`);
 	}

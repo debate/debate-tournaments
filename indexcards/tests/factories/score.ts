@@ -8,14 +8,13 @@ export function buildScoreData(overrides = {}) {
 	};
 }
 
-export async function create(overrides = {}) {
+export async function create(overrides: Parameters<typeof scoreRepo.createScore>[1] = {}) {
 	let ballot = overrides.ballot;
-	let getBallot = null;
+	let Ballot = null;
 
 	if (!ballot) {
-		const Ballot = await createBallot(overrides);
-		ballot = Ballot.ballotId;
-		getBallot = Ballot.getBallot;
+		Ballot = await createBallot(overrides);
+		ballot = Ballot.id;
 	}
 
 	const data = buildScoreData({
@@ -25,12 +24,11 @@ export async function create(overrides = {}) {
 		ballot,
 	});
 
-	const score = await scoreRepo.createScore(db, data);
+	const Score = await scoreRepo.createScore(db, data);
 
 	return {
-		score,
-		ballotId: ballot,
-		getBallot,
+		Score,
+		Ballot: Ballot ?? ballot,
 	};
 }
 

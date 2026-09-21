@@ -1,5 +1,6 @@
 import factories from '../../tests/factories/index.js';
 import personQuizRepo from './personQuizRepo.js';
+import { db } from '../../api/data/database.js';
 
 describe('PersonQuizRepo', () => {
 	describe('createPersonQuiz', () => {
@@ -10,13 +11,13 @@ describe('PersonQuizRepo', () => {
 			const personQuizData = {
 				person: Person.id,
 				quiz: Quiz.id,
-				hidden: false,
-				pending: false,
-				completed: true,
-				approvedBy: null,
+				hidden: 0,
+				pending: 0,
+				completed: 1,
+				approved_by: null,
 			};
 			// Act
-			const personQuizId = await personQuizRepo.createPersonQuiz(personQuizData);
+			const personQuizId = await personQuizRepo.createPersonQuiz(db, personQuizData);
 
 			// Assert
 			expect(personQuizId).toBeDefined();

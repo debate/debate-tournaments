@@ -4,17 +4,23 @@ import logger from '../../helpers/logger.js';
 import personRepo from '../../repos/personRepo.js';
 import { RateLimitExceeded } from '../../helpers/problem.js';
 
+import type { Request, Response } from 'express';
+
 import { db } from '../../data/database.js';
 
 const STUDENT_SEARCH_LIMIT_WINDOW_MS = 24 * 60 * 60 * 1000;
 const STUDENT_SEARCH_LIMIT_MAX = 9;
 
-export async function unlinkedSearch(req, res) {
+export async function unlinkedSearch(req: Request, res: Response) {
 	let { first, last, limit, offset } = req.valid.query;
 
+	if(!req.session || !req.actor.Person){
+		throw new Error('Unauthorized: Missing session or actor.Person');
+	}
+
 	if (!first || !last) {
-		first = req.actor.Person.first;
-		last = req.actor.Person.last;
+		first = req.actor.Person?.first;
+		last = req.actor.Person?.last;
 	}
 	// log access to student search to the change log
 	logStudentSearch(req.session, first, last).catch(err => {
@@ -23,7 +29,7 @@ export async function unlinkedSearch(req, res) {
 
 	// if person is not site admin, apply rate limiting logic via person settings
 	if (!req.actor.Person?.site_admin) {
-		const person = await personRepo.getPerson(db,req.actor.id, {
+		const person = await personRepo.getPerson(db,req.actor.Person.id, {
 			settings: ['last_student_search', 'student_search_count'],
 		});
 
@@ -48,7 +54,7 @@ export async function unlinkedSearch(req, res) {
       ? 1
       : studentSearchCount + 1;
 
-		await personRepo.updatePerson(db, req.actor.id, {
+		await personRepo.updatePerson(db, req.actor.Person.id, {
 			settings: {
 				student_search_count: nextStudentSearchCount,
 				last_student_search: now,
@@ -56,7 +62,7 @@ export async function unlinkedSearch(req, res) {
 		});
 	}
 
-	const results = await studentRepo.unlinkedSearch({ first, last }, { limit, offset });
+	const results = await studentRepo.unlinkedSearch(db,{ first, last }, { limit, offset });
 
 	res.json(results.map(s => ({
 		id: s.id,
@@ -72,16 +78,16 @@ export async function unlinkedSearch(req, res) {
 	})));
 }
 
-async function logStudentSearch(session, first, last) {
+async function logStudentSearch(session: NonNullable<Request['session']>, first: string, last: string) {
 	let description = `Searched for student records ${first} ${last}`;
 
-	if (session.su > 0 && session.Su?.email) {
+	if (session.su && session.su > 0 && session.Su?.email) {
 		description += ` while logged in as ${session.Su.email}`;
 	}
 
 	description += ` from session ID ${session.id}`;
 
-	await changeLogRepo.createChangeLog({
+	await changeLogRepo.createChangeLog(db,{
 		tag: 'student_search',
 		person: session.su ?? session.person,
 		description,

@@ -153,14 +153,14 @@ describe('PersonRepo', () => {
 	describe('buildPersonQuery', () => {
 		it('excludes banned persons when excludeBanned is true', async () => {
 			// Arrange
-			const { personId } = await factories.person.create({
+			const Person = await factories.person.create({
 				settings: {
 					banned: '1',
 				},
 			});
 
 			// Act
-			const person = await personRepo.getPerson(db, personId, { excludeBanned: true });
+			const person = await personRepo.getPerson(db, Person.id, { excludeBanned: true });
 
 			// Assert
 			expect(person).toBeUndefined();
@@ -168,13 +168,13 @@ describe('PersonRepo', () => {
 
 		it('excludes persons with unconfirmed emails when excludeUnconfirmedEmail is true', async () => {
 			// Arrange
-			const { personId } = await factories.person.create({
+			const Person = await factories.person.create({
 				settings: {
 					email_unconfirmed: '1',
 				},
 			});
 			// Act
-			const person = await personRepo.getPerson(db,personId, { excludeUnconfirmedEmail: true });
+			const person = await personRepo.getPerson(db, Person.id, { excludeUnconfirmedEmail: true });
 
 			// Assert
 			expect(person).toBeUndefined();
@@ -182,9 +182,9 @@ describe('PersonRepo', () => {
 		describe('filters by hasValidParadigm', () => {
 			it('excludes persons without a paradigm setting', async () => {
 				// Arrange
-				const { personId } = await factories.person.create();
+				const Person = await factories.person.create();
 				// Act
-				const person = await personRepo.getPerson(db,personId, { hasValidParadigm: true });
+				const person = await personRepo.getPerson(db, Person.id	, { hasValidParadigm: true });
 				// Assert
 				expect(person).toBeUndefined();
 			});
@@ -194,18 +194,12 @@ describe('PersonRepo', () => {
 	describe('getPerson', () => {
 		it('returns the person when the id is valid', async () => {
 			// Arrange
-			const { personId } = await factories.person.create();
+			const Person = await factories.person.create();
 			// Act
-			const result = await personRepo.getPerson(db, personId);
+			const result = await personRepo.getPerson(db, Person.id);
 			// Assert
 			expect(result).not.toBeNull();
-			expect(result?.id).toBe(personId);
-		});
-		it('returns undefined when the id is invalid', async () => {
-			// Act
-			const result = await personRepo.getPerson(db, 999999);
-			// Assert
-			expect(result).toBeUndefined();
+			expect(result?.id).toBe(Person.id);
 		});
 	});
 

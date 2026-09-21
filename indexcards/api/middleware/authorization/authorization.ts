@@ -1,14 +1,15 @@
 import { buildTarget } from './buildTarget.js';
 import { Unauthorized, Forbidden, NotImplemented } from '../../helpers/problem.js';
+import type { Request, Response, NextFunction } from 'express';
 //requires login - use before any route that needs authentication
-export function requireLogin(req, res, next) {
+export function requireLogin(req: Request, res: Response, next: NextFunction) {
 	if (!req.actor || req.actor.type === 'anonymous') {
 		return Unauthorized(req, res,'User not Authenticated');
 	}
 	next();
 }
 // used for ext routes
-export async function requireAreaAccess(req, res, next) {
+export async function requireAreaAccess(req: Request, res: Response, next: NextFunction) {
 	if (!req.actor) {
 		return Unauthorized(req, res,'User not Authenticated');
 	}
@@ -22,7 +23,7 @@ export async function requireAreaAccess(req, res, next) {
 	next();
 }
 // should be rolled into the RBAC scheme at some point
-export function requireSiteAdmin(req,res,next) {
+export function requireSiteAdmin(req: Request, res: Response, next: NextFunction) {
 	if (!req.actor) {
 		return Unauthorized(req, res,'User not Authenticated');
 	}
@@ -32,8 +33,8 @@ export function requireSiteAdmin(req,res,next) {
 	next();
 }
 
-export function requireAccess(resource, action) {
-	return async (req, res, next) => {
+export function requireAccess(resource: string, action: string) {
+	return async (req: Request, res: Response, next: NextFunction) => {
 		if (!req.actor) {
 			return Unauthorized(req, res,'User not Authenticated');
 		}
@@ -51,14 +52,14 @@ export function requireAccess(resource, action) {
 	};
 }
 /** create and attach the actor to the request */
-export function createActor(req) {
+export function createActor(req: Request) {
 	//if the request is scoped to a specific person
-	if(req.person){
+	if(req.session?.Person){
 		const auth = createAuthContext(req);
 		return {
-			id: req.person?.id,
-			Person: req.person,
-			type: 'person',
+			id: req.session?.Person?.id,
+			Person: req.session?.Person,
+			type: 'person' as const,
 			can: auth.can,
 			assert: auth.assert,
 			allowedIds: auth.allowedIds,
@@ -66,7 +67,7 @@ export function createActor(req) {
 	}
 	// unauthenticated
 	return {
-		type: 'anonymous',
+		type: 'anonymous' as const,
 		can: async () => false,
 		assert: async () => {
 			const err = new Error('Forbidden');
@@ -79,17 +80,17 @@ export function createActor(req) {
 	};
 }
 // this is a misnomer, I should rename it RT
-function createAuthContext(req) {
+function createAuthContext(req: Request) {
 	// Per-request cache
 	const targetCache = new Map();
 	const permCache = new Map();
 
-	async function can(resource, action, resourceId) {
+	async function can(resource: string, action: string, resourceId: number) {
 		if (!resource || !action) {
 			throw new Error('Invalid auth call');
 		}
 
-		if(req.person && req.person.site_admin){
+		if(req.actor?.Person?.site_admin){
 			return true;
 		}
 
@@ -120,7 +121,7 @@ function createAuthContext(req) {
 		return result;
 	}
 
-	async function assert(resource, action, resourceId) {
+	async function assert(resource: string, action: string, resourceId: number) {
 		const ok = await can(resource, action, resourceId);
 
 		if (!ok) {
@@ -130,17 +131,17 @@ function createAuthContext(req) {
 			throw err;
 		}
 
-		return true;
+		return;
 	}
 
-	function allowedIds(resource, action, opts = {}) {
+	function allowedIds(resource: string, action: string, opts: Record<string, unknown> = {}) {
 		if (!resource || !action) {
 			throw new Error('Invalid auth call');
 		}
-		if (!req.person) {
+		if (!req.actor?.Person) {
 			return { all: false, ids: [] };
 		}
-		if (req.person.site_admin) {
+		if (req.actor.Person?.site_admin) {
 			return { all: true, ids: [] };
 		}
 		const perms = req.auth?.perms;
@@ -249,7 +250,7 @@ const ACTION_HIERARCHY = {
  * Get all actions that would grant the requested action (including itself)
  * e.g., for 'check' returns ['check', 'read', 'write', 'owner']
  */
-function getActionChain(action) {
+function getActionChain(action: string) {
 	const chain = [action];
 
 	// Find which higher actions grant this action
@@ -265,14 +266,14 @@ function getActionChain(action) {
 	return chain;
 }
 
-export function checkAccess(resource, action, target, perms){
+export function checkAccess(resource: string, action: string, target: any, perms: any[]){
 
 	if (!perms || !Array.isArray(perms)) return false;
 
 	return perms.some(perm => hasPermissionForResource(resource, action, target, perm));
 }
 
-function hasPermissionForResource(resource, action, target, perm, visited = new Set(),targetResource=resource) {
+function hasPermissionForResource(resource: string, action: string, target: any, perm: any, visited = new Set(), targetResource = resource) {
 	const roleDef = ROLES[perm.role];
 	if (!roleDef) {
 		throw new Error(`Role definition for '${perm.role}' is not implemented`);
@@ -336,7 +337,7 @@ function hasPermissionForResource(resource, action, target, perm, visited = new 
 	return false;
 }
 
-function actionMatches(pattern, resource, action) {
+function actionMatches(pattern: string, resource: string, action: string) {
 	const [resPattern, actPattern] = pattern.split('/');
 	const resMatch = resPattern === '*' || resPattern === resource;
 
@@ -354,7 +355,7 @@ function actionMatches(pattern, resource, action) {
 	return false;
 }
 
-function roleAllowsAction(roleDef, resource, action) {
+function roleAllowsAction(roleDef: any, resource: string, action: string) {
 	for (const p of roleDef.permissions) {
 		if (p.notActions?.some(pattern => actionMatches(pattern, resource, action))) {
 			continue;
@@ -366,8 +367,8 @@ function roleAllowsAction(roleDef, resource, action) {
 	return false;
 }
 
-function getAllowedResourceIds(resource, action, perms, opts = {}) {
-	const ids = new Set();
+function getAllowedResourceIds(resource: string, action: string, perms: any[], opts: Record<string, unknown> = {}) {
+	const ids = new Set<number>();
 	let hasFullAccess = false;
 
 	for (const perm of perms) {

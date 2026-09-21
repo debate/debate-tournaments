@@ -20,7 +20,7 @@ describe('Status Board', () => {
 	beforeAll(async () => {
 		const session = await factories.session.create();
 		userkey = session.userkey;
-		personId = session.personId;
+		personId = session.person;
 		const permission = {
 			person : personId,
 			tourn  : testTourn.id,

@@ -1,7 +1,25 @@
 import factories from '../../tests/factories/index.js';
 import { db } from '../data/database.js';
 import studentRepo from './studentRepo.js';
+describe('updateStudent', () => {
+	it('should update the student with the given fields', async () => {
+		const Chapter = await factories.chapter.create();
+		const Student = await factories.student.create({
+			first: 'OldFirst',
+			last: 'OldLast',
+			chapter: Chapter.id,
+		});
 
+		await studentRepo.updateStudent(db, Student.id, {
+			first: 'NewFirst',
+			last: 'NewLast',
+		});
+		const updated = await studentRepo.getStudent(db, Student.id);
+
+		expect(updated?.first).toBe('NewFirst');
+		expect(updated?.last).toBe('NewLast');
+	});
+});
 describe('unlinkedSearch', () => {
 	it('returns only students matching unlinked and filter criteria', async () => {
 		const stamp = Date.now();

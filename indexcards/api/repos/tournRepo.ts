@@ -10,6 +10,8 @@ type queryOpts = {
 	hasPublishedResults?: boolean;
 	settings?: boolean;
 	circuit?: number;
+	startBefore?: Date;
+	endBefore?: Date;
 	startAfter?: Date;
 	endAfter?: Date;
 };
@@ -22,21 +24,13 @@ function buildTournQuery(db: Database, opts: queryOpts = {}) {
 			settings: opts.settings ?? false,
 		}))
 	);
-	if(opts.limit) {
-		query = query.limit(opts.limit);
-	}
-	if(opts.offset) {
-		query = query.offset(opts.offset);
-	}
-	if (!opts.unpublished){
-		query = query.where('tourn.hidden', '=', 0);
-	}
-	if (opts.startAfter) {
-		query = query.where('tourn.start', '>', opts.startAfter);
-	}
-	if (opts.endAfter) {
-		query = query.where('tourn.end', '>', opts.endAfter);
-	}
+	if(opts.limit) query = query.limit(opts.limit);
+	if(opts.offset) query = query.offset(opts.offset);
+	if (!opts.unpublished) query = query.where('tourn.hidden', '=', 0);
+	if (opts.startAfter) query = query.where('tourn.start', '>', opts.startAfter);
+	if (opts.endAfter) query = query.where('tourn.end', '>', opts.endAfter);
+	if (opts.startBefore) query = query.where('tourn.start', '<', opts.startBefore);
+	if (opts.endBefore) query = query.where('tourn.end', '<', opts.endBefore);
 	if (opts.circuit) {
 		query = query
 			.innerJoin('tourn_circuit', 'tourn_circuit.tourn', 'tourn.id')

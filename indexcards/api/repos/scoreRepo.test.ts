@@ -3,7 +3,7 @@ import scoreRepo from './scoreRepo.js';
 import factories from '../../tests/factories/index.js';
 import { db } from '../data/database.js';
 
-let Ballot;
+let Ballot: Awaited<ReturnType<typeof factories.ballot.create>>;
 
 beforeAll(async () => {
 	Ballot = await factories.ballot.create();

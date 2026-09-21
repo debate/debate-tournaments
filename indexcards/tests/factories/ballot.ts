@@ -10,7 +10,7 @@ export function buildBallotData(overrides = {}) {
 	};
 }
 
-export async function create(overrides = {}) {
+export async function create(overrides: Partial<Parameters<typeof ballotRepo.createBallot>[1]> = {}) {
 	let panelId = overrides.panel;
 
 	if (!overrides.panel) {

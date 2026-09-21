@@ -5,6 +5,7 @@ import z from 'zod';
 import { JudgeHistorySchema } from '@tabroom/types';
 import personRepo from '../../../../repos/personRepo.js';
 import { db } from '../../../../../api/data/database.js';
+import chapterJudgeRepo from '../../../../repos/chapterJudgeRepo.js';
 
 describe('judgesRouter', () => {
 	let personId : number;
@@ -17,25 +18,25 @@ describe('judgesRouter', () => {
 		it('should allow a user to claim a chapter judge', async () => {
 			//setup - create a chapter judge with no person_request
 			const Chapter = await factories.chapter.create();
-			const { chapterJudgeId, getChapterJudge } = await factories.chapterJudge.create({
+			const ChapterJudge = await factories.chapterJudge.create({
 				person_request: null,
 				chapter: Chapter.id,
 			});
 			//make the request to claim the chapter judge
 			await request(server)
 				.post('/v1/user/judges/claim')
-				.query({ chapterJudgeId })
+				.query({ chapterJudgeId: ChapterJudge.id })
 				.set('Accept', 'application/json')
 				.set('Authorization', `Bearer ${userkey}`)
 				.expect(200);
 			//assert that the chapter judge's person_request is updated and that an email was sent to the chapter email with the correct content
-			const updatedChapterJudge = await getChapterJudge();
-			expect(updatedChapterJudge.person_request).toBe(personId);
+			const updatedChapterJudge = await chapterJudgeRepo.getChapterJudge(db,ChapterJudge.id);
+			expect(updatedChapterJudge?.person_request).toBe(personId);
 		});
 		it('should auto-approve a claim request if the user is a chapter admin', async () => {
 			//setup - create a chapter judge with no person_request
 			const Chapter = await factories.chapter.create();
-			const { chapterJudgeId, getChapterJudge } = await factories.chapterJudge.create({
+			const ChapterJudge = await factories.chapterJudge.create({
 				person_request: null,
 				chapter: Chapter.id,
 			});
@@ -43,13 +44,13 @@ describe('judgesRouter', () => {
 			//make the request to claim the chapter judge
 			await request(server)
 				.post('/v1/user/judges/claim')
-				.query({ chapterJudgeId })
+				.query({ chapterJudgeId: ChapterJudge.id })
 				.set('Accept', 'application/json')
 				.set('Authorization', `Bearer ${userkey}`)
 				.expect(200);
 			//assert that the chapter judge's person_request is updated and that an email was sent to the chapter email with the correct content
-			const updatedChapterJudge = await getChapterJudge();
-			expect(updatedChapterJudge.person).toBe(personId);
+			const updatedChapterJudge = await chapterJudgeRepo.getChapterJudge(db,ChapterJudge.id);
+			expect(updatedChapterJudge?.person).toBe(personId);
 		});
 		it.todo('should allow a user to claim a judge', async () => {
 			//setup - create a judge with no person_request
@@ -59,15 +60,15 @@ describe('judgesRouter', () => {
 	});
 	describe("GET /user/judges/history", () => {
 		it('should return the judge history for the logged in user', async () => {
-			const tourn = await factories.tourn.create(); // start is past by default
-			const category = await factories.category.create({ tourn: tourn.id });
-			const { judgeId } = await factories.judge.create({ person: personId, category: category.id });
+			const Tourn = await factories.tourn.create(); // start is past by default
+			const Category = await factories.category.create({ tourn: Tourn.id });
+			const Judge = await factories.judge.create({ person: personId, category: Category.id });
 
 			// Create event → round → panel → ballot chain
-			const Event = await factories.event.create({ category: category.id });
-			const Round = await factories.round.create({ event: Event.id, published: true });
+			const Event = await factories.event.create({ category: Category.id });
+			const Round = await factories.round.create({ event: Event.id, published: 1 });
 			const Panel = await factories.panel.create({ round: Round.id });
-			await factories.ballot.create({ panel: Panel.id, judge:judgeId });
+			await factories.ballot.create({ panel: Panel.id, judge:Judge.id });
 			
 			const res = await request(server)
 				.get('/v1/user/judges/history')
@@ -102,16 +103,16 @@ describe('judgesRouter', () => {
 	});
 	describe("GET /user/judges/livedocs", () => {
 		it('should return the live docs for the logged in user', async () => {
-			const { tournId } = await factories.tourn.create();
+			const Tourn = await factories.tourn.create();
 			const category = await factories.category.create({
-				tourn: tournId,
+				tourn: Tourn.id,
 				settings: {
 					livedoc_url: 'example.com',
 					livedoc_caption: 'example',
 				},
 			});
 
-			await factories.person.createJudge({ personId, Judge: { category: category.id } });
+			await factories.person.createJudge({ person: personId, Judge: { category: category.id } });
 			const res = await request(server)
 				.get('/v1/user/judges/livedocs')
 				.set('Accept', 'application/json')

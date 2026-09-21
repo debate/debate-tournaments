@@ -34,7 +34,7 @@ describe('studentsController', () => {
 
 			const { req, res } = createContext({
 				valid: { query: { first: 'Te', last: 'St' } },
-				actor: { id: 10, Person: { site_admin: false } },
+				actor: { Person: { id: 10, site_admin: false } },
 				session: { id: 88, person: 10, su: null },
 			});
 
@@ -47,7 +47,7 @@ describe('studentsController', () => {
 				student_search_count: 1,
 				last_student_search: expect.any(Date),
 			}});
-			expect(studentRepo.unlinkedSearch).toHaveBeenCalledWith({ first: 'Te', last: 'St' }, expect.any(Object));
+			expect(studentRepo.unlinkedSearch).toHaveBeenCalledWith(expect.any(Object), { first: 'Te', last: 'St' }, expect.any(Object));
 			expect(res.body).toEqual([
 				{
 					id: 101,
@@ -114,7 +114,7 @@ describe('studentsController', () => {
 			await controller.unlinkedSearch(req, res);
 			await Promise.resolve();
 
-			expect(createChangeLogSpy).toHaveBeenCalledWith({
+			expect(createChangeLogSpy).toHaveBeenCalledWith(expect.any(Object), {
 				tag: 'student_search',
 				person: 45,
 				description: 'Searched for student records Ada Lovelace while logged in as admin@example.com from session ID 1234',
@@ -166,7 +166,8 @@ describe('studentsController', () => {
 			const { req, res } = createContext({
 				valid: { query: {} },
 				actor: {
-					id: 10, Person: {
+					Person: {
+						id: 10,
 						first: 'Test',
 						last: 'Student',
 						site_admin: false,
@@ -184,7 +185,7 @@ describe('studentsController', () => {
 				student_search_count: 1,
 				last_student_search: expect.any(Date),
 			}});
-			expect(studentRepo.unlinkedSearch).toHaveBeenCalledWith({ first: 'Test', last: 'Student' }, expect.any(Object));
+			expect(studentRepo.unlinkedSearch).toHaveBeenCalledWith(expect.any(Object), { first: 'Test', last: 'Student' }, expect.any(Object));
 			expect(res.body).toEqual([
 				{
 					id: 101,

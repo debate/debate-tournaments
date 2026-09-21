@@ -8,24 +8,17 @@ import type { Request, Response } from 'express';
 async function getQuizzes(req: Request, res: Response) {
 	//if a person is requesting, include their PersonQuiz data to determine if they've taken any quizzes or not
 	const personId = req.actor?.Person?.id;
-	const include = personId ? {
-		PersonQuizzes: {
-			where: {
-				person: personId,
-			},
-		},
-	} : undefined;
 
-	const quizzes = await quizRepo.getQuizzes(db,{
+	const [ quizzes, personQuizzes ] = await Promise.all([
+		quizRepo.getQuizzes(db,{
 		limit: req.valid?.query?.limit ?? undefined,
 		offset: req.valid?.query?.offset ?? undefined,
-		where: {
-			sitewide: true,
-			hidden: false,
-			admin_only: false,
-		},
-		...(include ? { include } : {}),
-	});
+		publicOnly: true,
+		}),
+		 personId ? quizRepo.getPersonQuizzes(db,{
+			person: personId,
+		}) : null,
+	]);
 	res.json(quizzes.map(q => ({
 		id: q.id,
 		tag: q.tag,
@@ -43,7 +36,7 @@ async function getQuizzes(req: Request, res: Response) {
 					: null,
 			link: q.badge_link || null,
 		},
-		PersonQuizzes: q.PersonQuizzes?.map(pq => ({
+		PersonQuizzes: personQuizzes?.filter(pq => pq.quiz === q.id).map(pq => ({
 			id: pq.id,
 			person: pq.person,
 			quiz: pq.quiz,

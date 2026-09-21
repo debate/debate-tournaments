@@ -19,6 +19,7 @@
     "build-storybook": "storybook build",
     "dev": "vite dev",
     "preview": "vite preview",
+	"sync": "svelte-kit sync",
     "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
     "check:ci": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --output=machine",
     "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",

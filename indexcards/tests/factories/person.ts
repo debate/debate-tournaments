@@ -27,34 +27,34 @@ export async function create(overrides: Overrides & { personId?: number } = {}) 
 
 	const data = createPersonData(overrides);
 
-
 	return await personRepo.createPerson(db, data);
 }
-export async function createJudge(overrides: Overrides & { personId?: number } = {}) {
+export async function createJudge(overrides: Overrides & { person?: number } = {}) {
 	const {Judge, Ballot: _Ballot, ...personOverrides} = overrides;
-	const person = overrides.personId ? { id: overrides.personId } : await personRepo.createPerson(db, createPersonData(personOverrides));
-	const judge = await factories.judge.create({ person: person.id, ...Judge });
+	const Person = overrides.person ? await personRepo.getPerson(db, overrides.person) : await personRepo.createPerson(db, createPersonData(personOverrides));
+	if(!Person) throw new Error('Failed to create or retrieve Person');
+	const judge = await factories.judge.create({ person: Person.id, ...Judge });
 
 	return {
-		Person: person,
+		Person: Person,
 		Judge: judge
 	};
 }
 
 //create a current ballot for a person
 export async function createBallot(overrides: Overrides & { 
-		personId?: number,
-		Round?: unknown,
-		Event?: unknown,
-		Timeslot?: unknown,
+		person?: number,
+		Round?: Partial<Parameters<typeof factories.round.create>[0]>,
+		Event?: Partial<Parameters<typeof factories.event.create>[0]>,
+		Timeslot?: Partial<Parameters<typeof factories.timeslot.create>[0]>,
+		Ballot?: object
 	} = {}) {
-	let Person, Judge;
-
-	const tourn = await factories.tourn.createFull(overrides);
-	({ Person, Judge } = await factories.person.createJudge({
-		personId: overrides.personId,
+	const { person, Ballot, ...restOverrides } = overrides;
+	const tourn =await factories.tourn.createFull(restOverrides);
+	let { Person, Judge } = await factories.person.createJudge({
+		person,
 		Judge: { category: tourn.Category.id },
-	}));
+	});
 
 	const panel = await factories.panel.create({
 		round: tourn.Round.id,
@@ -67,13 +67,14 @@ export async function createBallot(overrides: Overrides & {
 		judge: Judge.id,
 		entry: entry1.id,
 		panel: panel.id,
+		...Ballot,
 	});
 	await factories.ballot.create({
 		speakerorder: 1,
 		judge: Judge.id,
 		entry: entry2.id,
 		panel: panel.id,
-		...overrides.Ballot,
+		...Ballot,
 	});
 	return {
 		Tourn: tourn.Tourn,

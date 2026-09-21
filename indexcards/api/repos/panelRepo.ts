@@ -1,4 +1,5 @@
 import { saveSettings, selectSettings } from './utils/settings.js';
+import type { Settings } from './utils/settings.js';
 
 import type { Database } from '../data/database.js';
 import type { Insertable, Updateable } from 'kysely';
@@ -30,7 +31,7 @@ async function getPanel(db: Database, id: number, opts: queryOpts = {}){
 async function getPanels(db: Database, opts: queryOpts = {}) {
 	return await buildPanelQuery(db, opts).selectAll('panel').execute();
 }
-async function createPanel(db: Database, data: Insertable<Panel> & { settings?: Record<string, unknown> }){
+async function createPanel(db: Database, data: Insertable<Panel> & { settings?: Settings }){
 	const { settings, ...panelData } = data;
 
 	return await db.transaction().execute(async (trx) => {
@@ -47,9 +48,8 @@ async function createPanel(db: Database, data: Insertable<Panel> & { settings?: 
 		if (settings) {
 			await saveSettings({
 				db: trx,
-				table: 'panel_setting',
+				table: 'panel',
 				settings,
-				ownerKey: 'panel',
 				ownerId: panel.id,
 			});
 		}
@@ -58,7 +58,7 @@ async function createPanel(db: Database, data: Insertable<Panel> & { settings?: 
 	});
 }
 
-async function updatePanel(db: Database, id: number, data: Updateable<Panel> & { settings?: Record<string, unknown> }){
+async function updatePanel(db: Database, id: number, data: Updateable<Panel> & { settings?: Settings }){
 	const { settings, ...panelData } = data;
 
 	return await db.transaction().execute(async (trx) => {
@@ -73,9 +73,8 @@ async function updatePanel(db: Database, id: number, data: Updateable<Panel> & {
 		if (settings) {
 			await saveSettings({
 				db: trx,
-				table: 'panel_setting',
+				table: 'panel',
 				settings,
-				ownerKey: 'panel',
 				ownerId: id,
 			});
 		}

@@ -1,7 +1,7 @@
 import { NotFound } from '../../helpers/problem.js';
 import tournRepo from '../../repos/tournRepo.js';
 import eventRepo from '../../repos/eventRepo.js';
-import { ToPublicPage } from '../mappers/pageMapper.js';
+import webpageRepo from '../../repos/webpageRepo.js';
 import fileRepo from '../../repos/fileRepo.js';
 
 //TODO remove all references
@@ -14,122 +14,90 @@ export async function getTourn(req: Request, res: Response) {
 };
 
 export async function getTourns(req: Request, res: Response) {
-	const fields = {};
-	//These should probably be handled by a distinct function in the future RCT
-	if(req.valid.query.fields){
-		fields.root = req.valid.query.fields.split(',').map(f => f.trim());
-	}
-	if(req.valid.query['fields[events]']){
-		fields.events = req.valid.query['fields[events]'].split(',').map(f => f.trim())
-		.filter(field => ['id','name','type','abbr','level'].includes(field)); //list of allowed fields
-	}
-	const query = req.valid.query;
-	const opts = {
-		fields: fields.root,
-		hasPublishedResults: query.publishedResults,
-		limit: query.limit,
-		offset: query.offset,
-	};
 
-	if (fields.events?.length) {
-		opts.include = {
-			events: {
-				fields: fields.events,
-			},
-		};
-	}
-	const tourns = await tournRepo.getTourns({
+	const query = req.valid.query;
+
+	const tourns = await tournRepo.getTourns(db,{
+		hasPublishedResults: query.publishedResults,
 		circuit: query.circuit,
 		startBefore: query.startBefore,
 		startAfter: query.startAfter,
-	}, opts);
+		limit: query.limit,
+		offset: query.offset,
+	});
 
-	return res.status(200).json(tourns.map(t => {
-		return {
-			id: t.id,
-			name: t.name,
-			city: t.city,
-			state: t.state,
-			country: t.country,
-			tz: t.tz,
-			webname: t.webname,
-			start: t.start,
-			end: t.end,
-			regStart: t.reg_start,
-			regEnd: t.reg_end,
-			Events: t.events,
-		};
-	}));
+	return res.json(tourns);
 }
 
 export async function getTournInvite(req: Request, res: Response) {
 
-	let invite = await tournRepo.getTourn(db, req.params.tournId, {
-		include: {
-			webpages: true,
-			files: true,
-		},
-	});
+	let invite = await tournRepo.getTourn(db, Number(req.params.tournId));
 
 	if (!invite?.id || invite?.hidden) {
 		return NotFound(req, res, 'No such tournament found');
 	}
 
-	invite.Webpages = (invite.webpages ?? []).map(ToPublicPage);
-	delete invite.webpages;
-	invite.Files = (invite.files ?? []).map(file => {
-		return {
-			id        : file.id,
-			tag       : file.tag,
-			type      : file.type,
-			label     : file.label,
-			filename  : file.filename,
-			published : file.published,
-			pageOrder : file.pageOrder,
-			uploaded  : file.uploaded,
-			updatedAt : file.updatedAt,
-		};
-	});
-	delete invite.files;
-	invite.Events = await eventRepo.getEventsForInvite(invite.id);
-	invite.Contacts = await tournRepo.getContacts(invite.id);
-
-	return res.status(200).json(invite);
+	const [Files, Webpages, Events, Contacts] = await Promise.all([
+		fileRepo.getFiles(db, { tourn: invite.id }),
+		webpageRepo.getWebpages(db, { tourn: invite.id }),
+		eventRepo.getEventsForInvite(db,invite.id),
+		tournRepo.getContacts(db, invite.id),
+	]);
+	
+	const response = {
+		...invite,
+		Files,
+		Webpages,
+		Events,
+		Contacts,
+	};
+	return res.status(200).json(response);
 };
 
 export async function getSchedule(req: Request, res: Response){
-	const schedule = await tournRepo.getSchedule(db, req.params.tournId);
+	const schedule = await tournRepo.getSchedule(db, Number(req.params.tournId));
 	return res.status(200).json(schedule);
 };
 
 export async function getPublishedFiles(req: Request, res: Response) {
-	const files = await fileRepo.getFiles(db, { tourn: req.valid.params.tournId });
+	const files = await fileRepo.getFiles(db, { tourn: Number(req.valid.params.tournId) });
 	return res.status(200).json(files);
 };
 
 export async function getTournPublishedResults(req: Request, res: Response) {
-	const results = await db.sequelize.query(`
-			select
-				result_set.id, result_set.label name, result_set.bracket, result_set.generated,
-				result_set.published, result_set.coach,
-				event.id eventId, event.name eventName, event.abbr eventAbbr, event.type eventType,
-				sweep_set.id sweepSetId, sweep_set.name sweepSetName,
-				sweep_award.id sweepAwardId, sweep_award.name sweepAwardName
+	const results = await db
+	.selectFrom('result_set')
+	.innerJoin('tourn', 'tourn.id', 'result_set.tourn')
+	.leftJoin('event', join =>
+		join
+			.onRef('result_set.event', '=', 'event.id')
+			.on('event.type', '!=', 'attendee')
+	)
+	.leftJoin('sweep_set', 'result_set.sweep_set', 'sweep_set.id')
+	.leftJoin('sweep_award', 'sweep_award.id', 'sweep_set.sweep_award')
+	.select([
+		'result_set.id',
+		'result_set.label as name',
+		'result_set.bracket',
+		'result_set.generated',
+		'result_set.published',
+		'result_set.coach',
 
-			from (result_set, tourn)
-				left join event on result_set.event = event.id and event.type != 'attendee'
-				left join sweep_set on result_set.sweep_set = sweep_set.id
-				left join sweep_award on sweep_award.id = sweep_set.sweep_award
+		'event.id as eventId',
+		'event.name as eventName',
+		'event.abbr as eventAbbr',
+		'event.type as eventType',
 
-			where 1=1
-				and result_set.tourn = :tournId
-				and result_set.published = 1
-				and tourn.id = result_set.tourn
-				and tourn.hidden = 0
-		`, {
-		replacements : { tournId: req.params.tournId },
-		type         : db.sequelize.QueryTypes.SELECT,
-	});
+		'sweep_set.id as sweepSetId',
+		'sweep_set.name as sweepSetName',
+
+		'sweep_award.id as sweepAwardId',
+		'sweep_award.name as sweepAwardName',
+	])
+	.where('result_set.tourn', '=', Number(req.params.tournId))
+	.where('result_set.published', '=', 1)
+	.where('tourn.hidden', '=', 0)
+	.execute();
 
 	res.status(200).json(results);
 };

@@ -50,18 +50,18 @@ export async function register(userData: RegisterRequest, context: { ip?: string
 		country    : userData.country,
 		tz         : userData.tz,
 	};
-	const personId = await personRepo.createPerson(db,newPersonData);
+	const Person = await personRepo.createPerson(db,newPersonData);
 
-	if (!personId) {
+	if (!Person?.id) {
 		throw new Error('Failed to create user');
 	}
 
 	const { userkey } = await sessionRepo.createSession(db,{
-		person: personId,
+		person: Person.id,
 		ip,
 		agent_data: agentData,
 	});
-	return {personId, token: userkey};
+	return {personId: Person.id, token: userkey};
 }
 
 function generateCSRFToken(userkey: string){

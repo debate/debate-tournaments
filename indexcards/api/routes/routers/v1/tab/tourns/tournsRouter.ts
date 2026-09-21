@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { Backup } from '../../../../../controllers/tab/tourn/backup.js';
 import tournController from '../../../../../controllers/tab/tournsController.js';
+import { ValidateRequest } from '../../../../../middleware/validation.js';
 import categoriesRouter from './categoriesRouter.js';
 import schoolsRouter from './schoolsRouter.js';
 import sitesRouter from './sitesRouter.js';
@@ -10,21 +11,20 @@ import { requireAccess } from '../../../../../middleware/authorization/authoriza
 
 import legacyAllRouter from './legacy/allRouter.js';
 import legacyRoundRouter from './legacy/roundRouter.js';
+import { TournRequestSchema } from '@tabroom/types';
 
 const router = Router({mergeParams: true });
 
 router.param('tournId', loadTournAuthContext);
 
-router.route('/').post(tournController.createTourn).openapi = {
+router.route('/').post(ValidateRequest,tournController.createTourn).openapi = {
 	path: '/tab/tourns',
 	summary: 'Create tournament',
 	tags: ['Tournament'],
 	requestBody: {
 		content: {
 			'application/json': {
-				schema: {
-					$ref: '#/components/schemas/TournRequest',
-				},
+				schema: TournRequestSchema
 			},
 		},
 		required: true,

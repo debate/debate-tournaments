@@ -8,7 +8,7 @@ describe('Judge Record Service', async () => {
 		({ id: personId } = await factories.person.create());
 		({ id: judgeId } = await factories.judge.create({ person: personId }));
 		({ id: tournId } = await factories.tourn.create({ hidden: 0 })); //public tourn
-		({ id: eventId } = await factories.event.create({ tournId }));
+		({ id: eventId } = await factories.event.create({ tourn: tournId }));
 		({ id: roundId } = await factories.round.create({
 			event: eventId,
 			published: true,
@@ -23,20 +23,20 @@ describe('Judge Record Service', async () => {
 		entryId = entry.id;
 	});
 	it('returns the public judging record of a person', async () => {
-		const ballot = await factories.ballot.create({
-			section: panelId,
+		const Ballot = await factories.ballot.create({
+			panel: panelId,
 			judge: judgeId,
 			entry: entryId,
 			side: 1,
 		});
-		const { scoreId } = await factories.score.create({
-			ballot: ballot.id,
+		const { Score } = await factories.score.create({
+			ballot: Ballot.id,
 			tag: 'winloss',
 			value: 1,
 		});
 		const res = await judgeRecord(personId);
 
-		expect(scoreId).toBeDefined();
+		expect(Score.id).toBeDefined();
 		expect(Array.isArray(res)).toBe(true);
 		expect(res.length).toBeGreaterThan(0);
 		expect(res[0].affTeam).toBe('AFF1');

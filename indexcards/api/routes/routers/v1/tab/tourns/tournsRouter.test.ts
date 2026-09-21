@@ -1,7 +1,7 @@
 import request from 'supertest';
 import server from '../../../../../../app.js';
 import factories from '../../../../../../tests/factories/index.js';
-let sessionToken;
+let sessionToken = '';
 
 beforeAll(async () => {
 	({ userkey: sessionToken } = await factories.session.create());
@@ -10,10 +10,11 @@ describe('tournsRouter', () => {
 	describe('CRUD lifecycle', () => {
 		it('creates, reads, updates, and deletes a tourn', async () => {
 			const data = factories.tourn.createTournData();
+			const { hidden: _hidden, ...tournRequest } = data;
 			var response = await request(server)
 				.post('/v1/tab/tourns')
 				.set('Authorization', `Bearer ${sessionToken}`)
-				.send(data);
+				.send(tournRequest);
 			expect(response.status).toBe(201);
 			const tournId = response.body.id;
 
@@ -27,8 +28,8 @@ describe('tournsRouter', () => {
 				start: data.start?.toISOString(),
 				end: data.end?.toISOString(),
 				hidden: false,
-				regStart: data.regStart?.toISOString(),
-				regEnd: data.regEnd?.toISOString(),
+				reg_start: data.reg_start?.toISOString(),
+				reg_end: data.reg_end?.toISOString(),
 			});
 
 			const updates = { name: 'Updated Tournament Name' };

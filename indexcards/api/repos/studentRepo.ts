@@ -1,9 +1,7 @@
-import db from '../data/db.js';
 import { schoolYearDateRange } from '../helpers/dateTime.js';
 import type { Database } from '../data/database.js';
 import { selectSettings } from './utils/settings.js';
 import type { Insertable, Updateable } from 'kysely';
-import { sql } from 'kysely';
 import type { Student } from '../data/schema.js';
 
 type queryOpts = {
@@ -48,9 +46,12 @@ async function createStudent(db: Database, data: Insertable<Student>) {
 	.executeTakeFirstOrThrow();
 }
 async function updateStudent(db: Database, id: number, data: Updateable<Student>){
+	if(Object.keys(data).length === 0) {
+		throw new Error('No data provided for update');
+	}
 	return await db.updateTable('student')
 	.set(data)
-	.where('id', '=', id)
+	.where('student.id', '=', id)
 	.execute();
 }
 /**

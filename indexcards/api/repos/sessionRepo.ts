@@ -26,12 +26,14 @@ export const findByUserKey = async (
 			'p.first as personFirst',
 			'p.last as personLast',
 			'p.email as personEmail',
+			'p.site_admin as personSiteAdmin',
 		])
 		.select([
 			'su.id as suId',
 			'su.first as suFirst',
 			'su.last as suLast',
 			'su.email as suEmail',
+			'su.site_admin as suSiteAdmin',
 		])
 		.where('session.userkey', '=', userkey)
 		.executeTakeFirst();
@@ -51,13 +53,15 @@ export const findByUserKey = async (
 					first: session.personFirst,
 					last: session.personLast,
 					email: session.personEmail,
+					site_admin: session.personSiteAdmin ?? 0,
 		},
 		Su: session.suId
 			? {
 					id: session.suId,
 					first: session.suFirst,
 					last: session.suLast,
-					email: session.suEmail,
+					email: session.suEmail as string,
+					site_admin: session.suSiteAdmin ?? 0,
 				}
 			: null,
 	};

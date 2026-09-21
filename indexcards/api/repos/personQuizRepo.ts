@@ -1,45 +1,28 @@
-import db from '../data/db.js';
-import { quizInclude } from './quizRepo.js';
+import type { Database } from '../data/database.js';
+import type { PersonQuiz } from '../data/schema.js';
+import type { Insertable } from 'kysely';
 
 type queryOpts = {
 	limit?: number;
 	offset?: number;
 }
-function buildPersonQuizQuery(opts = {}) {
+function buildPersonQuizQuery(db: Database, opts: queryOpts = {}) {
 
-	const query = {
-		where: {},
-		attributes: resolveAttributesFromFields(opts.fields, FIELD_MAP),
-		include: [],
-	};
-
-	if (opts.where) {
-		query.where = { ...query.where, ...opts.where };
-	}
+	let query = db.selectFrom('person_quiz');
 
 
-	if (opts.limit) {
-		query.limit = Number(opts.limit);
-	}
+	if (opts.limit) query = query.limit(Number(opts.limit));
 
-	if (opts.offset) {
-		query.offset = Number(opts.offset);
-	}
+	if (opts.offset) query = query.offset(Number(opts.offset));
 
 	return query;
 }
 
-export function personQuizInclude(opts = {}) {
-	return {
-		model: db.personQuiz,
-		as: 'person_quizzes',
-		...buildPersonQuizQuery(opts),
-	};
-}
-
-async function createPersonQuiz(data) {
-	const newPersonQuiz = await db.personQuiz.create(data);
-	return newPersonQuiz.id;
+async function createPersonQuiz(db: Database, data: Insertable<PersonQuiz>) {
+	return await db.insertInto('person_quiz')
+	.values(data)
+	.returningAll()
+	.executeTakeFirstOrThrow();
 }
 
 export default {

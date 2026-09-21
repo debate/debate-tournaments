@@ -11,13 +11,15 @@ export function buildChapterJudgeData(overrides = {}) {
 	};
 }
 
-export async function create(overrides = {}) {
+export async function create(overrides: Partial<Parameters<typeof chapterJudgeRepo.createChapterJudge>[1]> = {}) {
+	
+	if (!overrides.chapter) {
+		const chapter = await factories.chapter.create();
+		overrides.chapter = chapter.id;
+	}
+	
 	const data = buildChapterJudgeData(overrides);
 
-	if (!data.chapter) {
-		const chapter = await factories.chapter.create();
-		data.chapter = chapter.id;
-	}
 
 	return await chapterJudgeRepo.createChapterJudge(db, data);
 }

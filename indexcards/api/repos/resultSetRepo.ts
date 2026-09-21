@@ -1,5 +1,8 @@
-import db from '../data/db.js';
+import type { Database } from '../data/database.js';
+import type { ResultSet } from '../data/schema.js';
+import type { Insertable } from 'kysely';
 import { stripNulls, dbToObject } from '../helpers/text.js';
+import db from '../data/db.js';
 
 const buildResultSetQuery = ({opts = {}, scope = {}}) => {
 
@@ -265,9 +268,17 @@ export const getResultSet = async (scope = {}, query = {}, opts = {}) => {
 	return resultSets;
 };
 
+async function createResultSet(kysleyDb: Database, data: Insertable<ResultSet>) {
+	return await kysleyDb.insertInto('result_set')
+	.values(data)
+	.returningAll()
+	.executeTakeFirstOrThrow();
+}
+
 export default {
 	getResultSet,
 	getResultSets,
+	createResultSet,
 };
 
 // This function takes the not-great syntax I had for the results sets up to

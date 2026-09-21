@@ -20,7 +20,7 @@ export async function create(
 
 	const permissionId = await permissionRepo.createPermission(db, {
 		...data,
-		person: overrides.person ?? (await factories.person.create()).personId,
+		person: overrides.person ?? (await factories.person.create()).id,
 	});
 
 	return {

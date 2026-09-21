@@ -50,75 +50,103 @@ type SettingInsert = {
 	value_date: Date | null;
 	tag: string;
 };
-type SettingRow = SettingInsert & {
-	created_at: Date | null;
-	timestamp: Date | null;
-};
 
 const settingConfig = {
 	category: {
 		table: "category_setting",
 		ownerKey: "category",
+		createdAtKey: "created_at",
+		timestampKey: "timestamp",
 	},
 	chapter: {
 		table: "chapter_setting",
 		ownerKey: "chapter",
+		createdAtKey: "created_at",
+		timestampKey: "timestamp",
 	},
 	circuit: {
 		table: "circuit_setting",
 		ownerKey: "circuit",
+		createdAtKey: "created_at",
+		timestampKey: "timestamp",
 	},
 	entry: {
 		table: "entry_setting",
 		ownerKey: "entry",
+		createdAtKey: "created_at",
+		timestampKey: "timestamp",
 	},
 	event: {
 		table: "event_setting",
 		ownerKey: "event",
+		createdAtKey: "created_at",
+		timestampKey: "timestamp",
 	},
 	jpool: {
 		table: "jpool_setting",
 		ownerKey: "jpool",
+		createdAtKey: "created_at",
+		timestampKey: "timestamp",
 	},
 	judge: {
 		table: "judge_setting",
 		ownerKey: "judge",
+		createdAtKey: "created_at",
+		timestampKey: "timestamp",
 	},
 	panel: {
 		table: "panel_setting",
 		ownerKey: "panel",
+		createdAtKey: null,
+		timestampKey: "timestamp",
 	},
 	person: {
 		table: "person_setting",
 		ownerKey: "person",
+		createdAtKey: "created_at",
+		timestampKey: "timestamp",
 	},
 	protocol: {
 		table: "protocol_setting",
 		ownerKey: "protocol",
+		createdAtKey: null,
+		timestampKey: "timestamp",
 	},
 	region: {
 		table: "region_setting",
 		ownerKey: "region",
+		createdAtKey: "created_at",
+		timestampKey: "timestamp",
 	},
 	round: {
 		table: "round_setting",
 		ownerKey: "round",
+		createdAtKey: null,
+		timestampKey: "timestamp",
 	},
 	rpool: {
 		table: "rpool_setting",
 		ownerKey: "rpool",
+		createdAtKey: null,
+		timestampKey: "timestamp",
 	},
 	school: {
 		table: "school_setting",
 		ownerKey: "school",
+		createdAtKey: null,
+		timestampKey: "timestamp",
 	},
 	student: {
 		table: "student_setting",
 		ownerKey: "student",
+		createdAtKey: "created_at",
+		timestampKey: "timestamp",
 	},
 	tourn: {
 		table: "tourn_setting",
 		ownerKey: "tourn",
+		createdAtKey: null,
+		timestampKey: "timestamp",
 	},
 } as const;
 
@@ -165,7 +193,7 @@ export function selectSettings<A extends string = 'settings'>(
 		settings,
 		as,
 	}: SettingsSelectArgs & { as?: A },
-): AliasedRawBuilder<Record<string, string> | null, A> {
+) {
 	const config = settingConfig[table];
 	const ownerRefResolved = tableAs ? `${tableAs}.id` : `${table}.id`;
 	const alias = as ?? 'settings';
@@ -175,22 +203,60 @@ export function selectSettings<A extends string = 'settings'>(
 		? sql` AND setting_row_internal.tag IN (${sql.join(tags)})`
 		: sql``;
 
-	return sql<Record<string, string> | null>`(
-		SELECT JSON_OBJECTAGG(
-			setting_row_internal.tag,
-			CASE
-				WHEN setting_row_internal.value = 'date' THEN setting_row_internal.value_date
-				WHEN setting_row_internal.value = 'text' THEN setting_row_internal.value_text
-				WHEN setting_row_internal.value = 'json' AND JSON_VALID(setting_row_internal.value_text)
-					THEN JSON_EXTRACT(setting_row_internal.value_text, '$')
-				WHEN setting_row_internal.value = 'json' THEN setting_row_internal.value_text
-				ELSE setting_row_internal.value
-			END
-		)
-		FROM ${sql.table(config.table)} setting_row_internal
-		WHERE ${sql.ref(`setting_row_internal.${config.ownerKey}`)} = ${sql.ref(ownerRefResolved)}
+	const where = sql`
+		WHERE ${sql.ref(`setting_row_internal.${config.ownerKey}`)}
+			= ${sql.ref(ownerRefResolved)}
 		${tagFilter}
-	)`.as(alias as A);
+	`;
+
+	const timestampFields = [
+		config.createdAtKey
+			? sql`'created_at', ${sql.ref(`setting_row_internal.${config.createdAtKey}`)}`
+			: undefined,
+		config.timestampKey
+			? sql`'timestamp', ${sql.ref(`setting_row_internal.${config.timestampKey}`)}`
+			: undefined,
+	].filter((field): field is NonNullable<typeof field> => field !== undefined);
+
+	return [
+		sql<Record<string, string> | null>`
+			(
+				SELECT JSON_OBJECTAGG(
+					setting_row_internal.tag,
+					CASE
+						WHEN setting_row_internal.value = 'date'
+							THEN setting_row_internal.value_date
+						WHEN setting_row_internal.value = 'text'
+							THEN setting_row_internal.value_text
+						WHEN setting_row_internal.value = 'json'
+							AND JSON_VALID(setting_row_internal.value_text)
+							THEN JSON_EXTRACT(setting_row_internal.value_text, '$')
+						WHEN setting_row_internal.value = 'json'
+							THEN setting_row_internal.value_text
+						ELSE setting_row_internal.value
+					END
+				)
+				FROM ${sql.table(config.table)} setting_row_internal
+				${where}
+			)
+		`.as(alias as A),
+
+		sql<Record<string, {
+			created_at?: Date | null;
+			timestamp?: Date | null;
+		}> | null>`
+			(
+				SELECT JSON_OBJECTAGG(
+					setting_row_internal.tag,
+					JSON_OBJECT(
+						${sql.join(timestampFields, sql`, `)}
+					)
+				)
+				FROM ${sql.table(config.table)} setting_row_internal
+				${where}
+			)
+		`.as('settingsTimestamps'),
+	];
 }
 /**
  * Build rows for bulk upsert into a *_setting table

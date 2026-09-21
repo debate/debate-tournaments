@@ -103,10 +103,11 @@ async function getParadigmByPersonId(req: Request, res: Response) {
 				.filter(Boolean)
 				.join(' '),
 		
-			lastReviewed:
-				person.settingsTimestamps['paradigm']?.updatedAt || null,
+			lastReviewed: person.settingsTimestamps?.paradigm.timestamp
+				? new Date(person.settingsTimestamps?.paradigm.timestamp).toISOString()
+				: null,
 		
-			paradigm: person.settings['paradigm'] || null,
+			paradigm: person.settings?.paradigm || null,
 		
 			certifications: certifications.map((cert) => ({
 				id: cert.quizId,

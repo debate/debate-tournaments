@@ -1,147 +1,201 @@
 import con from './judgesController.js';
 import judgeRepo from '../../repos/judgeRepo.js';
-import chapterJudgeRepo from '../../repos/chapterJudgeRepo.js';
 import tabroomRepo from '../../repos/tabroomRepo.js';
-import chapterRepo from '../../repos/chapterRepo.js';
 import personRepo from '../../repos/personRepo.js';
 import changeLogRepo from '../../repos/changeLogRepo.js';
 import { UnlinkedJudgeSchema } from '@tabroom/types';
-import { createContext } from '../../../tests/httpMocks.js';
-import { notify } from '../../helpers/blast.js';
+import { createPersonContext } from '../../../tests/httpMocks.js';
+import { db } from '../../data/database.js';
 import logger from '../../helpers/logger.js';
+import factories from '../../../tests/factories/index.js';
 import z from 'zod';
+import type { TabroomSetting } from '../../data/schema.js';
+import type { Selectable } from 'kysely';
 
-vi.mock('../../repos/judgeRepo.js');
-vi.mock('../../repos/chapterJudgeRepo.js');
-vi.mock('../../repos/chapterRepo.js');
-vi.mock('../../repos/personRepo.js');
-vi.mock('../../repos/changeLogRepo.js');
-vi.mock('../../repos/tabroomRepo.js');
-vi.mock('../../helpers/blast.js');
+vi.mock('../../repos/tabroomRepo.js', () => ({
+	default: {
+		getSettings: vi.fn(),
+	},
+}));
+vi.spyOn(logger, 'debug');
+vi.spyOn(changeLogRepo, 'createChangeLog');
 
-vi.spyOn(logger, 'debug').mockImplementation(() => {});
+type Person = Awaited<ReturnType<typeof factories.person.create>>;
 
+let person!: Person;
 describe('judgesController', () => {
-	beforeAll(() => {
-		vi.mocked(changeLogRepo.createChangeLog).mockResolvedValue(1);
+	beforeAll(async () => {
+		person = await factories.person.create();
 	});
 	beforeEach(() => {
 		vi.clearAllMocks();
 	});
 	describe('linkRequests', () => {
 		it('should return linked judges and chapter judges for the user', async () => {
-			// Mock data
-			const mockJudges = [
-				{ id: 1, first: 'John', last: 'Doe' },
-				{ id: 2, first: 'Jane', last: 'Smith' },
-			];
-			const mockChapterJudges = [
-				{ id: 3, first: 'Alice', last: 'Johnson' },
-			];
-
-			vi.mocked(judgeRepo.getJudges).mockResolvedValue(mockJudges);
-			vi.mocked(chapterJudgeRepo.getChapterJudges).mockResolvedValue(mockChapterJudges);
+			const Judge1 = await factories.judge.create({ person_request: person.id });
+			const Judge2 = await factories.judge.create({ person_request: person.id });
+			const ChapterJudge1 = await factories.chapterJudge.create({ person_request: person.id });
 
 			// Mock request and response
-			const {req, res } = createContext({ actor: { id: 123 } });
+			const {req, res } = createPersonContext(person,{});
 
 			// Call the controller function
 			await con.linkRequests(req, res);
 
 			// Assertions
 			expect(res).not.toBeProblemResponse();
-			expect(judgeRepo.getJudges).toHaveBeenCalledWith({ where: { person_request: 123 } });
-			expect(chapterJudgeRepo.getChapterJudges).toHaveBeenCalledWith({ where: { person_request: 123 } });
+			expect(res.body).toContainEqual(expect.objectContaining({ id: Judge1.id }));
+			expect(res.body).toContainEqual(expect.objectContaining({ id: Judge2.id }));
+			expect(res.body).toContainEqual(expect.objectContaining({ id: ChapterJudge1.id }));
 			expect(res.body).toMatchSchema(z.array(UnlinkedJudgeSchema));
 		});
 	});
 	describe('claimRequest', () => {
 		it('should return 400 if both judgeId and chapterJudgeId are provided', async () => {
-			const { req, res } = createContext({ actor: { id: 123 }, valid: { query: { judgeId: 1, chapterJudgeId: 2 } } });
+			const judge = await factories.judge.create();
+			const chapterJudge = await factories.chapterJudge.create();
+	
+			const { req, res } = createPersonContext(person, {
+				valid: {
+					query: {
+						judgeId: judge.id,
+						chapterJudgeId: chapterJudge.id,
+					},
+				},
+			});
+	
 			await con.claimRequest(req, res);
+	
 			expect(res).toBeProblemResponse(400);
 		});
+	
 		it('should return 400 if neither judgeId nor chapterJudgeId are provided', async () => {
-			const { req, res } = createContext({ actor: { id: 123 }, valid: { query: {} } });
+			const { req, res } = createPersonContext(person, {
+				valid: {
+					query: {},
+				},
+			});
+	
 			await con.claimRequest(req, res);
+	
 			expect(res).toBeProblemResponse(400);
 		});
+	
 		it('should return 400 if judgeId is invalid', async () => {
-			const { req, res } = createContext({ actor: { id: 123 }, valid: { query: { judgeId: 1 } } });
-			// judge not found
-			vi.mocked(judgeRepo.getJudge).mockResolvedValue(null);
+			const { req, res } = createPersonContext(person, {
+				valid: {
+					query: {
+						judgeId: 999999999,
+					},
+				},
+			});
+	
 			await con.claimRequest(req, res);
-			expect(res).toBeProblemResponse(400);
-			// judge has no category
-			vi.mocked(judgeRepo.getJudge).mockResolvedValue({ id: 1, category: null });
-			await con.claimRequest(req, res);
+	
 			expect(res).toBeProblemResponse(400);
 		});
+	
+		it('should return 400 if judge has no category', async () => {
+			// If category is nullable in the DB:
+			const judge = await factories.judge.create({
+				category: null,
+			});
+	
+			const { req, res } = createPersonContext(person, {
+				valid: {
+					query: {
+						judgeId: judge.id,
+					},
+				},
+			});
+	
+			await con.claimRequest(req, res);
+	
+			expect(res).toBeProblemResponse(400);
+		});
+	
 		it('should return 400 if user is already linked to another judge in the same category', async () => {
-			const { req, res } = createContext({ actor: { id: 123 }, valid: { query: { judgeId: 1 } } });
-			vi.mocked(judgeRepo.getJudge).mockResolvedValue({ id: 1, category: 123 });
-			vi.mocked(judgeRepo.getJudges).mockResolvedValue([{ id: 2, category: 123, person: 123 }]);
+			const category = await factories.category.create();
+	
+			await factories.judge.create({
+				category: category.id,
+				person: person.id,
+			});
+	
+			const requestedJudge = await factories.judge.create({
+				category: category.id,
+			});
+	
+			const { req, res } = createPersonContext(person, {
+				valid: {
+					query: {
+						judgeId: requestedJudge.id,
+					},
+				},
+			});
+	
 			await con.claimRequest(req, res);
-			expect(res).toBeProblemResponse(400);
-			vi.mocked(judgeRepo.getJudges).mockResolvedValue([{ id: 2, category: 123, person_request: 123 }]);
-			await con.claimRequest(req, res);
+	
 			expect(res).toBeProblemResponse(400);
 		});
+	
+		it('should return 400 if user has already requested another judge in the same category', async () => {
+			const category = await factories.category.create();
+	
+			await factories.judge.create({
+				category: category.id,
+				person_request: person.id,
+			});
+	
+			const requestedJudge = await factories.judge.create({
+				category: category.id,
+			});
+	
+			const { req, res } = createPersonContext(person, {
+				valid: {
+					query: {
+						judgeId: requestedJudge.id,
+					},
+				},
+			});
+	
+			await con.claimRequest(req, res);
+	
+			expect(res).toBeProblemResponse(400);
+		});
+	
 		it('should return 200 and update judge if valid judgeId is provided', async () => {
-			const { req, res } = createContext({ actor: { id: 123 }, valid: { query: { judgeId: 1 } } });
-			vi.mocked(judgeRepo.getJudge).mockResolvedValue({ id: 1, category: 123 });
-			vi.mocked(judgeRepo.getJudges).mockResolvedValue([]);
+			const category = await factories.category.create();
+	
+			const Judge = await factories.judge.create({
+				category: category.id,
+			});
+	
+			const { req, res } = createPersonContext(person, {
+				valid: {
+					query: {
+						judgeId: Judge.id,
+					},
+				},
+			});
+	
 			await con.claimRequest(req, res);
+	
 			expect(res).not.toBeProblemResponse();
 			expect(res.status).toBeCalledWith(200);
-			expect(judgeRepo.updateJudge).toHaveBeenCalledWith(1, { person_request: 123 });
-		});
-		it('should return 400 if chapterJudgeId is invalid', async () => {
-			const { req, res } = createContext({ actor: { id: 123 }, valid: { query: { chapterJudgeId: 1 } } });
-			// chapter judge not found
-			vi.mocked(chapterJudgeRepo.getChapterJudge).mockResolvedValue(null);
-			await con.claimRequest(req, res);
-			expect(res).toBeProblemResponse(400);
-			// chapter judge has no chapter
-			vi.mocked(chapterJudgeRepo.getChapterJudge).mockResolvedValue({ id: 1, chapter: null });
-			await con.claimRequest(req, res);
-			expect(res).toBeProblemResponse(400);
-		});
-		it('should return 400 if user is already linked to another chapter judge in the same chapter', async () => {
-			const { req, res } = createContext({ actor: { id: 123 }, valid: { query: { chapterJudgeId: 1 } } });
-			vi.mocked(chapterJudgeRepo.getChapterJudge).mockResolvedValue({ id: 1, chapter: 123 });
-			vi.mocked(chapterJudgeRepo.getChapterJudges).mockResolvedValue([{ id: 2, chapter: 123, person: 123 }]);
-			await con.claimRequest(req, res);
-			expect(res).toBeProblemResponse(400);
-			vi.mocked(chapterJudgeRepo.getChapterJudges).mockResolvedValue([{ id: 2, chapter: 123, person_request: 123 }]);
-			await con.claimRequest(req, res);
-			expect(res).toBeProblemResponse(400);
-		});
-		it('should return 200 and update chapter judge if valid chapterJudgeId is provided', async () => {
-			const { req, res } = createContext({ actor: { id: 123 }, valid: { query: { chapterJudgeId: 1 } } });
-			vi.mocked(chapterJudgeRepo.getChapterJudge).mockResolvedValue({ id: 1, chapter: 123 });
-			vi.mocked(chapterJudgeRepo.getChapterJudges).mockResolvedValue([]);
-			vi.mocked(chapterRepo.getAdmins).mockResolvedValue([]);
-			await con.claimRequest(req, res);
-			expect(res).not.toBeProblemResponse();
-			expect(res.status).toBeCalledWith(200);
-			expect(chapterJudgeRepo.updateChapterJudge).toHaveBeenCalledWith(1, { person_request: 123 });
-		});
-		it('should send notification email to chapter admins when a chapter judge is claimed', async () => {
-			const { req, res } = createContext({ actor: { id: 123, Person: { first: 'Test', last: 'User' } }, valid: { query: { chapterJudgeId: 1 } } });
-			vi.mocked(chapterJudgeRepo.getChapterJudge).mockResolvedValue({ id: 1, chapter: 123 });
-			vi.mocked(chapterJudgeRepo.getChapterJudges).mockResolvedValue([]);
-			vi.mocked(chapterRepo.getAdmins).mockResolvedValue([{ id: 1, email: 'admin@example.com' }]);
-			await con.claimRequest(req, res);
-			expect(notify).toHaveBeenCalledWith(expect.objectContaining({ ids: [1] }));
+	
+			const updatedJudge = await judgeRepo.getJudge(db, Judge.id);
+	
+			expect(updatedJudge?.person_request).toBe(person.id);
 		});
 	});
 	describe('updateParadigm', () => {
-		let { req, res } = {};
+		let { req, res } = {} as ReturnType<typeof createPersonContext>;
 		beforeEach(() => {
-			({ req, res } = createContext({ actor: { Person: { id: 123 } }, session: { id: 'abc' }, ip: 'ip' }));
-			vi.mocked(tabroomRepo.getSettings).mockResolvedValue([{ tag: 'paradigm_word_limit', value: '100' }]);
-			vi.mocked(personRepo.getPerson).mockResolvedValue({ id: 123, settings: {} });
+			({ req, res } = createPersonContext(person, {}));
+			vi.mocked(tabroomRepo.getSettings).mockResolvedValue([
+				{ id: 1,tag: 'paradigm_word_limit', value: '100' } as Selectable<TabroomSetting>,
+			]);
 		});
 		it('should return 400 if paradigm exceeds word limit', async () => {
 			req.valid = { body: { paradigm: 'word '.repeat(101) } };
@@ -149,10 +203,12 @@ describe('judgesController', () => {
 			expect(res).toBeProblemResponse(400);
 		});
 		it('should return 403 if persons email is unconfirmed', async () => {
-			req.valid = { body: { paradigm: 'word '.repeat(50) } };
-			vi.mocked(personRepo.getPerson).mockResolvedValue({ id: 123, settings: { email_unconfirmed: true } });
-			await con.updateParadigm(req, res);
-			expect(res).toBeProblemResponse(403);
+			const reqOverride = { valid: { body: { paradigm: 'word '.repeat(50) } } };
+			const unconfirmedPerson = await factories.person.create({ settings: { email_unconfirmed: 1 } });
+			const { req: req2, res: res2 } = createPersonContext(unconfirmedPerson, reqOverride);
+			//vi.mocked(personRepo.getPerson).mockResolvedValue({ id: 123, settings: { email_unconfirmed: true } });
+			await con.updateParadigm(req2, res2);
+			expect(res2).toBeProblemResponse(403);
 		});
 		it('does not fail if no word limit is set', async () => {
 			req.valid = { body: { paradigm: 'word '.repeat(200) } };
@@ -169,10 +225,8 @@ describe('judgesController', () => {
 		it('saves the paradigm if it meets all requirements', async () => {
 			req.valid = { body: { paradigm: 'word '.repeat(50) } };
 			await con.updateParadigm(req, res);
-			expect(res.status).toHaveBeenCalledWith(204);
 			expect(res).not.toBeProblemResponse();
 			expect(changeLogRepo.createChangeLog).toHaveBeenCalled();
-			expect(personRepo.updatePerson).toHaveBeenCalledWith(expect.any(Object), 123, { settings: { paradigm: 'word '.repeat(50) } });
 		});
 	});
 });

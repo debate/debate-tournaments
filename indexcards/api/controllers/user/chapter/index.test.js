@@ -10,7 +10,7 @@ describe('User Chapter', () => {
 	beforeAll(async () => {
 		const session = await factories.session.create();
 		userkey = session.userkey;
-		personId = session.personId;
+		personId = session.person;
 		await factories.permission.create({
 			chapter : 130737,
 			tourn   : 31059,

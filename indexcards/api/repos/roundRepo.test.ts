@@ -7,11 +7,11 @@ describe('getRounds', () => {
 		const tournId = 29807;
 
 		//Act
-		var rounds = await roundRepo.getRounds(db, {tournId});
+		var Rounds = await roundRepo.getRounds(db, {tournId});
 
-		rounds.forEach((round, i) => {
-			assert.equal(round.published, 1, `Round at index ${i} (roundId=${round.roundId}) is not published`);
-			assert.typeOf(round.event, 'number', `Round at index ${i} (id=${round.id}) should contain round.event`);
+		Rounds.forEach((Round, i) => {
+			assert.equal(Round.published, 1, `Round at index ${i} (roundId=${Round.id}) is not published`);
+			assert.typeOf(Round.event, 'number', `Round at index ${i} (id=${Round.id}) should contain round.event`);
 		});
 	});
 	it('returns published rounds with stable base fields', async () => {

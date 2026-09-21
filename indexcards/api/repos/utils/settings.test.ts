@@ -4,8 +4,10 @@ import { db } from '../../data/database.js';
 import factories from '../../../tests/factories/index.js';
 
 describe('selectSettings', () => {
+	let schoolId: number = 0;
 	beforeAll(async () => {
 		const school = await factories.school.create();
+		schoolId = school.id;
 		await db.insertInto('school_setting').values({ school: school.id, tag: 'foo', value: 'text', value_text: 'bar', value_date: null }).execute();
 		await db.insertInto('school_setting').values({ school: school.id, tag: 'bar', value: 'value', value_text: null, value_date: null }).execute();
 	});
@@ -15,7 +17,7 @@ describe('selectSettings', () => {
 			settings: true,
 		});
 		expect(sqlSnippet).toBeDefined();
-		const res = await db.selectFrom('school').select(sqlSnippet).executeTakeFirst();
+		const res = await db.selectFrom('school').where('id', '=', schoolId).select(sqlSnippet).executeTakeFirst();
 
 		expect(res).toBeDefined();
 		expect(res?.settings).toBeDefined();
@@ -27,7 +29,7 @@ describe('selectSettings', () => {
 			settings: ['foo'],
 		});
 		expect(sqlSnippet).toBeDefined();
-		const res = await db.selectFrom('school').select(sqlSnippet).executeTakeFirst();
+		const res = await db.selectFrom('school').where('id', '=', schoolId).select(sqlSnippet).executeTakeFirst();
 
 		expect(res).toBeDefined();
 		expect(res?.settings).toBeDefined();
@@ -40,7 +42,7 @@ describe('selectSettings', () => {
 			as: 'custom_settings',
 		});
 		expect(sqlSnippet).toBeDefined();
-		const res = await db.selectFrom('school').select(sqlSnippet).executeTakeFirst();
+		const res = await db.selectFrom('school').where('id', '=', schoolId).select(sqlSnippet).executeTakeFirst();
 
 		expect(res).toBeDefined();
 		expect('settings' in res!).toBe(false);
@@ -54,7 +56,7 @@ describe('selectSettings', () => {
 			settings: ['foo'],
 		});
 		expect(sqlSnippet).toBeDefined();
-		const res = await db.selectFrom('school as s').select(sqlSnippet).executeTakeFirst();
+		const res = await db.selectFrom('school as s').where('id', '=', schoolId).select(sqlSnippet).executeTakeFirst();
 
 		expect(res).toBeDefined();
 		expect(res?.settings).toBeDefined();

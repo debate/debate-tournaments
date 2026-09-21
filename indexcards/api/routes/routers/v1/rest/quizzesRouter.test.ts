@@ -43,7 +43,7 @@ describe('Quizzes Router', () => {
 		.set('Authorization', `Bearer ${Session.userkey}`);
 		expect(response.status).toBe(200);
 		expect(response.body).toMatchSchema(z.array(QuizSchema));
-		const quiz = response.body.find((q: { id: string }) => q.id === Quiz.id);
+		const quiz = response.body.find((q: { id: string }) => Number(q.id) === Quiz.id);
 		expect(quiz).toBeDefined();
 		expect(quiz.PersonQuizzes).toBeDefined();
 		expect(quiz.PersonQuizzes.length).toBe(1);

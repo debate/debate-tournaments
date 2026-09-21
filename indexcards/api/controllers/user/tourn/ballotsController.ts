@@ -13,7 +13,7 @@ export async function getCurrent(req: Request,res: Response) {
 		if(!s.Round.published || !s.Round.settings.judges_ballots_visible) {
 			return;
 		}
-		if(s.Ballots.some((b: { audit: number }) => b.audit === 1)){
+		if(s.Ballots.some((b: { audit: number }) => b.audit)){
 			if(
 				s.Ballots.every((b: { chair: number }) => b.chair !== 1) && 
 				s.Judge.Category.Event.type !== 'mock_trial' && 

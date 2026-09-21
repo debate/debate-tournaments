@@ -1,16 +1,26 @@
 import permissionRepo from '../../repos/permissionRepo.js';
 import eventRepo from '../../repos/eventRepo.js';
 import { db } from '../../data/database.js';
-import sequelizeDB from '../../data/db.js';
+import type { Request, Response, NextFunction } from 'express';
 
-export async function loadTournAuthContext(req, res, next, tournId){
+export type Perm = {
+	scope: string;
+	id: number;
+	role: string;
+	categoryId?: number;
+	tournId?: number;
+}
 
-	//attach all relevant perms to the req.auth.perms object
-	req.auth = req.auth || {};
-	req.auth.perms = req.auth.perms || [];
+export async function loadTournAuthContext(req: Request, res: Response, next: NextFunction, tournId: string){
+	req.auth = {
+		...req.auth,
+		perms: [
+			...(req.auth?.perms ?? []),
+		],
+	};
 
 	// Unauthenticated request, skip loading perms
-	const personId = req.person?.id;
+	const personId = req.actor?.Person?.id;
 	if (!personId) return next();
 
 	if (tournId){
@@ -18,7 +28,7 @@ export async function loadTournAuthContext(req, res, next, tournId){
 		const perms = await permissionRepo.getPermissions(db, { tourn: parseInt(tournId), person: personId });
 
 		// Collect unique event IDs for batch enrichment (only need categoryId)
-		const eventIds = new Set();
+		const eventIds = new Set<number>();
 
 		for (const perm of perms) {
 			if (perm.event) eventIds.add(perm.event);
@@ -28,9 +38,9 @@ export async function loadTournAuthContext(req, res, next, tournId){
 		const eventMap = new Map();
 
 		if (eventIds.size > 0) {
-			const events = await eventRepo.getEvents({ id: Array.from(eventIds) }, { fields: ['id', 'categoryId'] });
+			const events = await eventRepo.getEvents(db, { ids: Array.from(eventIds) });
 			for (const event of events) {
-				eventMap.set(event.id, event.categoryId);
+				eventMap.set(event.id, event.category);
 			}
 		}
 
@@ -59,46 +69,52 @@ export async function loadTournAuthContext(req, res, next, tournId){
 			}
 
 			if (scope && id) {
-				const permObj = {
+				req.auth.perms.push({
 					scope,
 					id,
 					role: perm.tag,
-				};
-				if (categoryId) permObj.categoryId = categoryId;
-				if (permTournId) permObj.tournId = permTournId;
-				req.auth.perms.push(permObj);
+					categoryId: categoryId || undefined,
+					tournId: permTournId || undefined,
+				})
 			}
 		}
 	}
 	return next();
 }
-export async function loadExtAuthContext(req, res, next) {
+export async function loadExtAuthContext(req: Request, res: Response, next: NextFunction) {
 
-	if (!req.actor?.Person?.id) return next();
-
+	const personId = req.actor?.Person?.id;
+	if (!personId) return next();
 	// Fetch permissions where person matches req.actor.Person and tag is like 'api_auth_%'
-	const perms = await sequelizeDB.personSetting.findAll({
-		where: {
-			person: req.actor.Person.id,
-			tag: { [sequelizeDB.Sequelize.Op.like]: 'api_auth_%' },
-		},
-	});
+	const perms = await db.selectFrom('person_setting')
+		.where('person', '=', personId)
+		.where('tag', 'like', 'api_auth_%')
+		.selectAll()
+		.execute();
 
-	// Attach to req.auth.perms if needed, or handle as required
-	req.auth = req.auth || {};
-	req.auth.perms = perms.map(p => ({
-		scope: p.tag,
-		id: req.actor.Person.id,
-		role: 'authorized',
-	}));
+
+		req.auth = {
+			...req.auth,
+			perms: [
+				...(req.auth?.perms ?? []),
+				...perms.map(p => ({
+					scope: p.tag,
+					id: personId,
+					role: 'authorized',
+				})),
+			],
+		};
 
 	return next();
 }
 /** load all the chapter perms for the actor */
-export async function loadChapterAuthContext(req, res, next, chapterId) {
-	//attach all relevant perms to the req.auth.perms object
-	req.auth = req.auth || {};
-	req.auth.perms = req.auth.perms || [];
+export async function loadChapterAuthContext(req: Request, res: Response, next: NextFunction, chapterId: number) {
+	req.auth = {
+		...req.auth,
+		perms: [
+			...(req.auth?.perms ?? []),
+		],
+	};
 
 	//cannot load perms when there is no person
 	if(!req.actor?.Person?.id) return next();
@@ -112,7 +128,7 @@ export async function loadChapterAuthContext(req, res, next, chapterId) {
 		req.auth.perms.push({
 			scope: 'chapter',
 			id: perm.chapter,
-			role: req.tag === 'chapter' ? 'chapterAdmin' : 'prefs',
+			role: perm.tag === 'chapter' ? 'chapterAdmin' : 'prefs',
 		});
 	}
 

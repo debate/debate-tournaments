@@ -34,7 +34,7 @@ export async function createBallot(db: Database, data: Insertable<Ballot> = {}){
 	return await db.insertInto('ballot')
 	.values(data)
 	.returningAll()
-	.executeTakeFirst();
+	.executeTakeFirstOrThrow();
 }
 
 export default {

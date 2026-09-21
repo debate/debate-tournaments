@@ -57,7 +57,7 @@ export async function buildTarget(resource: string, resourceId: number, targetCa
 			break;
 		}
 		case 'round': {
-			const round = await roundRepo.getRound(db, resourceId, { fields: ['event'] });
+			const round = await roundRepo.getRound(db, resourceId);
 			if (round && round.event) {
 				target.eventId = round.event;
 				target ={
@@ -68,7 +68,7 @@ export async function buildTarget(resource: string, resourceId: number, targetCa
 			break;
 		}
 		case 'section': {
-			const panel = await panelRepo.getSection(db,resourceId);
+			const panel = await panelRepo.getPanel(db,resourceId);
 			if (panel && panel.round) {
 				target.roundId = panel.round;
 				target ={

@@ -13,16 +13,14 @@ describe('GET /rest/judges/unlinked/search', () => {
 	let cjLast: string;
 
 	beforeAll(async () => {
-		const { getJudge } = await factories.judge.create();
-		const judge = await getJudge() as { first: string; last: string };
-		first = judge.first;
-		last = judge.last;
+		const Judge = await factories.judge.create();
+		first = Judge.first!;
+		last = Judge.last!;
 
-		const { chapterJudgeId: cjId, getChapterJudge } = await factories.chapterJudge.create();
-		chapterJudgeId = cjId;
-		const cj = await getChapterJudge() as { first: string; last: string };
-		cjFirst = cj.first;
-		cjLast = cj.last;
+		const ChapterJudge = await factories.chapterJudge.create();
+		chapterJudgeId = ChapterJudge.id;
+		cjFirst = ChapterJudge.first!;
+		cjLast = ChapterJudge.last!;
 
 		({ userkey } = await factories.session.create({
 			Person: {
@@ -99,15 +97,15 @@ describe('GET /rest/judges/unlinked/search', () => {
 	});
 
 	it('returns both judge and chapter_judge types in a combined search', async () => {
-		const { chapterJudgeId: cjId2, getChapterJudge } = await factories.chapterJudge.create({
+		const ChapterJudge2 = await factories.chapterJudge.create({
 			first,
 			last,
 		});
-		const cj = await getChapterJudge() as { first: string; last: string };
+		const cjId2 = ChapterJudge2.id;
 
 		const res = await request(server)
       .get('/v1/rest/judges/unlinked/search')
-      .query({ first: cj.first, last: cj.last })
+      .query({ first: ChapterJudge2.first, last: ChapterJudge2.last })
       .set('Accept', 'application/json')
       .set('Authorization', `Bearer ${userkey}`)
       .expect(200);

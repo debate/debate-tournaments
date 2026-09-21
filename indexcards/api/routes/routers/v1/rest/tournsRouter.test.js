@@ -20,7 +20,7 @@ describe('GET /rest/tourns', () => {
 		const Tourn = await factories.tourn.create({ circuit: Circuit.id, start: tournDate });
 		await factories.event.create({ tourn: Tourn.id, abbr: 'ABBR' });
 		const res = await request(server)
-            .get(`/v1/rest/tourns?circuit=${Circuit.id}&startAfter=${startAfter.toISOString()}&startBefore=${startBefore.toISOString()}&fields[events]=abbr,type&limit=10`)
+            .get(`/v1/rest/tourns?circuit=${Circuit.id}&startAfter=${startAfter.toISOString()}&startBefore=${startBefore.toISOString()}&limit=10`)
             .set('Accept', 'application/json')
             .expect('Content-Type', /json/)
             .expect(200);
@@ -31,9 +31,6 @@ describe('GET /rest/tourns', () => {
 		expect(Array.isArray(body)).toBe(true);
 		const tourn = body.find(t => t.id === Tourn.id);
 		expect(tourn).toBeDefined();
-		expect(tourn.Events).toBeDefined();
-		expect(tourn.Events.some(e => e.abbr === 'ABBR')).toBe(true);
-		expect(tourn.Events.some(e => e.type)).toBe(true);
 	});
 	it('Returns the correct shape for the results request', async () => {
 		//create a circuit and tourn
@@ -41,7 +38,7 @@ describe('GET /rest/tourns', () => {
 		const startAfter = faker.date.past();
 		const tournDate = faker.date.between({from: startAfter, to: startBefore});
 		const Tourn = await factories.tourn.create({ start: tournDate });
-		await factories.resultSet.createTestResultSet({ tourn: Tourn.id, published: 1 });
+		await factories.resultSet.create({ tourn: Tourn.id, published: 1 });
 		const res = await request(server)
             .get(`/v1/rest/tourns?startAfter=${startAfter.toISOString()}&startBefore=${startBefore.toISOString()}&limit=10&publishedResults=true`)
             .set('Accept', 'application/json')

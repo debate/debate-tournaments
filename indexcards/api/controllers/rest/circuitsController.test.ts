@@ -1,11 +1,11 @@
 
-import circuitRepo from '../../repos/circuitRepo';
+import circuitRepo from '../../repos/circuitRepo.js';
 import { createContext } from '../../../tests/httpMocks.js';
 import * as c from './circuitsController.js';
 
 describe('getCircuit', () => {
 	it('returns 404 if the circuit does not exist', async () => {
-		vi.spyOn(circuitRepo, 'getCircuit').mockResolvedValue(null);
+		vi.spyOn(circuitRepo, 'getCircuit').mockResolvedValue(undefined);
 		const { req, res } = createContext({
 			params: { circuitId: 'nonexistent' },
 		});

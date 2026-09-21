@@ -14,7 +14,7 @@ async function getTourn(req: Request, res: Response) {
 
 async function createTourn(req: Request, res: Response) {
 	//TODO need to make the requesting user the owner of the tourn
-	const data = req.body;
+	const data = req.valid.body;
 	if(!req.actor.Person?.id) return BadRequest(req,res,'Actor person ID is required');
 	const tourn = await tournRepo.createTourn(db,data);
 	//TODO this should be handled and validated by a middleware plugin
@@ -33,9 +33,9 @@ async function updateTourn(req: Request, res: Response) {
 	const updates = req.body;
 	delete updates.id;
 
-	await tournRepo.updateTourn(tournId, updates);
+	await tournRepo.updateTourn(db,Number(tournId), updates);
 
-	const updatedTourn = await tournRepo.getTourn(db, tournId as string);
+	const updatedTourn = await tournRepo.getTourn(db, Number(tournId));
 	return res.json(updatedTourn);
 }
 
@@ -43,7 +43,7 @@ async function deleteTourn(req: Request, res: Response) {
 	const { tournId } = req.params;
 	if (!tournId) return BadRequest(req, res, 'Tournament ID is required');
 
-	await tournRepo.deleteTourn(tournId as string);
+	await tournRepo.deleteTourn(db, Number(tournId));
 
 	return res.status(204).send();
 }

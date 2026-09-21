@@ -11,7 +11,7 @@ describe('Inbox Router', () => {
 	let personId : number;
 	let userkey: string;
 	beforeAll(async () => {
-		({ personId } = await factories.person.create());
+		({ id: personId } = await factories.person.create());
 		await factories.message.create({ person: personId });
 		({ userkey } = await factories.session.create({ person: personId }));
 	});
@@ -32,9 +32,9 @@ describe('Inbox Router', () => {
 	});
 	describe('GET /user/inbox/unread', () => {
 		it('Returns the number of unread messages', async () => {
-			const { personId: person1 } = await factories.person.create();
-			await factories.message.create({ person: person1 });
-			const { userkey: key1 } = await factories.session.create({ person: person1 });
+			const Person1 = await factories.person.create();
+			await factories.message.create({ person: Person1.id });
+			const { userkey: key1 } = await factories.session.create({ person: Person1.id });
 
 			const res = await request(server)
 				.get('/v1/user/inbox/unread')
@@ -49,13 +49,13 @@ describe('Inbox Router', () => {
 	});
 	describe('POST /user/inbox/markAllRead', () => {
 		it('Marks all messages as read', async () => {
-			const { messageId } = await factories.message.create({ person: personId });
+			const Message = await factories.message.create({ person: personId });
 			const res = await request(server)
 				.post('/v1/user/inbox/markAllRead')
 				.set('Accept', 'application/json')
 				.set('Authorization', `Bearer ${userkey}`);
 			expect(res).not.toBeProblemResponse();
-			const message = await messageRepo.getMessage(db,messageId);
+			const message = await messageRepo.getMessage(db,Message.id);
 			expect(message?.read_at).not.toBeNull();
 
 		});
@@ -63,15 +63,15 @@ describe('Inbox Router', () => {
 
 	describe('POST /user/inbox/{messageId}/markRead', () => {
 		it('Marks a message as read', async () => {
-			const { messageId } = await factories.message.create({ person: personId });
+			const Message = await factories.message.create({ person: personId });
 
 			const res = await request(server)
-				.post(`/v1/user/inbox/${messageId}/markRead`)
+				.post(`/v1/user/inbox/${Message.id}/markRead`)
 				.set('Accept', 'application/json')
 				.set('Authorization', `Bearer ${userkey}`);
 
 			expect(res).not.toBeProblemResponse();
-			const message = await messageRepo.getMessage(db,messageId,personId);
+			const message = await messageRepo.getMessage(db,Message.id,personId);
 			expect(message?.read_at).not.toBeNull();
 
 		});
@@ -79,29 +79,29 @@ describe('Inbox Router', () => {
 
 	describe('POST /user/inbox/{messageId}/markUnread', () => {
 		it('Marks a message as unread', async () => {
-			const { messageId } = await factories.message.create({ person: personId });
+			const Message = await factories.message.create({ person: personId });
 
 			await request(server)
-				.post(`/v1/user/inbox/${messageId}/markRead`)
+				.post(`/v1/user/inbox/${Message.id}/markRead`)
 				.set('Accept', 'application/json')
 				.set('Authorization', `Bearer ${userkey}`);
 
 			const res = await request(server)
-				.post(`/v1/user/inbox/${messageId}/markUnread`)
+				.post(`/v1/user/inbox/${Message.id}/markUnread`)
 				.set('Accept', 'application/json')
 				.set('Authorization', `Bearer ${userkey}`);
 
 			expect(res).not.toBeProblemResponse();
-			const message = await messageRepo.getMessage(db,messageId,personId);
+			const message = await messageRepo.getMessage(db,Message.id,personId);
 			expect(message?.read_at).toBeNull();
 		});
 	});
 	describe('GET /user/inbox/{messageId}', () => {
 		it('Gets a message by ID', async () => {
-			const { messageId } = await factories.message.create({ person: personId });
+			const Message = await factories.message.create({ person: personId });
 
 			const res = await request(server)
-				.get(`/v1/user/inbox/${messageId}`)
+				.get(`/v1/user/inbox/${Message.id}`)
 				.set('Accept', 'application/json')
 				.set('Authorization', `Bearer ${userkey}`)
 				.expect(200);
@@ -112,15 +112,15 @@ describe('Inbox Router', () => {
 	});
 	describe('DELETE /user/inbox/{messageId}', () => {
 		it('Marks a message as deleted', async () => {
-			const { messageId } = await factories.message.create({ person: personId });
+			const Message = await factories.message.create({ person: personId });
 
 			const res = await request(server)
-				.delete(`/v1/user/inbox/${messageId}`)
+				.delete(`/v1/user/inbox/${Message.id}`)
 				.set('Accept', 'application/json')
 				.set('Authorization', `Bearer ${userkey}`);
 
 			expect(res).not.toBeProblemResponse();
-			const message = await messageRepo.getMessage(db,messageId,personId);
+			const message = await messageRepo.getMessage(db,Message.id,personId);
 			expect(message?.deleted_at).not.toBeNull();
 
 		});

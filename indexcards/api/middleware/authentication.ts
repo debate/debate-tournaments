@@ -13,6 +13,7 @@ import sessionRepo from '../repos/sessionRepo.js';
 export async function Authenticate(req: Request, res: Response, next: NextFunction) {
 
 	let session = null;
+	let extPerson = null;
 
 	try {
 
@@ -43,13 +44,13 @@ export async function Authenticate(req: Request, res: Response, next: NextFuncti
 				}
 
 				//req.person is what should be checked for every authorization decision
-				const person = await personRepo.getPerson(db, parseInt(credentials.name), {settings: ['api_key']}) as {id: number, settings?: {api_key?: string}} | null;
+				extPerson = await personRepo.getPerson(db, parseInt(credentials.name), {settings: ['api_key']}) ;
 
-				if (!person || person.settings?.api_key !== credentials.pass) {
+				if (!extPerson || extPerson.settings?.api_key !== credentials.pass) {
 					return Unauthorized(req, res,'Invalid API key');
 				}
 
-				req.person = person;
+				req.person = extPerson;
 				req.authType = 'basic';
 
 			} else if (req.headers.authorization.startsWith('Bearer ')) {
@@ -75,12 +76,21 @@ export async function Authenticate(req: Request, res: Response, next: NextFuncti
 				id       : session.id,
 				person  : session.person,
 				su       : session.su || null,
-				Su: session.Su,
-				Person   : session.Person
+				Su: session.Su ?? null,
+				Person   : session.Person ?? undefined
 			};
 
 			//deprecated, use req.actor for auth and req.session.Person for anything that MUST be done by a person
 			req.person = await personRepo.getPerson(db,req.session.su ?? req.session.person ?? -1);
+		}
+		if(extPerson) {
+			req.session = {
+				id       : null,
+				person  : extPerson.id,
+				su       : null,
+				Su: undefined,
+				Person   : extPerson
+			};
 		}
 		//req.actor is what should be checked for every authorization decision
 		req.actor = createActor(req);

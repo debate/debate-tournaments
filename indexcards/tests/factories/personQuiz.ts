@@ -1,26 +1,37 @@
 import personQuizRepo from '../../api/repos/personQuizRepo.js';
 import factories from './index.js';
+import { db } from '../../api/data/database.js';
 
-async function createData(overrides = {}) {
+function createData(
+	overrides: Omit<
+		Partial<Parameters<typeof personQuizRepo.createPersonQuiz>[1]>,
+		'person' | 'quiz'
+	> & {
+		person: number;
+		quiz: number;
+	},
+) {
 	return {
-		hidden: false,
-		pending: false,
-		completed: true,
-		approvedBy: null,
+		hidden: 0,
+		pending: 0,
+		completed: 1,
+		approved_by: null,
 		...overrides,
 	};
 }
-async function create(overrides = {}) {
-	const data = await createData(overrides);
-	if (!data.person) {
-		const Person = await factories.person.create();
-		data.person = Person.id;
-	}
-	if (!data.quiz) {
-		const Quiz = await factories.quiz.create({ person: data.person });
-		data.quiz = Quiz.id;
-	}
-	return await personQuizRepo.createPersonQuiz(data);
+async function create(
+	overrides: Partial<Parameters<typeof personQuizRepo.createPersonQuiz>[1]> = {},
+) {
+	const person = overrides.person ?? (await factories.person.create()).id;
+	const quiz = overrides.quiz ?? (await factories.quiz.create({ person })).id;
+
+	const data = createData({
+		...overrides,
+		person,
+		quiz,
+	});
+
+	return personQuizRepo.createPersonQuiz(db, data);
 }
 
 export default {

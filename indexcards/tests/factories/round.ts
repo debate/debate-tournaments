@@ -8,7 +8,7 @@ export function createRoundData(overrides = {}) {
 	};
 }
 
-export async function create(overrides = {}) {
+export async function create(overrides: Parameters<typeof roundRepo.createRound>[1] = {}) {
 	const data = createRoundData(overrides);
 	return await roundRepo.createRound(db,data);
 }

@@ -1,5 +1,4 @@
 import webpageRepo from '../../repos/webpageRepo.js';
-import { ToPublicPage } from '../mappers/pageMapper.js';
 import { db } from '../../data/database.js';
 import type { Request, Response } from 'express';
 
@@ -16,8 +15,8 @@ export async function getPublicPages(req: Request, res: Response){
 		if (!pages.length) {
 			return res.status(404).json({ message: 'Page with not found' });
 		}
-		return res.json(ToPublicPage(pages[0]));
+		return res.json(pages);
 	}
 
-	res.json(pages.map(ToPublicPage));
+	res.json(pages);
 }

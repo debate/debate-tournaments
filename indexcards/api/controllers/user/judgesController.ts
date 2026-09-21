@@ -6,7 +6,6 @@ import tabroomRepo from '../../repos/tabroomRepo.js';
 import changeLogRepo from '../../repos/changeLogRepo.js';
 import { profanityCheck, sanitizeHTML } from '../../helpers/text.js';
 import { BadRequest, Forbidden, NotFound } from '../../helpers/problem.js';
-import { Op } from 'sequelize';
 import { notify } from '../../helpers/blast.js';
 import logger from '../../helpers/logger.js';
 import { db } from '../../data/database.js';
@@ -14,9 +13,9 @@ import type { Request, Response } from 'express';
 
 async function linkRequests(req: Request, res: Response) {
 	const [judges, chapterJudges] = await Promise.all([
-		judgeRepo.getJudges(db, { person_request: req.actor.person! }),
+		judgeRepo.getJudges(db, { person_request: req.actor.Person!.id }),
 		chapterJudgeRepo.getChapterJudges(db, {
-			person_request: req.actor.person!,
+			person_request: req.actor.Person!.id,
 		}),
 	]);
 
@@ -55,15 +54,15 @@ async function claimRequest(req: Request, res: Response) {
 		.select('id')
 		.where('category', '=', judge.category)
 		.where((eb) => eb.or([
-			eb('person', '=', req.actor.person!),
-			eb('person_request', '=', req.actor.person!),
+			eb('person', '=', req.actor.Person!.id),
+			eb('person_request', '=', req.actor.Person!.id),
 		]))
 		.executeTakeFirst();
 
 		if (already) {
 			return BadRequest(req, res, `You are already linked to another ${judge.category} judge.  You may only link to one judge in a given tournament.  If you are trying to link yourself to all your school's judges, please DO NOT.  Every judge must be linked to their OWN Tabroom account.`);
 		}
-		await judgeRepo.updateJudge(db, judgeId, { person_request: req.actor.person! });
+		await judgeRepo.updateJudge(db, judgeId, { person_request: req.actor.Person!.id });
 		return res.status(200).json({
 			message: 'Judge claim request submitted',
 			detail: 'A message has been sent to your chapter admins to approve this request.',
@@ -75,16 +74,15 @@ async function claimRequest(req: Request, res: Response) {
 		return BadRequest(req, res, 'Invalid chapter judge ID or chapter judge has no chapter');
 	}
 	// search for other chapter judges in the chapter the person has claimed or requested, error if any exist
-	const already = await chapterJudgeRepo.getChapterJudges(db,{
-		where: {
-			chapter: chapterJudge.chapter,
-			[Op.or]: [
-				{ person: req.actor.id },
-				{ person_request: req.actor.id },
-			],
-		},
-	});
-	if (already.length > 0) {
+	const already = await db.selectFrom('chapter_judge')
+		.select('id')
+		.where('chapter', '=', chapterJudge.chapter)
+		.where((eb) => eb.or([
+			eb('person', '=', req.actor.Person!.id),
+			eb('person_request', '=', req.actor.Person!.id),
+		]))
+		.executeTakeFirst();
+	if (already) {
 		return BadRequest(req, res, `You are already linked to another judge on that school's roster. You can only be linked to 1 judge per roster at a time. If you are linking yourself to all your school's judges, DO NOT. Each judge must have their OWN Tabroom account for the system to function.`);
 	}
 
@@ -99,7 +97,7 @@ async function claimRequest(req: Request, res: Response) {
 		});
 	}
 	if(admins.some(a => a.email && !a.no_email)) {
-		const emailData = buildChapterJudgeClaimEmail(chapterJudge, req.actor.Person);
+		const emailData = buildChapterJudgeClaimEmail(chapterJudge, req.actor.Person!);
 		await notify({
 			ids: admins.filter(a => a.email && !a.no_email).map(a => a.id),
 			...emailData,
@@ -165,7 +163,7 @@ async function updateParadigm(req: Request, res: Response) {
 	const tabSettings = await tabroomRepo.getSettings(db,[
 		'paradigm_word_limit',
 	]);
-	if(tabSettings.filter(s => s.tag === 'paradigm_word_limit')[0]?.value > 0){
+	if(tabSettings.filter(s => s.tag === 'paradigm_word_limit')[0]?.value){
 		const wordLimit = parseInt(tabSettings.filter(s => s.tag === 'paradigm_word_limit')[0].value);
 		const wordCount = req.valid.body.paradigm.split(/\s+/).length;
 		if(wordCount > wordLimit){
@@ -194,7 +192,7 @@ async function updateParadigm(req: Request, res: Response) {
 		await changeLogRepo.createChangeLog(db,{
 			tag: 'paradigm',
 			person: Person.id,
-			description: `Saved new paradigm from session ${req.session!.id} logged in from ${req.ip}${req.actor.Su ? ` while SU'd from account ${req.actor.Su.email}` : ''}`,
+			description: `Saved new paradigm from session ${req.session!.id} logged in from ${req.ip}${req.session?.Su ? ` while SU'd from account ${req.session.Su.email}` : ''}`,
 		});
 	} catch (err) {
 		logger.error('Failed to log paradigm change in change log', { error: err });
@@ -217,7 +215,9 @@ export default {
 	getLiveDocs,
 };
 
-function buildChapterJudgeClaimEmail(chapterJudge, person) {
+function buildChapterJudgeClaimEmail(
+	chapterJudge: NonNullable<Awaited<ReturnType<typeof chapterJudgeRepo.getChapterJudge>>>, 
+	person: NonNullable<Request['actor']['Person']>) {
 	let text = `The Tabroom user \n\n${person.first} ${person.last} (${person.email}) \n\n
 	has requested online access to updates, ballots and texts for judge ${chapterJudge.first} ${chapterJudge.last} in your team roster.\n\n
 	If these are the same people, approve this request by logging into Tabroom and visiting\n\n

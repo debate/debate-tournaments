@@ -62,20 +62,20 @@ describe('judgeRepo', () => {
 			const category = await factories.category.create({ tourn: tourn.id });
 			const school = await factories.school.create({ name: 'Central High' });
 
-			const judge = await factories.judge.create({
+			const Judge = await factories.judge.create({
 				category: category.id,
 				school: school.id,
 				person_request: null,
 			});
 
-			const results = await judgeRepo.unlinkedSearch(db,{ first: judge.first, last: judge.last });
+			const results = await judgeRepo.unlinkedSearch(db,{ first: Judge.first!, last: Judge.last! });
 
 			expect(results).toEqual(
 				expect.arrayContaining([
 					expect.objectContaining({
-						id: judge.id,
-						first: judge.first,
-						last: judge.last,
+						id: Judge.id,
+						first: Judge.first,
+						last: Judge.last,
 						school_name: 'Central High',
 						tourn_name: 'Test Tournament',
 					}),
@@ -139,7 +139,7 @@ describe('judgeRepo', () => {
 
 			// Create event → round → panel → ballot chain
 			const Event = await factories.event.create({ category: category.id });
-			const Round = await factories.round.create({ event: Event.id, published: true });
+			const Round = await factories.round.create({ event: Event.id, published: 1 });
 			const Panel = await factories.panel.create({ round: Round.id });
 			await factories.ballot.create({ panel: Panel.id, judge: Judge.id });
 			const history = await judgeRepo.getJudgeHistory(db,Person.id, {limit: 10, offset: 0 });

@@ -1,5 +1,5 @@
-import db from '../../api/data/db.js';
-
+import { db } from '../../api/data/database.js';
+import resultSetRepo from '../../api/repos/resultSetRepo.js';
 // Factory to create fake result_set data
 export function createResultSetData(overrides = {}) {
 	return {
@@ -8,17 +8,12 @@ export function createResultSetData(overrides = {}) {
 }
 
 // Factory to create a result_set in the database for tests
-export async function createTestResultSet(overrides = {}) {
+export async function create(overrides: Parameters<typeof resultSetRepo.createResultSet>[1] = {}) {
 	const data = createResultSetData(overrides);
-	const resultSet = await db.resultSet.create(data);
-
-	return {
-		resultSetId: resultSet.id,
-		getResultSet: () => db.resultSet.findByPk(resultSet.id),
-	};
+	return await resultSetRepo.createResultSet(db, data);
 }
 
 export default {
 	createResultSetData,
-	createTestResultSet,
+	create,
 };

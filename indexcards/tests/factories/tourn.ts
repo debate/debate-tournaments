@@ -3,7 +3,7 @@ import { fakeTournName, toWebName, noMs } from './factoryUtils.js';
 import tournRepo from '../../api/repos/tournRepo.js';
 import { db } from '../../api/data/database.js';
 import factories from './index.js';
-import type { Tourn, Event, Timeslot, Round } from '../../api/data/schema.js';
+import type { Tourn, Event, Timeslot } from '../../api/data/schema.js';
 import type { Settings } from '../../api/repos/utils/settings.js';
 import type { Insertable } from 'kysely';
 
@@ -49,7 +49,7 @@ export async function create(overrides: Partial<Insertable<Tourn>> & { circuit?:
 type FullTournOverrides = Partial<Insertable<Tourn>> & {
 	Event?: Partial<Insertable<Event>>;
 	Timeslot?: Partial<Insertable<Timeslot>>;
-	Round?: Partial<Insertable<Round>>;
+	Round?: Parameters<typeof factories.round.create>[0];
 };
 //create a full test tourn with category, event and the like
 export async function createFull(overrides: FullTournOverrides = {}){
@@ -57,7 +57,7 @@ export async function createFull(overrides: FullTournOverrides = {}){
 	const data = createTournData(tournOverrides);
 	const tourn = await tournRepo.createTourn(db, data);
 	const Category = await factories.category.create({ tourn: tourn.id });
-	const CreatedEvent = await factories.event.create({ Event, category: Category.id });
+	const CreatedEvent = await factories.event.create({ ...Event, category: Category.id });
 	const CreatedTimeslot = await factories.timeslot.create(Timeslot);
 	const CreatedRound = await factories.round.create({
 		event: CreatedEvent.id,
@@ -65,6 +65,7 @@ export async function createFull(overrides: FullTournOverrides = {}){
 		...Round,
 		settings: {
 			judges_ballots_visible: 1,
+			...Round?.settings,
 		},
 	});
 	return {
