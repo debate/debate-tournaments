@@ -29,7 +29,7 @@ describe('buildTarget', () => {
 		expect(targetCache.get('tourn:456')).toEqual(result);
 	});
 	it('target for category resource sets tournId and circuitIds', async () => {
-		vi.spyOn(categoryRepo, 'getCategory').mockResolvedValueOnce({ tourn: 1 });
+		vi.spyOn(categoryRepo, 'getCategory').mockResolvedValueOnce({ tourn: 1 } as Awaited<ReturnType<typeof categoryRepo.getCategory>>);
 
 		const result = await buildTarget('category', 456, targetCache);
 
@@ -44,7 +44,7 @@ describe('buildTarget', () => {
 		vi.spyOn(eventRepo, 'getEvent').mockResolvedValueOnce({
 			tourn: 1,
 			category: 10,
-		});
+		} as Awaited<ReturnType<typeof eventRepo.getEvent>>);
 
 		const result = await buildTarget('event', 456, targetCache);
 

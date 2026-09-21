@@ -3,14 +3,6 @@ import eventRepo from '../../repos/eventRepo.js';
 import { db } from '../../data/database.js';
 import type { Request, Response, NextFunction } from 'express';
 
-export type Perm = {
-	scope: string;
-	id: number;
-	role: string;
-	categoryId?: number;
-	tournId?: number;
-}
-
 export async function loadTournAuthContext(req: Request, res: Response, next: NextFunction, tournId: string){
 	req.auth = {
 		...req.auth,

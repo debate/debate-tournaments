@@ -1,6 +1,7 @@
-import { buildTarget } from './buildTarget.js';
+import { buildTarget, type Target } from './buildTarget.js';
 import { Unauthorized, Forbidden, NotImplemented } from '../../helpers/problem.js';
 import type { Request, Response, NextFunction } from 'express';
+import type { AuthError, Perm } from './types.js';
 //requires login - use before any route that needs authentication
 export function requireLogin(req: Request, res: Response, next: NextFunction) {
 	if (!req.actor || req.actor.type === 'anonymous') {
@@ -43,8 +44,8 @@ export function requireAccess(resource: string, action: string) {
 			await req.actor.assert(resource, action, resourceId);
 			next();
 		}
-		catch(err){
-			if (err.code === 'AUTH_FORBIDDEN'){
+		catch(err: unknown){
+			if (err instanceof Error && (err as AuthError).code === 'AUTH_FORBIDDEN'){
 				return Forbidden(req, res,`You do not have permission to ${action} on ${resource}: ${resourceId}`);
 			}
 			return next(err);
@@ -70,7 +71,7 @@ export function createActor(req: Request) {
 		type: 'anonymous' as const,
 		can: async () => false,
 		assert: async () => {
-			const err = new Error('Forbidden');
+			const err = new Error('Forbidden') as AuthError;
 			err.status = 403;
 			err.code = 'AUTH_FORBIDDEN';
 			throw err;
@@ -113,7 +114,7 @@ function createAuthContext(req: Request) {
 			resource,
 			action,
 			target,
-			req.auth?.perms
+			req.auth?.perms ?? [],
 		);
 
 		permCache.set(permKey, result);
@@ -125,7 +126,7 @@ function createAuthContext(req: Request) {
 		const ok = await can(resource, action, resourceId);
 
 		if (!ok) {
-			const err = new Error('Forbidden');
+			const err = new Error('Forbidden') as AuthError;
 			err.status = 403;
 			err.code = 'AUTH_FORBIDDEN';
 			throw err;
@@ -159,7 +160,15 @@ function createAuthContext(req: Request) {
 	};
 }
 
-const ROLES = {
+type RoleDef = {
+	description: string;
+	permissions: {
+		actions: string[];
+		notActions?: string[];
+	}[];
+	parentAccess?: Record<string, string[]>;
+};
+const ROLES: Record<string, RoleDef> = {
 	owner: {
 		description: 'Resource Owner - full access to resource and its children',
 		permissions: [
@@ -229,7 +238,7 @@ const ROLES = {
  * Note: category and event are siblings under tourn, not parent-child (no inheritance)
  * but event can access category resources via parentAccess
  */
-const CHILDREN = {
+const CHILDREN: Record<string, string[]> = {
 	tourn: ['category', 'event', 'timeslot'],   // Tourn has these direct children
 	category: ['jpool'],            // Category has jpools as children
 	event: ['round'],               // Event has these direct children
@@ -240,9 +249,8 @@ const CHILDREN = {
  * read > check
  *
  * Example: If a user has 'read' permission, they can also perform 'check' actions.
- * If denied 'read', they're also denied 'check'.
  */
-const ACTION_HIERARCHY = {
+const ACTION_HIERARCHY: Record<string, string[]> = {
 	read: ['check'],
 };
 
@@ -266,14 +274,14 @@ function getActionChain(action: string) {
 	return chain;
 }
 
-export function checkAccess(resource: string, action: string, target: any, perms: any[]){
+export function checkAccess(resource: string, action: string, target: Target, perms: Perm[]){
 
 	if (!perms || !Array.isArray(perms)) return false;
 
 	return perms.some(perm => hasPermissionForResource(resource, action, target, perm));
 }
 
-function hasPermissionForResource(resource: string, action: string, target: any, perm: any, visited = new Set(), targetResource = resource) {
+function hasPermissionForResource(resource: string, action: string, target: Target, perm: Perm, visited = new Set(), targetResource = resource) {
 	const roleDef = ROLES[perm.role];
 	if (!roleDef) {
 		throw new Error(`Role definition for '${perm.role}' is not implemented`);
@@ -298,7 +306,9 @@ function hasPermissionForResource(resource: string, action: string, target: any,
 	for (const parent of Object.keys(CHILDREN)) {
 		if (!CHILDREN[parent].includes(resource)) continue;
 
-		const parentIdKey = parent + (Array.isArray(target[parent + 'Ids']) ? 'Ids' : 'Id');
+		const idsKey = parent + 'Ids' as keyof Target;
+
+		const parentIdKey = parent + (Array.isArray(target[idsKey]) ? 'Ids' : 'Id') as keyof Target;
 		const parentIds = Array.isArray(target[parentIdKey]) ? target[parentIdKey] : [target[parentIdKey]];
 
 		for (const id of parentIds) {
@@ -325,8 +335,13 @@ function hasPermissionForResource(resource: string, action: string, target: any,
 	// Check parentAccess - child scope can access parent resources
 	if (roleDef.parentAccess) {
 		for (const [parentScope, allowedActions] of Object.entries(roleDef.parentAccess)) {
-			const parentIdAttr = parentScope + 'Id';
-			if (perm[parentIdAttr] && target[parentIdAttr] && perm[parentIdAttr] === target[parentIdAttr]) {
+			const parentIdAttr = `${parentScope}Id` as keyof Perm & keyof Target;
+
+			if (
+				perm[parentIdAttr] &&
+				target[parentIdAttr] &&
+				perm[parentIdAttr] === target[parentIdAttr]
+			) {
 				if (allowedActions.some(pattern => actionMatches(pattern, targetResource, action))) {
 					return true;
 				}
@@ -355,7 +370,7 @@ function actionMatches(pattern: string, resource: string, action: string) {
 	return false;
 }
 
-function roleAllowsAction(roleDef: any, resource: string, action: string) {
+function roleAllowsAction(roleDef: RoleDef, resource: string, action: string) {
 	for (const p of roleDef.permissions) {
 		if (p.notActions?.some(pattern => actionMatches(pattern, resource, action))) {
 			continue;
@@ -367,7 +382,7 @@ function roleAllowsAction(roleDef: any, resource: string, action: string) {
 	return false;
 }
 
-function getAllowedResourceIds(resource: string, action: string, perms: any[], opts: Record<string, unknown> = {}) {
+function getAllowedResourceIds(resource: string, action: string, perms: Perm[], opts: Record<string, unknown> = {}) {
 	const ids = new Set<number>();
 	let hasFullAccess = false;
 
@@ -400,12 +415,12 @@ function getAllowedResourceIds(resource: string, action: string, perms: any[], o
 				if (resource === parentScope || (CHILDREN[parentScope]?.includes(resource))) {
 					if (allowedActions.some(pattern => actionMatches(pattern, resource, action))) {
 						// This child perm grants access to parent's resources
-						const parentIdAttr = parentScope + 'Id';
+						const parentIdAttr = parentScope + 'Id' as keyof Perm;
 						if (perm[parentIdAttr]) {
 							// For resources under the parent scope, we'd need full access flag
 							// For simplicity, mark as partial access requiring filtering
 							if (resource === parentScope) {
-								ids.add(perm[parentIdAttr]);
+								ids.add(perm[parentIdAttr] as number);
 							}
 						}
 					}

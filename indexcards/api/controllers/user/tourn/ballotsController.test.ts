@@ -1,6 +1,6 @@
 import con from './ballotsController.js';
 import panelRepo from '../../../repos/panelRepo.js';
-import { createContext } from '../../../../tests/httpMocks.js';
+import { createPersonContext } from '../../../../tests/httpMocks.js';
 
 vi.mock('../../../repos/panelRepo.js');
 
@@ -14,13 +14,13 @@ describe('getCurrent', () => {
 		vi.spyOn(panelRepo, 'getCurrentBallots').mockResolvedValueOnce(mockBallots);
 
 		// Mock request and response
-		const {req, res } = createContext({ actor: { Person: { 
+		const {req, res } = createPersonContext({
 			id: 123,
 			first: 'Test',
 			last: 'User',
 			email: 'test@example.com',	
 			site_admin: 0,
-		} } });
+		 });
 
 		// Call the controller function
 		await con.getCurrent(req, res);
@@ -76,7 +76,7 @@ describe('getCurrent', () => {
 		vi.spyOn(panelRepo, 'getCurrentBallots').mockResolvedValueOnce(mockBallots);
 
 		// Mock request and response
-		const {req, res } = createContext({ actor: { Person: { id: 123 } } });
+		const {req, res } = createPersonContext({ id: 123, first: 'Test', last: 'User', email: 'test@example.com', site_admin: 0 },{});
 
 		// Call the controller function
 		await con.getCurrent(req, res);

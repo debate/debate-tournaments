@@ -25,7 +25,7 @@ describe('GET /user/tourns/{tournId}/ballots/current', () => {
 		expect(res.body).toMatchSchema(z.array(CurrentBallotSchema));
 	});
 	it('Does not return ballots for unpublished rounds or rounds with judges_ballots_visible set to false', async () => {
-		const { Tourn } = await factories.person.createBallot({person: personId, Round: { published: false} });
+		const { Tourn } = await factories.person.createBallot({person: personId, Round: { published: 0 } });
 		const res = await request(server)
 			.get(`/v1/user/tourns/${Tourn.id}/ballots/current`)
 			.set('Accept', 'application/json')
@@ -36,7 +36,7 @@ describe('GET /user/tourns/{tournId}/ballots/current', () => {
 		expect(res.body).toMatchSchema(z.array(CurrentBallotSchema));
 		expect(res.body).toHaveLength(0);
 
-		const { Tourn: Tourn2 } = await factories.person.createBallot({person: personId, Round: { settings: { judges_ballots_visible: false } } });
+		const { Tourn: Tourn2 } = await factories.person.createBallot({person: personId, Round: { settings: { judges_ballots_visible: 0 } } });
 		const res2 = await request(server)
 			.get(`/v1/user/tourns/${Tourn2.id}/ballots/current`)
 			.set('Accept', 'application/json')

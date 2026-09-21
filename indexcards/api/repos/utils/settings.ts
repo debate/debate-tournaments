@@ -1,4 +1,4 @@
-import { sql, type AliasedRawBuilder } from 'kysely';
+import { sql } from 'kysely';
 
 import type { Database } from '../../data/database.js';
 /** Possible types for a setting value. Can be a string, a Date, an object, or null.*/

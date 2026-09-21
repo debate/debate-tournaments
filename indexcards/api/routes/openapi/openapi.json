@@ -4134,66 +4134,6 @@
           }
         ]
       },
-      "TournRequestSchema": {
-        "type": "object",
-        "description": "A request to create or update a Tournament",
-        "properties": {
-          "name": {
-            "type": "string",
-            "description": "The name of the tournament",
-            "example": "National Speech & Debate Tournament"
-          },
-          "city": {
-            "type": "string",
-            "description": "The city where the tournament is held",
-            "example": "Phoenix/Mesa"
-          },
-          "state": {
-            "type": "string",
-            "description": "The state where the tournament is held",
-            "example": "AZ"
-          },
-          "country": {
-            "type": "string",
-            "description": "The country where the tournament is held",
-            "example": "US"
-          },
-          "tz": {
-            "type": "string",
-            "description": "The IANA timezone of the tournament location",
-            "example": "America/Chicago"
-          },
-          "webname": {
-            "type": "string",
-            "description": "The web name of the tournament",
-            "example": "nationals"
-          },
-          "start": {
-            "type": "string",
-            "format": "date-time",
-            "description": "The start date and time of the tournament",
-            "example": "2023-06-11T15:00:00.000Z"
-          },
-          "end": {
-            "type": "string",
-            "format": "date-time",
-            "description": "The end date and time of the tournament",
-            "example": "2023-06-17T05:00:00.000Z"
-          },
-          "regStart": {
-            "type": "string",
-            "format": "date-time",
-            "description": "The registration start date and time of the tournament",
-            "example": "2023-03-15T13:00:00.000Z"
-          },
-          "regEnd": {
-            "type": "string",
-            "format": "date-time",
-            "description": "The registration end date and time of the tournament",
-            "example": "2023-06-02T06:59:00.000Z"
-          }
-        }
-      },
       "UpdateSchoolSchema": {
         "type": "object",
         "properties": {
@@ -5248,7 +5188,7 @@
           "published": {
             "type": "boolean"
           },
-          "pageOrder": {
+          "page_order": {
             "anyOf": [
               {
                 "type": "integer",
@@ -5272,7 +5212,7 @@
               }
             ]
           },
-          "updatedAt": {
+          "timestamp": {
             "type": "string",
             "format": "date-time",
             "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
@@ -5285,9 +5225,9 @@
           "label",
           "filename",
           "published",
-          "pageOrder",
+          "page_order",
           "uploaded",
-          "updatedAt"
+          "timestamp"
         ],
         "additionalProperties": false
       },
@@ -5791,14 +5731,10 @@
             "type": "string"
           },
           "start": {
-            "type": "string",
-            "format": "date-time",
-            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+            "type": "string"
           },
           "end": {
-            "type": "string",
-            "format": "date-time",
-            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+            "type": "string"
           },
           "tz": {
             "type": "string",
@@ -6371,24 +6307,16 @@
             "type": "boolean"
           },
           "start": {
-            "type": "string",
-            "format": "date-time",
-            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+            "type": "string"
           },
           "end": {
-            "type": "string",
-            "format": "date-time",
-            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+            "type": "string"
           },
           "regStart": {
-            "type": "string",
-            "format": "date-time",
-            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+            "type": "string"
           },
           "regEnd": {
-            "type": "string",
-            "format": "date-time",
-            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+            "type": "string"
           }
         },
         "required": [
@@ -7450,6 +7378,78 @@
           "start",
           "end",
           "tourn"
+        ],
+        "additionalProperties": false
+      },
+      "TournRequest": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 63
+          },
+          "city": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 31
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "state": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 6
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "country": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 4
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "tz": {
+            "type": "string",
+            "maxLength": 31
+          },
+          "webname": {
+            "type": "string"
+          },
+          "start": {
+            "type": "string"
+          },
+          "end": {
+            "type": "string"
+          },
+          "reg_start": {
+            "type": "string"
+          },
+          "reg_end": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "city",
+          "state",
+          "country",
+          "tz",
+          "webname",
+          "start",
+          "end"
         ],
         "additionalProperties": false
       }

@@ -68,7 +68,7 @@ describe('createCategory', () => {
 		const withSettings = await categoryRepo.getCategory(db, result.id, { settings: true });
 		expect(withSettings).toBeDefined();
 		expect(withSettings?.name).toBe(categoryData.name);
-		expect(withSettings?.settings.someSetting).toEqual('value');
+		expect(withSettings?.settings?.someSetting).toEqual('value');
 	});
 });
 describe('updateCategory', () => {

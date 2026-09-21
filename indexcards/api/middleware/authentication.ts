@@ -88,7 +88,7 @@ export async function Authenticate(req: Request, res: Response, next: NextFuncti
 				id       : null,
 				person  : extPerson.id,
 				su       : null,
-				Su: undefined,
+				Su: null,
 				Person   : extPerson
 			};
 		}

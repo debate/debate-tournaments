@@ -18,6 +18,10 @@ function buildPersonQuizQuery(db: Database, opts: queryOpts = {}) {
 	return query;
 }
 
+async function getPersonQuiz(db: Database,id:number, opts: queryOpts = {}) {
+	return await buildPersonQuizQuery(db, opts).where('id', '=', id).executeTakeFirst();
+} 
+
 async function createPersonQuiz(db: Database, data: Insertable<PersonQuiz>) {
 	return await db.insertInto('person_quiz')
 	.values(data)
@@ -27,4 +31,5 @@ async function createPersonQuiz(db: Database, data: Insertable<PersonQuiz>) {
 
 export default {
 	createPersonQuiz,
+	getPersonQuiz,
 };

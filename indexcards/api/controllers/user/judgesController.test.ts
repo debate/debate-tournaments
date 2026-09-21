@@ -1,7 +1,6 @@
 import con from './judgesController.js';
 import judgeRepo from '../../repos/judgeRepo.js';
 import tabroomRepo from '../../repos/tabroomRepo.js';
-import personRepo from '../../repos/personRepo.js';
 import changeLogRepo from '../../repos/changeLogRepo.js';
 import { UnlinkedJudgeSchema } from '@tabroom/types';
 import { createPersonContext } from '../../../tests/httpMocks.js';

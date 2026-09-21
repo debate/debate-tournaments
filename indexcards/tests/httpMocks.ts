@@ -17,7 +17,8 @@ export function createPersonContext(
 				last: person.last,
 				email: person.email,
 				site_admin: person.site_admin
-			}
+			},
+			Su: null,
 		},
 		...reqOverrides,
 	};
