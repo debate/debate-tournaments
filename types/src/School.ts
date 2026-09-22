@@ -1,133 +1,38 @@
 import type { ZodOpenApiSchemaObject } from 'zod-openapi';
+import { z } from 'zod';
+import { datetime } from './utils.js';
 
-export const SchoolSchema = {
-	type: 'object',
-	properties: {
-		id: {
-			type: 'integer',
-			readOnly: true,
-			description: 'Unique identifier for the school',
-		},
-		name: {
-			type: 'string',
-			description: 'Name of the school',
-		},
-		code: {
-			type: 'string',
-			description: 'School code',
-		},
-		onsite: {
-			type: 'boolean',
-			description: 'Whether the school is onsite',
-		},
-		tournId: {
-			type: 'integer',
-			description: 'Tournament ID',
-		},
-		chapterId: {
-			type: 'integer',
-			description: 'Chapter ID',
-		},
-		state: {
-			type: 'string',
-			description: 'State abbreviation',
-		},
-		regionId: {
-			type: 'integer',
-			description: 'Region ID',
-		},
-		districtId: {
-			type: 'integer',
-			description: 'District ID',
-		},
-		updatedAt: {
-			type: 'string',
-			readOnly: true,
-			format: 'date-time',
-			description: 'Last modified timestamp',
-		},
-		createdAt: {
-			type        : 'string',
-			readOnly    : true,
-			format      : 'date-time',
-			description : 'Creation timestamp',
-		},
-		Chapter: {
-			$ref: '#/components/schemas/Chapter',
-		},
-		Entries: {
-			type: 'array',
-			items: { $ref: '#/components/schemas/Entry' },
-		},
-		Judges: {
-			type: 'array',
-			items: { $ref: '#/components/schemas/Judge' },
-		},
-		settings  : { type : 'object', additionalProperties: { type: ['string', 'integer', 'boolean'] } } ,
-		metadata  : { type : 'object', additionalProperties: { type: ['string', 'integer', 'boolean'] } } ,
-	},
-	additionalProperties: false,
-	examples: [
-		{
-			id: 1985,
-			name: 'Shermer High School',
-			code: 'SHS',
-			onsite: true,
-			tournId: 123,
-			chapterId: 456,
-			state: 'IL',
-			regionId: 789,
-			districtId: 987,
-			settings: { allowGuests: true },
-			updatedAt: '2024-01-15T12:34:56Z',
-			createdAt: '2023-09-01T08:00:00Z',
-		},
-	],
-} as const satisfies ZodOpenApiSchemaObject;
-export const CreateSchoolSchema = {
-	type: 'object',
-	required: ['chapterId'],
-	properties: {
-		name: { type: 'string', description: 'Name of the school' },
-		code: { type: 'string', description: 'SchoolSchema code' },
-		onsite: { type: 'boolean', description: 'Whether the school is onsite' },
-		chapterId: { type: 'integer', description: 'Chapter ID' },
-		state: { type: 'string', description: 'State abbreviation' },
-		regionId: { type: 'integer', description: 'Region ID' },
-		settings: { type: 'object', description: 'SchoolSchema settings object' },
-	},
-	additionalProperties: false,
-	examples: [
-		{
-			name: 'Shermer High SchoolSchema',
-			code: 'SHS',
-			onsite: true,
-			chapterId: 456,
-			state: 'IL',
-			regionId: 789,
-			settings: { allowGuests: true },
-		},
-	],
-} as const satisfies ZodOpenApiSchemaObject;
-export const UpdateSchoolSchema = {
-	type: 'object',
-	properties: {
-		name: { type: 'string', description: 'Name of the school' },
-		code: { type: 'string', description: 'SchoolSchema code' },
-		onsite: { type: 'boolean', description: 'Whether the school is onsite' },
-		state: { type: 'string', description: 'State abbreviation' },
-		regionId: { type: 'integer', description: 'Region ID' },
-		settings: { type: 'object', description: 'SchoolSchema settings object' },
-	},
-	additionalProperties: false,
-	examples: [
-		{
-			name: 'Shermer High SchoolSchema',
-			code: 'SHS',
-			onsite: true,
-			state: 'IL',
-			regionId: 789,
-			settings: { allowGuests: true },
-		},
-	],
-} as const satisfies ZodOpenApiSchemaObject;
+export const SchoolSchema = z.object({
+	id: z.number().int(),
+	name: z.string(),
+	code: z.string(),
+	onsite: z.boolean(),
+	tournId: z.number().int(),
+	chapterId: z.number().int(),
+	state: z.string(),
+	regionId: z.number().int(),
+	districtId: z.number().int(),
+	updatedAt: datetime(),
+	createdAt: datetime(),
+	settings: z.record(z.string(), z.string()),
+	metadata: z.record(z.string(), z.string()),
+}) satisfies ZodOpenApiSchemaObject;
+
+export const CreateSchoolSchema = z.object({
+	name: z.string().optional(),
+	code: z.string().optional(),
+	onsite: z.boolean().optional(),
+	chapterId: z.number().int(),
+	state: z.string().optional(),
+	regionId: z.number().int().optional(),
+	settings: z.record(z.string(), z.string()).optional(),
+}) satisfies ZodOpenApiSchemaObject;
+
+export const UpdateSchoolSchema = z.object({
+	name: z.string(),
+	code: z.string(),
+	onsite: z.boolean(),
+	state: z.string(),
+	regionId: z.number().int(),
+	settings: z.record(z.string(), z.string()),
+}) satisfies ZodOpenApiSchemaObject;

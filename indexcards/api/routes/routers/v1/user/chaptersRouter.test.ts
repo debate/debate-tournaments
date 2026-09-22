@@ -7,12 +7,13 @@ import factories from '../../../../../tests/factories/index.js';
 
 let userkey: string, personId: number, chapterId: number;
 beforeAll(async () => {
-	const session = await factories.session.createTestSession();
-	({ chapterId } = await factories.chapter.create());
+	const session = await factories.session.create();
+	const Chapter = await factories.chapter.create();
 	userkey = session.userkey;
-	personId = session.personId;
+	personId = session.person;
+	chapterId = Chapter.id;
 	await factories.permission.create({
-		chapter : chapterId,
+		chapter : Chapter.id,
 		person  : personId,
 		tag     : 'chapter',
 	});

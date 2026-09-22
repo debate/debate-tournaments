@@ -1,0 +1,66 @@
+
+import permissionRepo from './permissionRepo.js';
+import { db } from '../data/database.js';
+import factories from '../../tests/factories/index.js';
+
+let Person = await factories.person.create();
+beforeAll(async () => {
+	Person = await factories.person.create();
+});
+
+describe('getPermission', () => {
+	it('should return a permission for a given id', async () => {
+		const permissionId = await permissionRepo.createPermission(db,{ person: Person.id, tag: 'chapter' });
+		const permission = await permissionRepo.getPermission(db, permissionId);
+		expect(permission).toBeDefined();
+		expect(permission?.id).toBe(permissionId);
+		expect(permission?.person).toBe(Person.id);
+	});
+});
+describe('getPermissions', () => {
+	it('should return permissions for a given personId', async () => {
+		const permissionId = await permissionRepo.createPermission(db, { person: Person.id, tag: 'chapter' });
+		const permissions = await permissionRepo.getPermissions(db, { person: Person.id });
+		expect(Array.isArray(permissions)).toBe(true);
+		expect(permissions.length).toBeGreaterThan(0);
+		const found = permissions.find(b => b.id === permissionId);
+		expect(found).toBeDefined();
+		expect(found?.person).toBe(Person.id);
+	});
+
+	it('should return permissions for a given tournId', async () => {
+		const tourn = await factories.tourn.createFull();
+		const permissionId = await permissionRepo.createPermission(db, { person: Person.id, tourn: tourn.Tourn.id, tag: 'owner' });
+		const permissions = await permissionRepo.getPermissions(db, { tourn: tourn.Tourn.id });
+		expect(Array.isArray(permissions)).toBe(true);
+		expect(permissions.length).toBeGreaterThan(0);
+		const found = permissions.find(b => b.id === permissionId);
+		expect(found).toBeDefined();
+		expect(found?.tourn).toBe(tourn.Tourn.id);
+	});
+	it('should return permissions for a given chapterId', async () => {
+		const Chapter = await factories.chapter.create();
+		const permissionId = await permissionRepo.createPermission(db, { person: Person.id, chapter: Chapter.id, tag: 'owner' });
+		const permissions = await permissionRepo.getPermissions(db, { chapter: Chapter.id });
+		expect(Array.isArray(permissions)).toBe(true);
+		expect(permissions.length).toBeGreaterThan(0);
+		const found = permissions.find(b => b.id === permissionId);
+		expect(found).toBeDefined();
+		expect(found?.chapter).toBe(Chapter.id);
+	});
+});
+describe('createPermission', () => {
+	it('should create a permission and retrieve it', async () => {
+		const permissionId = await permissionRepo.createPermission(db, { 
+			person: Person.id,
+			tag: 'owner',
+		});
+		expect(permissionId).toBeDefined();
+		expect(typeof permissionId).toBe('number');
+		const permission = await permissionRepo.getPermission(db, permissionId);
+
+		//ensure that id, updatedAt and createdAt are present and not null
+		expect(permission).toHaveProperty('id');
+		expect(permission?.id).not.toBeNull();
+	});
+});

@@ -1592,7 +1592,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/TournInvite"
+                  "$ref": "#/components/schemas/TournInviteSchema"
                 }
               }
             }
@@ -1642,7 +1642,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/FileSchema"
+                    "$ref": "#/components/schemas/FileSchemaOutput"
                   }
                 }
               }
@@ -3426,55 +3426,6 @@
   },
   "components": {
     "schemas": {
-      "BackupRequestSchema": {
-        "type": "object",
-        "description": "A request to create a backup for a tournament or part of a tournament",
-        "required": [
-          "scope"
-        ],
-        "properties": {
-          "scope": {
-            "type": "object",
-            "description": "Defines what part of the tournament to back up",
-            "required": [
-              "type"
-            ],
-            "properties": {
-              "type": {
-                "type": "string",
-                "description": "The scope of the backup",
-                "enum": [
-                  "tournament",
-                  "category",
-                  "event",
-                  "school"
-                ]
-              },
-              "id": {
-                "type": "integer",
-                "description": "The ID of the category, event, or school being backed up (required when scope type is not \"tournament\")"
-              }
-            },
-            "additionalProperties": false
-          },
-          "options": {
-            "type": "object",
-            "description": "Optional flags that affect how the backup is generated",
-            "properties": {
-              "ignoreComments": {
-                "type": "boolean",
-                "description": "Exclude comments from the backup"
-              },
-              "ignoreBallots": {
-                "type": "boolean",
-                "description": "Exclude ballots from the backup"
-              }
-            },
-            "additionalProperties": false
-          }
-        },
-        "additionalProperties": false
-      },
       "CaselistLinkSchema": {
         "type": "object",
         "properties": {
@@ -3500,148 +3451,6 @@
             ]
           }
         }
-      },
-      "ContactSchema": {
-        "type": "object",
-        "description": "A tournament contact for a school",
-        "required": [
-          "id",
-          "schoolId",
-          "personId"
-        ],
-        "properties": {
-          "id": {
-            "type": "integer",
-            "example": 42
-          },
-          "schoolId": {
-            "type": "integer"
-          },
-          "personId": {
-            "type": "integer"
-          },
-          "official": {
-            "type": "boolean",
-            "description": "True if the contact is a designated official contact for the school"
-          },
-          "onsite": {
-            "type": "boolean",
-            "description": "True if the contact will be physically present at the tournament"
-          },
-          "email": {
-            "type": "boolean",
-            "description": "True if the contact should get mass emails for the school"
-          },
-          "book": {
-            "type": "boolean",
-            "description": "True if the contact should appear in the Nationals TBook"
-          },
-          "nsda": {
-            "type": "integer",
-            "description": "NSDA ID number of the contact if they are a coach"
-          },
-          "first": {
-            "type": "string",
-            "example": "John"
-          },
-          "middleName": {
-            "type": [
-              "string",
-              "null"
-            ],
-            "example": "Quincy"
-          },
-          "last": {
-            "type": "string",
-            "example": "Doe"
-          },
-          "state": {
-            "type": "string",
-            "example": "CA"
-          },
-          "country": {
-            "type": "string",
-            "example": "USA"
-          },
-          "tz": {
-            "type": "string",
-            "example": "America/Los_Angeles"
-          },
-          "createdAt": {
-            "type": "string",
-            "readOnly": true,
-            "format": "date-time",
-            "description": "Creation timestamp"
-          },
-          "settings": {
-            "type": "object",
-            "additionalProperties": {
-              "type": "string"
-            }
-          },
-          "metadata": {
-            "type": "object",
-            "additionalProperties": {
-              "type": "string"
-            }
-          },
-          "Person": {
-            "$ref": "#/components/schemas/Person"
-          },
-          "School": {
-            "$ref": "#/components/schemas/School"
-          }
-        }
-      },
-      "CreateSchoolSchema": {
-        "type": "object",
-        "required": [
-          "chapterId"
-        ],
-        "properties": {
-          "name": {
-            "type": "string",
-            "description": "Name of the school"
-          },
-          "code": {
-            "type": "string",
-            "description": "SchoolSchema code"
-          },
-          "onsite": {
-            "type": "boolean",
-            "description": "Whether the school is onsite"
-          },
-          "chapterId": {
-            "type": "integer",
-            "description": "Chapter ID"
-          },
-          "state": {
-            "type": "string",
-            "description": "State abbreviation"
-          },
-          "regionId": {
-            "type": "integer",
-            "description": "Region ID"
-          },
-          "settings": {
-            "type": "object",
-            "description": "SchoolSchema settings object"
-          }
-        },
-        "additionalProperties": false,
-        "examples": [
-          {
-            "name": "Shermer High SchoolSchema",
-            "code": "SHS",
-            "onsite": true,
-            "chapterId": 456,
-            "state": "IL",
-            "regionId": 789,
-            "settings": {
-              "allowGuests": true
-            }
-          }
-        ]
       },
       "EmailSchema": {
         "type": "object",
@@ -3717,182 +3526,6 @@
             ]
           }
         }
-      },
-      "NSDACategorySchema": {
-        "type": "object",
-        "required": [
-          "id",
-          "name",
-          "type",
-          "code"
-        ],
-        "properties": {
-          "id": {
-            "type": "integer"
-          },
-          "name": {
-            "type": "string"
-          },
-          "type": {
-            "type": "string"
-          },
-          "code": {
-            "type": "integer"
-          },
-          "nationals": {
-            "type": "boolean"
-          }
-        },
-        "examples": [
-          {
-            "id": 202,
-            "name": "Extemporaneous",
-            "type": "s",
-            "code": 202
-          }
-        ]
-      },
-      "ProblemSchema": {
-        "type": "object",
-        "additionalProperties": true,
-        "required": [
-          "type",
-          "title",
-          "status"
-        ],
-        "properties": {
-          "type": {
-            "type": "string",
-            "format": "uri",
-            "description": "A URI reference that identifies the problem type."
-          },
-          "title": {
-            "type": "string",
-            "description": "A short, human-readable summary of the problem type."
-          },
-          "status": {
-            "type": "integer",
-            "format": "int32",
-            "description": "The HTTP status code."
-          },
-          "detail": {
-            "type": "string",
-            "description": "Human-readable explanation of the error."
-          },
-          "instance": {
-            "type": "string",
-            "format": "uri",
-            "description": "A URI reference to the specific occurrence."
-          }
-        }
-      },
-      "SchoolSchema": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "integer",
-            "readOnly": true,
-            "description": "Unique identifier for the school"
-          },
-          "name": {
-            "type": "string",
-            "description": "Name of the school"
-          },
-          "code": {
-            "type": "string",
-            "description": "School code"
-          },
-          "onsite": {
-            "type": "boolean",
-            "description": "Whether the school is onsite"
-          },
-          "tournId": {
-            "type": "integer",
-            "description": "Tournament ID"
-          },
-          "chapterId": {
-            "type": "integer",
-            "description": "Chapter ID"
-          },
-          "state": {
-            "type": "string",
-            "description": "State abbreviation"
-          },
-          "regionId": {
-            "type": "integer",
-            "description": "Region ID"
-          },
-          "districtId": {
-            "type": "integer",
-            "description": "District ID"
-          },
-          "updatedAt": {
-            "type": "string",
-            "readOnly": true,
-            "format": "date-time",
-            "description": "Last modified timestamp"
-          },
-          "createdAt": {
-            "type": "string",
-            "readOnly": true,
-            "format": "date-time",
-            "description": "Creation timestamp"
-          },
-          "Chapter": {
-            "$ref": "#/components/schemas/Chapter"
-          },
-          "Entries": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/Entry"
-            }
-          },
-          "Judges": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/Judge"
-            }
-          },
-          "settings": {
-            "type": "object",
-            "additionalProperties": {
-              "type": [
-                "string",
-                "integer",
-                "boolean"
-              ]
-            }
-          },
-          "metadata": {
-            "type": "object",
-            "additionalProperties": {
-              "type": [
-                "string",
-                "integer",
-                "boolean"
-              ]
-            }
-          }
-        },
-        "additionalProperties": false,
-        "examples": [
-          {
-            "id": 1985,
-            "name": "Shermer High School",
-            "code": "SHS",
-            "onsite": true,
-            "tournId": 123,
-            "chapterId": 456,
-            "state": "IL",
-            "regionId": 789,
-            "districtId": 987,
-            "settings": {
-              "allowGuests": true
-            },
-            "updatedAt": "2024-01-15T12:34:56Z",
-            "createdAt": "2023-09-01T08:00:00Z"
-          }
-        ]
       },
       "SearchSchema": {
         "type": "object",
@@ -3974,364 +3607,6 @@
             "type": "string",
             "format": "date-time",
             "readOnly": true
-          }
-        }
-      },
-      "TimeslotRequestSchema": {
-        "type": "object",
-        "properties": {
-          "name": {
-            "type": "string"
-          },
-          "start": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "end": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "tournId": {
-            "type": "integer"
-          }
-        },
-        "required": [
-          "name",
-          "start",
-          "end",
-          "tournId"
-        ]
-      },
-      "TimeslotResponseSchema": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "integer"
-          },
-          "name": {
-            "type": "string"
-          },
-          "start": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "end": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "tournId": {
-            "type": "integer"
-          },
-          "updatedAt": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "createdAt": {
-            "type": "string",
-            "format": "date-time"
-          }
-        }
-      },
-      "TopicSchema": {
-        "type": "object",
-        "required": [
-          "id",
-          "tag",
-          "source",
-          "schoolYear",
-          "topicText"
-        ],
-        "properties": {
-          "id": {
-            "type": "integer"
-          },
-          "tag": {
-            "type": "string"
-          },
-          "source": {
-            "type": "string",
-            "enum": [
-              "NSDA",
-              "NCFL",
-              "CEDA",
-              "NFHS",
-              "CPFL",
-              "NFA",
-              "AFA"
-            ]
-          },
-          "schoolYear": {
-            "type": "integer"
-          },
-          "eventType": {
-            "type": "string"
-          },
-          "pattern": {
-            "type": "string"
-          },
-          "topicText": {
-            "type": "string"
-          },
-          "createdAt": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "createdBy": {
-            "$ref": "#/components/schemas/Person"
-          },
-          "Events": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/Event"
-            }
-          }
-        }
-      },
-      "TournContactSchema": {
-        "type": "object",
-        "description": "A tournament contact person",
-        "properties": {
-          "id": {
-            "type": "integer",
-            "description": "The unique identifier for the contact person",
-            "readOnly": true,
-            "example": 456
-          },
-          "first": {
-            "type": "string",
-            "description": "The first name of the contact person",
-            "example": "John"
-          },
-          "middle": {
-            "type": [
-              "string",
-              "null"
-            ],
-            "description": "The middle name of the contact person",
-            "example": "A."
-          },
-          "last": {
-            "type": "string",
-            "description": "The last name of the contact person",
-            "example": "Doe"
-          },
-          "email": {
-            "type": "string",
-            "format": "email",
-            "description": "The email address of the contact person",
-            "example": "johndoe@example.com"
-          }
-        }
-      },
-      "TournInviteSchema": {
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/Tourn"
-          },
-          {
-            "type": "object",
-            "properties": {
-              "Webpages": {
-                "type": "array",
-                "items": {
-                  "$ref": "#/components/schemas/Webpage"
-                }
-              },
-              "Files": {
-                "type": "array",
-                "items": {
-                  "$ref": "#/components/schemas/File"
-                }
-              },
-              "Events": {
-                "type": "array",
-                "items": {
-                  "$ref": "#/components/schemas/EventInviteSchema"
-                }
-              },
-              "Contacts": {
-                "type": "array",
-                "items": {
-                  "$ref": "#/components/schemas/TournContact"
-                }
-              }
-            }
-          }
-        ]
-      },
-      "TournRequestSchema": {
-        "type": "object",
-        "description": "A request to create or update a Tournament",
-        "properties": {
-          "name": {
-            "type": "string",
-            "description": "The name of the tournament",
-            "example": "National Speech & Debate Tournament"
-          },
-          "city": {
-            "type": "string",
-            "description": "The city where the tournament is held",
-            "example": "Phoenix/Mesa"
-          },
-          "state": {
-            "type": "string",
-            "description": "The state where the tournament is held",
-            "example": "AZ"
-          },
-          "country": {
-            "type": "string",
-            "description": "The country where the tournament is held",
-            "example": "US"
-          },
-          "tz": {
-            "type": "string",
-            "description": "The IANA timezone of the tournament location",
-            "example": "America/Chicago"
-          },
-          "webname": {
-            "type": "string",
-            "description": "The web name of the tournament",
-            "example": "nationals"
-          },
-          "start": {
-            "type": "string",
-            "format": "date-time",
-            "description": "The start date and time of the tournament",
-            "example": "2023-06-11T15:00:00.000Z"
-          },
-          "end": {
-            "type": "string",
-            "format": "date-time",
-            "description": "The end date and time of the tournament",
-            "example": "2023-06-17T05:00:00.000Z"
-          },
-          "regStart": {
-            "type": "string",
-            "format": "date-time",
-            "description": "The registration start date and time of the tournament",
-            "example": "2023-03-15T13:00:00.000Z"
-          },
-          "regEnd": {
-            "type": "string",
-            "format": "date-time",
-            "description": "The registration end date and time of the tournament",
-            "example": "2023-06-02T06:59:00.000Z"
-          }
-        }
-      },
-      "UpdateSchoolSchema": {
-        "type": "object",
-        "properties": {
-          "name": {
-            "type": "string",
-            "description": "Name of the school"
-          },
-          "code": {
-            "type": "string",
-            "description": "SchoolSchema code"
-          },
-          "onsite": {
-            "type": "boolean",
-            "description": "Whether the school is onsite"
-          },
-          "state": {
-            "type": "string",
-            "description": "State abbreviation"
-          },
-          "regionId": {
-            "type": "integer",
-            "description": "Region ID"
-          },
-          "settings": {
-            "type": "object",
-            "description": "SchoolSchema settings object"
-          }
-        },
-        "additionalProperties": false,
-        "examples": [
-          {
-            "name": "Shermer High SchoolSchema",
-            "code": "SHS",
-            "onsite": true,
-            "state": "IL",
-            "regionId": 789,
-            "settings": {
-              "allowGuests": true
-            }
-          }
-        ]
-      },
-      "WebpageSchema": {
-        "type": "object",
-        "description": "A webpage",
-        "properties": {
-          "id": {
-            "type": "integer",
-            "format": "int32",
-            "description": "Unique identifier",
-            "readOnly": true
-          },
-          "title": {
-            "type": [
-              "string",
-              "null"
-            ],
-            "maxLength": 63,
-            "description": "Title of the page"
-          },
-          "content": {
-            "type": [
-              "string",
-              "null"
-            ],
-            "description": "Page content"
-          },
-          "published": {
-            "type": "boolean",
-            "description": "Whether the page is published"
-          },
-          "sitewide": {
-            "type": "boolean",
-            "description": "Whether the page is visible sitewide"
-          },
-          "special": {
-            "type": [
-              "string",
-              "null"
-            ],
-            "maxLength": 15,
-            "description": "Special page identifier or mode"
-          },
-          "slug": {
-            "type": [
-              "string",
-              "null"
-            ],
-            "maxLength": 63,
-            "description": "page slug"
-          },
-          "pageOrder": {
-            "type": [
-              "integer",
-              "null"
-            ],
-            "format": "int16",
-            "description": "Ordering value for page display"
-          },
-          "parentId": {
-            "type": [
-              "integer",
-              "null"
-            ],
-            "format": "int32",
-            "description": "Parent page ID (for hierarchical pages)"
-          },
-          "updatedAt": {
-            "type": "string",
-            "format": "date-time",
-            "description": "Timestamp when the page was last modified",
-            "readOnly": true,
-            "example": "2023-10-26T15:51:32.000Z"
           }
         }
       },
@@ -4477,6 +3752,184 @@
           "name"
         ],
         "additionalProperties": false
+      },
+      "Event": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "maximum": 9007199254740991
+          },
+          "abbr": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "fee": {
+            "type": "number"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "debate",
+              "speech",
+              "mock_trial",
+              "congress",
+              "wsdc",
+              "wudc",
+              "attendee",
+              "academic"
+            ]
+          },
+          "categoryId": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "maximum": 9007199254740991
+          },
+          "settings": {
+            "type": "object",
+            "properties": {
+              "flight_offset": {
+                "anyOf": [
+                  {
+                    "type": "integer",
+                    "minimum": -9007199254740991,
+                    "maximum": 9007199254740991
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "online_mode": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "online_ballots": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "flight_offset",
+              "online_mode",
+              "online_ballots"
+            ]
+          },
+          "metadata": {
+            "type": "object",
+            "properties": {}
+          },
+          "nsdaCategoryId": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 9007199254740991
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "abbr",
+          "name",
+          "fee",
+          "type",
+          "categoryId",
+          "settings",
+          "metadata",
+          "nsdaCategoryId"
+        ]
+      },
+      "FileSchema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "maximum": 9007199254740991,
+            "description": "The unique identifier for the file"
+          },
+          "tag": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "type": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "label": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "filename": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 255
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "published": {
+            "type": "boolean"
+          },
+          "page_order": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "uploaded": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+          }
+        },
+        "required": [
+          "id",
+          "tag",
+          "type",
+          "label",
+          "filename",
+          "published",
+          "page_order",
+          "uploaded",
+          "timestamp"
+        ]
       },
       "LoginRequest": {
         "type": "object",
@@ -4848,6 +4301,137 @@
           "createdAt"
         ]
       },
+      "TournContactSchema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "first": {
+            "type": "string"
+          },
+          "middle": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "last": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+          }
+        },
+        "required": [
+          "id",
+          "first",
+          "middle",
+          "last",
+          "email"
+        ],
+        "additionalProperties": false
+      },
+      "WebpageSchema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "title": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 63
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "content": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "published": {
+            "type": "boolean"
+          },
+          "sitewide": {
+            "type": "boolean"
+          },
+          "special": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 15
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "slug": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 63
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "pageOrder": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "parentId": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "content",
+          "published",
+          "sitewide",
+          "special",
+          "slug",
+          "pageOrder",
+          "parentId",
+          "updatedAt"
+        ]
+      },
       "ActiveCircuitsResponseSchema": {
         "type": "array",
         "items": {
@@ -4982,14 +4566,10 @@
             "type": "boolean"
           },
           "start": {
-            "type": "string",
-            "format": "date-time",
-            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+            "type": "string"
           },
           "deadline": {
-            "type": "string",
-            "format": "date-time",
-            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+            "type": "string"
           },
           "roomId": {
             "anyOf": [
@@ -5236,90 +4816,6 @@
         ],
         "additionalProperties": false
       },
-      "FileSchema": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "integer",
-            "exclusiveMinimum": 0,
-            "maximum": 9007199254740991,
-            "description": "The unique identifier for the file"
-          },
-          "tag": {
-            "type": [
-              "string",
-              "null"
-            ]
-          },
-          "type": {
-            "type": [
-              "string",
-              "null"
-            ]
-          },
-          "label": {
-            "type": [
-              "string",
-              "null"
-            ]
-          },
-          "filename": {
-            "anyOf": [
-              {
-                "type": "string",
-                "maxLength": 255
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "published": {
-            "type": "boolean"
-          },
-          "pageOrder": {
-            "anyOf": [
-              {
-                "type": "integer",
-                "minimum": -9007199254740991,
-                "maximum": 9007199254740991
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "uploaded": {
-            "anyOf": [
-              {
-                "type": "string",
-                "format": "date-time",
-                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "updatedAt": {
-            "type": "string",
-            "format": "date-time",
-            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
-          }
-        },
-        "required": [
-          "id",
-          "tag",
-          "type",
-          "label",
-          "filename",
-          "published",
-          "pageOrder",
-          "uploaded",
-          "updatedAt"
-        ],
-        "additionalProperties": false
-      },
       "Fine": {
         "type": "object",
         "properties": {
@@ -5436,14 +4932,14 @@
             ],
             "description": "The URL associated with the message"
           },
-          "visibleAt": {
+          "visible_at": {
             "description": "The timestamp when the message became visible",
             "type": [
               "string",
               "null"
             ]
           },
-          "readAt": {
+          "read_at": {
             "description": "The timestamp when the message was read",
             "type": [
               "string",
@@ -5566,8 +5062,8 @@
           "subject",
           "body",
           "url",
-          "visibleAt",
-          "readAt",
+          "visible_at",
+          "read_at",
           "Tourn",
           "Sender",
           "Email"
@@ -5820,14 +5316,10 @@
             "type": "string"
           },
           "start": {
-            "type": "string",
-            "format": "date-time",
-            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+            "type": "string"
           },
           "end": {
-            "type": "string",
-            "format": "date-time",
-            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+            "type": "string"
           },
           "tz": {
             "type": "string",
@@ -5906,6 +5398,41 @@
         ],
         "additionalProperties": false,
         "description": "A summary of a tourn and a persons role in it for the user homepage"
+      },
+      "ProblemSchema": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "format": "uri",
+            "description": "A URI reference that identifies the problem type."
+          },
+          "title": {
+            "type": "string",
+            "description": "A short, human-readable summary of the problem type."
+          },
+          "status": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991,
+            "description": "The HTTP status code."
+          },
+          "detail": {
+            "description": "Human-readable explanation of the error.",
+            "type": "string"
+          },
+          "instance": {
+            "description": "A URI reference to the specific occurrence.",
+            "type": "string",
+            "format": "uri"
+          }
+        },
+        "required": [
+          "type",
+          "title",
+          "status"
+        ],
+        "additionalProperties": false
       },
       "RestCircuit": {
         "type": "object",
@@ -6156,7 +5683,32 @@
           "Su": {
             "anyOf": [
               {
-                "$ref": "#/components/schemas/PersonOutput"
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "integer",
+                    "exclusiveMinimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "email": {
+                    "type": "string",
+                    "format": "email",
+                    "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+                  },
+                  "first": {
+                    "type": "string"
+                  },
+                  "last": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "id",
+                  "email",
+                  "first",
+                  "last"
+                ],
+                "additionalProperties": false
               },
               {
                 "type": "null"
@@ -6164,7 +5716,32 @@
             ]
           },
           "Person": {
-            "$ref": "#/components/schemas/PersonOutput"
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 9007199254740991
+              },
+              "email": {
+                "type": "string",
+                "format": "email",
+                "pattern": "^(?!\\.)(?!.*\\.\\.)([A-Za-z0-9_'+\\-\\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+              },
+              "first": {
+                "type": "string"
+              },
+              "last": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "email",
+              "first",
+              "last"
+            ],
+            "additionalProperties": false
           }
         },
         "required": [
@@ -6294,6 +5871,118 @@
         ],
         "additionalProperties": false
       },
+      "TournInviteSchema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "maximum": 9007199254740991
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 63
+          },
+          "city": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 31
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "state": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 6
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "country": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 4
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "tz": {
+            "type": "string",
+            "maxLength": 31
+          },
+          "webname": {
+            "type": "string"
+          },
+          "hidden": {
+            "type": "boolean"
+          },
+          "start": {
+            "type": "string"
+          },
+          "end": {
+            "type": "string"
+          },
+          "regStart": {
+            "type": "string"
+          },
+          "regEnd": {
+            "type": "string"
+          },
+          "Webpages": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/WebpageSchemaOutput"
+            }
+          },
+          "Files": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FileSchemaOutput"
+            }
+          },
+          "Events": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EventOutput"
+            }
+          },
+          "Contacts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TournContactSchema"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "city",
+          "state",
+          "country",
+          "tz",
+          "webname",
+          "hidden",
+          "start",
+          "end",
+          "regStart",
+          "regEnd",
+          "Webpages",
+          "Files",
+          "Events",
+          "Contacts"
+        ],
+        "additionalProperties": false
+      },
       "Tourn": {
         "type": "object",
         "properties": {
@@ -6350,24 +6039,16 @@
             "type": "boolean"
           },
           "start": {
-            "type": "string",
-            "format": "date-time",
-            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+            "type": "string"
           },
           "end": {
-            "type": "string",
-            "format": "date-time",
-            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+            "type": "string"
           },
           "regStart": {
-            "type": "string",
-            "format": "date-time",
-            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+            "type": "string"
           },
           "regEnd": {
-            "type": "string",
-            "format": "date-time",
-            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+            "type": "string"
           }
         },
         "required": [
@@ -6664,6 +6345,188 @@
         ],
         "additionalProperties": false,
         "description": "A user's relation to a chapter, including their permission level"
+      },
+      "EventOutput": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "maximum": 9007199254740991
+          },
+          "abbr": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "fee": {
+            "type": "number"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "debate",
+              "speech",
+              "mock_trial",
+              "congress",
+              "wsdc",
+              "wudc",
+              "attendee",
+              "academic"
+            ]
+          },
+          "categoryId": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "maximum": 9007199254740991
+          },
+          "settings": {
+            "type": "object",
+            "properties": {
+              "flight_offset": {
+                "anyOf": [
+                  {
+                    "type": "integer",
+                    "minimum": -9007199254740991,
+                    "maximum": 9007199254740991
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "online_mode": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "online_ballots": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "flight_offset",
+              "online_mode",
+              "online_ballots"
+            ],
+            "additionalProperties": false
+          },
+          "metadata": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": false
+          },
+          "nsdaCategoryId": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 9007199254740991
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "abbr",
+          "name",
+          "fee",
+          "type",
+          "categoryId",
+          "settings",
+          "metadata",
+          "nsdaCategoryId"
+        ],
+        "additionalProperties": false
+      },
+      "FileSchemaOutput": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "maximum": 9007199254740991,
+            "description": "The unique identifier for the file"
+          },
+          "tag": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "type": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "label": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "filename": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 255
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "published": {
+            "type": "boolean"
+          },
+          "page_order": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "uploaded": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+          }
+        },
+        "required": [
+          "id",
+          "tag",
+          "type",
+          "label",
+          "filename",
+          "published",
+          "page_order",
+          "uploaded",
+          "timestamp"
+        ],
+        "additionalProperties": false
       },
       "PersonQuizOutput": {
         "type": "object",
@@ -6962,6 +6825,146 @@
         ],
         "additionalProperties": false
       },
+      "WebpageSchemaOutput": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "title": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 63
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "content": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "published": {
+            "type": "boolean"
+          },
+          "sitewide": {
+            "type": "boolean"
+          },
+          "special": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 15
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "slug": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 63
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "pageOrder": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "parentId": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "updatedAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "content",
+          "published",
+          "sitewide",
+          "special",
+          "slug",
+          "pageOrder",
+          "parentId",
+          "updatedAt"
+        ],
+        "additionalProperties": false
+      },
+      "BackupRequest": {
+        "type": "object",
+        "properties": {
+          "scope": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "tournament",
+                  "category",
+                  "event",
+                  "school"
+                ]
+              },
+              "id": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              }
+            },
+            "required": [
+              "type"
+            ],
+            "additionalProperties": false
+          },
+          "options": {
+            "type": "object",
+            "properties": {
+              "ignoreComments": {
+                "type": "boolean"
+              },
+              "ignoreBallots": {
+                "type": "boolean"
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "scope"
+        ],
+        "additionalProperties": false,
+        "description": "A request to create a backup for a tournament or part of a tournament"
+      },
       "Ballot": {
         "type": "object",
         "properties": {
@@ -7052,6 +7055,147 @@
         ],
         "additionalProperties": false
       },
+      "ContactSchema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "schoolId": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "personId": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "official": {
+            "type": "boolean"
+          },
+          "onsite": {
+            "type": "boolean"
+          },
+          "email": {
+            "type": "boolean"
+          },
+          "book": {
+            "type": "boolean"
+          },
+          "nsda": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "first": {
+            "type": "string"
+          },
+          "middleName": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "last": {
+            "type": "string"
+          },
+          "state": {
+            "type": "string"
+          },
+          "country": {
+            "type": "string"
+          },
+          "tz": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "settings": {
+            "type": "object",
+            "propertyNames": {
+              "type": "string"
+            },
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "metadata": {
+            "type": "object",
+            "propertyNames": {
+              "type": "string"
+            },
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "Person": {
+            "$ref": "#/components/schemas/PersonOutput"
+          }
+        },
+        "required": [
+          "id",
+          "schoolId",
+          "personId",
+          "official",
+          "onsite",
+          "email",
+          "book",
+          "first",
+          "last",
+          "state",
+          "country",
+          "tz",
+          "createdAt",
+          "settings",
+          "metadata",
+          "Person"
+        ],
+        "additionalProperties": false
+      },
+      "CreateSchoolSchema": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string"
+          },
+          "onsite": {
+            "type": "boolean"
+          },
+          "chapterId": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "state": {
+            "type": "string"
+          },
+          "regionId": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "settings": {
+            "type": "object",
+            "propertyNames": {
+              "type": "string"
+            },
+            "additionalProperties": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "chapterId"
+        ],
+        "additionalProperties": false
+      },
       "Entry": {
         "type": "object",
         "properties": {
@@ -7076,104 +7220,6 @@
           "id",
           "code",
           "event"
-        ],
-        "additionalProperties": false
-      },
-      "Event": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "integer",
-            "exclusiveMinimum": 0,
-            "maximum": 9007199254740991
-          },
-          "abbr": {
-            "type": "string"
-          },
-          "name": {
-            "type": "string"
-          },
-          "fee": {
-            "type": "number"
-          },
-          "type": {
-            "type": "string",
-            "enum": [
-              "debate",
-              "speech",
-              "mock_trial",
-              "congress",
-              "wsdc",
-              "wudc",
-              "attendee",
-              "academic"
-            ]
-          },
-          "categoryId": {
-            "type": "integer",
-            "exclusiveMinimum": 0,
-            "maximum": 9007199254740991
-          },
-          "settings": {
-            "type": "object",
-            "properties": {
-              "flight_offset": {
-                "anyOf": [
-                  {
-                    "type": "integer",
-                    "minimum": -9007199254740991,
-                    "maximum": 9007199254740991
-                  },
-                  {
-                    "type": "null"
-                  }
-                ]
-              },
-              "online_mode": {
-                "type": [
-                  "string",
-                  "null"
-                ]
-              },
-              "online_ballots": {
-                "type": "boolean"
-              }
-            },
-            "required": [
-              "flight_offset",
-              "online_mode",
-              "online_ballots"
-            ],
-            "additionalProperties": false
-          },
-          "metadata": {
-            "type": "object",
-            "properties": {},
-            "additionalProperties": false
-          },
-          "nsdaCategoryId": {
-            "anyOf": [
-              {
-                "type": "integer",
-                "exclusiveMinimum": 0,
-                "maximum": 9007199254740991
-              },
-              {
-                "type": "null"
-              }
-            ]
-          }
-        },
-        "required": [
-          "id",
-          "abbr",
-          "name",
-          "fee",
-          "type",
-          "categoryId",
-          "settings",
-          "metadata",
-          "nsdaCategoryId"
         ],
         "additionalProperties": false
       },
@@ -7249,6 +7295,39 @@
           "middle",
           "last",
           "obligation"
+        ],
+        "additionalProperties": false
+      },
+      "NSDACategorySchema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 63
+          },
+          "type": {
+            "type": "string",
+            "maxLength": 15
+          },
+          "code": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "nationals": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "type",
+          "code"
         ],
         "additionalProperties": false
       },
@@ -7405,6 +7484,330 @@
           "flighted"
         ],
         "additionalProperties": false
+      },
+      "SchoolSchema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "name": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string"
+          },
+          "onsite": {
+            "type": "boolean"
+          },
+          "tournId": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "chapterId": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "state": {
+            "type": "string"
+          },
+          "regionId": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "districtId": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "updatedAt": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "settings": {
+            "type": "object",
+            "propertyNames": {
+              "type": "string"
+            },
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "metadata": {
+            "type": "object",
+            "propertyNames": {
+              "type": "string"
+            },
+            "additionalProperties": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "code",
+          "onsite",
+          "tournId",
+          "chapterId",
+          "state",
+          "regionId",
+          "districtId",
+          "updatedAt",
+          "createdAt",
+          "settings",
+          "metadata"
+        ],
+        "additionalProperties": false
+      },
+      "TimeslotRequestSchema": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "start": {
+            "type": "string"
+          },
+          "end": {
+            "type": "string"
+          },
+          "tourn": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "name",
+          "start",
+          "end",
+          "tourn"
+        ],
+        "additionalProperties": false
+      },
+      "TimeslotResponseSchema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "name": {
+            "type": "string"
+          },
+          "start": {
+            "type": "string"
+          },
+          "end": {
+            "type": "string"
+          },
+          "tournId": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "updatedAt": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "start",
+          "end",
+          "tournId",
+          "updatedAt",
+          "createdAt"
+        ],
+        "additionalProperties": false
+      },
+      "TopicZodSchema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "tag": {
+            "type": "string"
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "NSDA",
+              "NCFL",
+              "CEDA",
+              "NFHS",
+              "CPFL",
+              "NFA",
+              "AFA"
+            ]
+          },
+          "schoolYear": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "eventType": {
+            "type": "string"
+          },
+          "pattern": {
+            "type": "string"
+          },
+          "topicText": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "createdBy": {
+            "$ref": "#/components/schemas/PersonOutput"
+          },
+          "Events": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EventOutput"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "tag",
+          "source",
+          "schoolYear",
+          "eventType",
+          "pattern",
+          "topicText",
+          "createdAt",
+          "createdBy",
+          "Events"
+        ],
+        "additionalProperties": false
+      },
+      "TournRequest": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 63
+          },
+          "city": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 31
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "state": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 6
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "country": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 4
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "tz": {
+            "type": "string",
+            "maxLength": 31
+          },
+          "webname": {
+            "type": "string"
+          },
+          "start": {
+            "type": "string"
+          },
+          "end": {
+            "type": "string"
+          },
+          "reg_start": {
+            "type": "string"
+          },
+          "reg_end": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "city",
+          "state",
+          "country",
+          "tz",
+          "webname",
+          "start",
+          "end"
+        ],
+        "additionalProperties": false
+      },
+      "UpdateSchoolSchema": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string"
+          },
+          "onsite": {
+            "type": "boolean"
+          },
+          "state": {
+            "type": "string"
+          },
+          "regionId": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "settings": {
+            "type": "object",
+            "propertyNames": {
+              "type": "string"
+            },
+            "additionalProperties": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "name",
+          "code",
+          "onsite",
+          "state",
+          "regionId",
+          "settings"
+        ],
+        "additionalProperties": false
       }
     },
     "responses": {
@@ -7413,7 +7816,7 @@
         "content": {
           "application/problem+json": {
             "schema": {
-              "$ref": "#/components/schemas/Problem"
+              "$ref": "#/components/schemas/ProblemSchema"
             },
             "examples": {
               "badrequest": {
@@ -7435,7 +7838,7 @@
         "content": {
           "application/problem+json": {
             "schema": {
-              "$ref": "#/components/schemas/Problem"
+              "$ref": "#/components/schemas/ProblemSchema"
             },
             "examples": {
               "error": {
@@ -7457,7 +7860,7 @@
         "content": {
           "application/problem+json": {
             "schema": {
-              "$ref": "#/components/schemas/Problem"
+              "$ref": "#/components/schemas/ProblemSchema"
             },
             "examples": {
               "forbidden": {
@@ -7479,7 +7882,7 @@
         "content": {
           "application/problem+json": {
             "schema": {
-              "$ref": "#/components/schemas/Problem"
+              "$ref": "#/components/schemas/ProblemSchema"
             },
             "examples": {
               "notfound": {
@@ -7501,7 +7904,7 @@
         "content": {
           "application/problem+json": {
             "schema": {
-              "$ref": "#/components/schemas/Problem"
+              "$ref": "#/components/schemas/ProblemSchema"
             },
             "examples": {
               "unauthorized": {

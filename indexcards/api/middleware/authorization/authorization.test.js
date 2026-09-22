@@ -20,7 +20,7 @@ describe('Authorization Middleware', () => {
 		it('deny access when no area access', async () => {
 			// Arrange
 			const {req, res, next} = createContext({
-				person: {id: 1},
+				session: { Person: { id: 1 } },
 				params: {area: 'caselist'},
 			});
 			req.actor = createActor(req);
@@ -38,7 +38,7 @@ describe('Authorization Middleware', () => {
 		it('allow access when has area access', async () => {
 			// Arrange
 			const {req, res, next} = createContext({
-				person: {id: 1},
+				session: { Person: { id: 1 } },
 				params: {area: 'caselist'},
 			});
 			req.actor = createActor(req);
@@ -63,8 +63,10 @@ describe('Authorization Middleware', () => {
 		});
 		it('deny when not site_admin', () => {
 			const {req, res, next} = createContext({
-				person: {
-					site_admin: false,
+				session: {
+					Person: {
+						site_admin: false,
+					},
 				},
 			});
 			req.actor = createActor(req);
@@ -76,8 +78,10 @@ describe('Authorization Middleware', () => {
 		});
 		it('allow when site_admin', () => {
 			const {req, res, next} = createContext({
-				person: {
-					site_admin: true,
+				session: {
+					Person: {
+						site_admin: true,
+					},
 				},
 			});
 			req.actor = createActor(req);
@@ -117,7 +121,7 @@ describe('Authorization Middleware', () => {
 		it.each(cases)('allows site_admin to bypass checks for %s:%s',async (resource, capability) => {
 			vi.spyOn(buildTargetModule, 'buildTarget').mockResolvedValueOnce({ id: 42, resource, circuitIds: []});
 			const {req,res,next} = createContext({
-				person: { id: 1, site_admin: true },
+				session: { Person: { id: 1, site_admin: true } },
 				params: { tournId: 1 },
 				auth: { perms: [] },
 			});
@@ -130,7 +134,7 @@ describe('Authorization Middleware', () => {
 		it.each(cases)('Allows owner all capabilities for %s',async (resource) => {
 			vi.spyOn(buildTargetModule, 'buildTarget').mockResolvedValueOnce({ id: 42, resource, circuitIds: []});
 			const {req,res,next} = createContext({
-				person: { id: 1, site_admin: false },
+				session: { Person: { id: 1, site_admin: false } }	,
 				params: { [`${resource}Id`]: 42 },
 				auth: {
 					perms: [
@@ -151,7 +155,7 @@ describe('Authorization Middleware', () => {
 
 		it('allows access with correct permission and capability', async () => {
 			const {req,res,next} = createContext({
-				person: { id: 1, site_admin: false },
+				session: { Person: { id: 1, site_admin: false } },
 				params: { tournId: 42 },
 				auth: {
 					perms: [
@@ -167,7 +171,7 @@ describe('Authorization Middleware', () => {
 
 		it('denies access if permission does not match resource id', async () => {
 			let {req, res, next} = createContext({
-				person: { id: 1, site_admin: false },
+				session: { Person: { id: 1, site_admin: false } },
 				params: { tournId: 42 },
 				auth: {
 					perms: [
@@ -185,7 +189,7 @@ describe('Authorization Middleware', () => {
 		it('allows access if parent scope grants capability', async () => {
 			vi.spyOn(buildTargetModule, 'buildTarget').mockResolvedValueOnce({ id: 7, resource: 'category', tournId: 42, circuitIds: []});
 			const {req, res, next} = createContext({
-				person: { id: 1, site_admin: false },
+				session: { Person: { id: 1, site_admin: false } },
 				params: { tournId: 42, categoryId: 7 },
 				auth: {
 					perms: [
@@ -201,7 +205,7 @@ describe('Authorization Middleware', () => {
 
 		it('denies access if role does not grant capability', async () => {
 			let {req, res, next} = createContext({
-				person: { id: 1, site_admin: false },
+				session: { Person: { id: 1, site_admin: false } },
 				params: { tournId: 42 },
 				auth: {
 					perms: [
@@ -218,7 +222,7 @@ describe('Authorization Middleware', () => {
 
 		it('allows access for child resource with parent permission', async () => {
 			let {req, res, next} = createContext({
-				person: { id: 1, site_admin: false },
+				session: { Person: { id: 1, site_admin: false } },
 				params: { tournId: 42, categoryId: 7 },
 				auth: {
 					perms: [
@@ -237,7 +241,7 @@ describe('Authorization Middleware', () => {
 
 		it('denies access if no matching permission', async () => {
 			const {req, res, next} = createContext({
-				person: { id: 1, site_admin: false },
+				session: { Person: { id: 1, site_admin: false } },
 				params: { tournId: 42 },
 				auth: {
 					perms: [

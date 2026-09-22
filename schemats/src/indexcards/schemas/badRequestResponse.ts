@@ -5,9 +5,9 @@
  * Tabroom.com data & operational API
  * OpenAPI spec version: 1.2.0
  */
-import type { Problem } from './problem';
+import type { ProblemSchema } from './problemSchema';
 
 /**
  * BadRequest - the request was invalid or cannot be otherwise served.
  */
-export type BadRequestResponse = Problem;
+export type BadRequestResponse = ProblemSchema;

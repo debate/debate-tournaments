@@ -1,8 +1,8 @@
 import con from './ballotsController.js';
-import sectionRepo from '../../../repos/sectionRepo.js';
-import { createContext } from '../../../../tests/httpMocks.js';
+import panelRepo from '../../../repos/panelRepo.js';
+import { createPersonContext } from '../../../../tests/httpMocks.js';
 
-vi.mock('../../../repos/sectionRepo.js');
+vi.mock('../../../repos/panelRepo.js');
 
 
 describe('getCurrent', () => {
@@ -11,10 +11,16 @@ describe('getCurrent', () => {
 		const mockBallots = [
 			{ Round: { published: false } },
 		];
-		vi.spyOn(sectionRepo, 'getCurrentBallots').mockResolvedValueOnce(mockBallots);
+		vi.spyOn(panelRepo, 'getCurrentBallots').mockResolvedValueOnce(mockBallots);
 
 		// Mock request and response
-		const {req, res } = createContext({ actor: { Person: { id: 123 } } });
+		const {req, res } = createPersonContext({
+			id: 123,
+			first: 'Test',
+			last: 'User',
+			email: 'test@example.com',	
+			site_admin: 0,
+		 });
 
 		// Call the controller function
 		await con.getCurrent(req, res);
@@ -67,10 +73,10 @@ describe('getCurrent', () => {
 				Entries: [],
 		},
 		];
-		vi.spyOn(sectionRepo, 'getCurrentBallots').mockResolvedValueOnce(mockBallots);
+		vi.spyOn(panelRepo, 'getCurrentBallots').mockResolvedValueOnce(mockBallots);
 
 		// Mock request and response
-		const {req, res } = createContext({ actor: { Person: { id: 123 } } });
+		const {req, res } = createPersonContext({ id: 123, first: 'Test', last: 'User', email: 'test@example.com', site_admin: 0 },{});
 
 		// Call the controller function
 		await con.getCurrent(req, res);
@@ -78,10 +84,10 @@ describe('getCurrent', () => {
 		// Assertions
 		expect(res).not.toBeProblemResponse();
 		//expect(res.body).toMatchSchema(z.array(CurrentBallot));
-		const returnedBallot = res.body[0];
+		const returnedBallot = (res.body as Array<{ flight: number; start: string; deadline: string; status: string }>)[0];
 		expect(returnedBallot.flight).toBe(2);
 		expect(returnedBallot.start).toBeDefined();
-		expect(returnedBallot.start).toBe(new Date(roundStart.getTime() + offset * 60_000).toISOString());
+		expect(returnedBallot.start).toEqual(new Date(roundStart.getTime() + offset * 60_000));
 		expect(returnedBallot.deadline).toBeDefined();
 		expect(returnedBallot.status).toBe('not_started');
 	});

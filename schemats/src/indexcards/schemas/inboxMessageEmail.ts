@@ -10,6 +10,9 @@
  * The email associated with the message
  */
 export type InboxMessageEmail = {
-	/** The content of the email */
+	/**
+	 * The content of the email
+	 * @nullable
+	 */
 	content: string | null;
 } | null;

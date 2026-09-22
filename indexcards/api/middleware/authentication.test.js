@@ -133,7 +133,8 @@ describe('Authentication Middleware', () => {
 			vi.spyOn(sessionRepo, 'findByUserKey').mockImplementationOnce(async () => {
 				return {
 					id          : 1,
-					person      : {
+					person: 69,
+					Person      : {
 						id          : 69,
 						site_admin   : false,
 						email       : '',
@@ -155,7 +156,7 @@ describe('Authentication Middleware', () => {
 			// Assert
 			expect(req.actor).toBeDefined();
 			const actor = req.actor;
-			expect(actor.id).toBe(69);
+			expect(actor.Person.id).toBe(69);
 		});
 
 	});
@@ -187,7 +188,7 @@ describe('Authentication Middleware', () => {
 		});
 		it('returns 401 when API key is invalid', async () => {
 			// base64("myuserkey:invalidapikey")
-			const encoded = Buffer.from('username:invalidapikey').toString('base64');
+			const encoded = Buffer.from('123:invalidapikey').toString('base64');
 
 			const { req, res, next } = createContext({
 				headers: {
@@ -195,7 +196,7 @@ describe('Authentication Middleware', () => {
 				},
 			});
 
-			vi.spyOn(personRepo, 'getPersonByUsername').mockResolvedValue(null);
+			vi.spyOn(personRepo, 'getPerson').mockResolvedValue(null);
 
 			await Authenticate(req, res, next);
 

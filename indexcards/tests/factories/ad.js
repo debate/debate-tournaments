@@ -15,7 +15,7 @@ export function createAdData(overrides = {}) {
 	};
 }
 
-export async function createTestAd(overrides = {}) {
+export async function create(overrides = {}) {
 	const data = createAdData(overrides);
 	const adId = await db.ad.create(data);
 
@@ -26,5 +26,5 @@ export async function createTestAd(overrides = {}) {
 }
 export default {
 	createAdData,
-	createTestAd,
+	create,
 };

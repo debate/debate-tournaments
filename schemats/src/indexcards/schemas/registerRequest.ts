@@ -19,16 +19,31 @@ export interface RegisterRequest {
 	password: string;
 	/** The first name of the new user */
 	first: string;
-	/** The middle name of the new user */
+	/**
+	 * The middle name of the new user
+	 * @nullable
+	 */
 	middleName?: string | null;
 	/** The last name of the new user */
 	last: string;
-	/** The phone number of the new user */
+	/**
+	 * The phone number of the new user
+	 * @nullable
+	 */
 	phoneNumber?: string | null;
-	/** The 2 letter state code of the new user */
+	/**
+	 * The 2 letter state code of the new user
+	 * @nullable
+	 */
 	state?: string | null;
-	/** The 2 letter country code of the new user */
+	/**
+	 * The 2 letter country code of the new user
+	 * @nullable
+	 */
 	country?: string | null;
-	/** The IANA timezone of the new user */
+	/**
+	 * The IANA timezone of the new user
+	 * @nullable
+	 */
 	tz?: string | null;
 }

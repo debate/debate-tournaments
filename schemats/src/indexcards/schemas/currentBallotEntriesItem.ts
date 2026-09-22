@@ -12,7 +12,9 @@ export type CurrentBallotEntriesItem = {
 	 * @exclusiveMinimum 0
 	 */
 	id: number;
+	/** @nullable */
 	code: string | null;
+	/** @nullable */
 	side: string | null;
 	speakerOrder: number | null;
 };

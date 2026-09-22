@@ -7,7 +7,7 @@ import * as z from 'zod';
 describe('/rest/ads', () => {
 	it('returns a list of ads for the homepage', async () => {
 		//Arrange
-		await factories.ad.createTestAd();
+		await factories.ad.create();
 
 		//Act
 		const res = await request(server)

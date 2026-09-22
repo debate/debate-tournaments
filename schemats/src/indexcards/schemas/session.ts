@@ -5,7 +5,8 @@
  * Tabroom.com data & operational API
  * OpenAPI spec version: 1.2.0
  */
-import type { PersonOutput } from './personOutput';
+import type { SessionPerson } from './sessionPerson';
+import type { SessionSu } from './sessionSu';
 
 /**
  * A user session
@@ -22,6 +23,6 @@ export interface Session {
 	 */
 	person: number;
 	su: number | null;
-	Su: PersonOutput | null;
-	Person: PersonOutput;
+	Su: SessionSu;
+	Person: SessionPerson;
 }

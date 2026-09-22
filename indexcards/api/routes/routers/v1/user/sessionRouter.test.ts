@@ -8,8 +8,8 @@ describe('Session Router', () => {
 	let personId : number;
 	let userkey: string;
 	beforeAll(async () => {
-		({ personId } = await factories.person.create());
-		({ userkey } = await factories.session.createTestSession({ person: personId }));
+		({ id: personId } = await factories.person.create());
+		({ userkey } = await factories.session.create({ person: personId }));
 	});
 
 	describe('GET /user/session', () => {

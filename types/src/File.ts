@@ -9,9 +9,9 @@ export const FileSchema = z.object({
 	label: z.string().nullable(),
 	filename: z.string().max(255).nullable(),
 	published: z.boolean(),
-	pageOrder: z.number().int().nullable(),
+	page_order: z.number().int().nullable(),
 	uploaded: z.iso.datetime().nullable(),
-	updatedAt: z.iso.datetime(),
+	timestamp: z.iso.datetime(),
 }) satisfies ZodOpenApiSchemaObject;
 
 export type File = z.infer<typeof FileSchema>;

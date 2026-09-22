@@ -7,13 +7,13 @@ type ProblemDetails = {
 	[key: string]: unknown;
 };
 
+import { ProblemSchema } from '@tabroom/types';
+
 type ProblemResponse = {
 	description: string;
 	content: {
 		'application/problem+json': {
-			schema: {
-				$ref: '#/components/schemas/Problem';
-			};
+			schema: typeof ProblemSchema,
 			examples: Record<string, {
 				summary: string;
 				value: ProblemDetails;
@@ -27,9 +27,7 @@ export const ErrorResponse = {
 	description: 'Unexpected Error',
 	content: {
 		'application/problem+json': {
-			schema: {
-				$ref: '#/components/schemas/Problem',
-			},
+			schema: ProblemSchema,
 			examples:{
 				error: {
 					summary: '500 Internal Server Error',
@@ -49,7 +47,7 @@ export const Unauthorized = {
 	description: 'Unauthorized - authentication failed or was not provided.',
 	content: {
 		'application/problem+json': {
-			schema: { $ref: '#/components/schemas/Problem' },
+			schema: ProblemSchema,
 			examples: {
 				unauthorized: {
 					summary: '401 Unauthorized',
@@ -69,7 +67,7 @@ export const NotFound = {
 	description: 'NotFound - the requested resource was not found or you do not have access.',
 	content: {
 		'application/problem+json': {
-			schema: { $ref: '#/components/schemas/Problem' },
+			schema: ProblemSchema,
 			examples:{
 				notfound: {
 					summary: '404 Not Found',
@@ -89,7 +87,7 @@ export const Forbidden = {
 	description: 'Forbidden - You do not have permission to perform this action.',
 	content: {
 		'application/problem+json': {
-			schema: { $ref: '#/components/schemas/Problem' },
+			schema: ProblemSchema,
 			examples:{
 				forbidden: {
 					summary: '403 Forbidden',
@@ -109,7 +107,7 @@ export const BadRequest = {
 	description: 'BadRequest - the request was invalid or cannot be otherwise served.',
 	content: {
 		'application/problem+json': {
-			schema: { $ref: '#/components/schemas/Problem' },
+			schema: ProblemSchema,
 			examples:{
 				badrequest: {
 					summary: '400 Bad Request',

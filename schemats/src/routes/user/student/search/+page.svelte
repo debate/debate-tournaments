@@ -5,7 +5,7 @@
 		createUserStudentsClaim,
 	} from '$indexcards';
 	import type {
-		UnlinkedStudentSearch,
+		UnlinkedStudentSearchSchema,
 		RestStudentsUnlinkedSearchParams,
 	} from '$indexcards/schemas';
 	import { Button } from 'flowbite-svelte';

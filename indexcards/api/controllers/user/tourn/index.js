@@ -2,6 +2,8 @@ import db from '../../../data/db.js';
 import fineRepo from '../../../repos/fineRepo.js';
 import tournRepo from '../../../repos/tournRepo.js';
 
+import { db as KyselyDb } from '../../../data/database.js';
+
 // The purpose of this function is to deliver a complete list of "things I care
 // about" at a tournament. That will help sorting the relevant judges, entries,
 // events, etc to the top of the stack when displaying information.
@@ -192,8 +194,9 @@ export const getPersonTournSchools = async (personId, tournId) => {
 
 export async function getPersonTourns(req, res){
 	const { endAfter } = req.valid.query;
-	const data = await tournRepo.getPersonTourns(req.actor.id, {
+	const data = await tournRepo.getPersonTourns(KyselyDb,req.actor.id, {
 		endAfter,
+		unpublished: false,
 	});
 	const tourns = data.map((row) => ({
 		id: row.id,
@@ -214,7 +217,7 @@ export async function getPersonTourns(req, res){
 };
 
 export async function getTournSummary(req,res){
-	const tourn = await tournRepo.getPersonTournSummary(req.actor.id,req.valid.params.tournId);
+	const tourn = await tournRepo.getPersonTournSummary(KyselyDb,req.actor.id,req.valid.params.tournId);
 	let roles = [];
 	let livedocs = [];
 	if(tourn.judges.length > 0)
@@ -243,7 +246,7 @@ export async function getTournSummary(req,res){
 }
 export async function getTournFines(req,res){
 	const { tournId } = req.valid.params;
-	const data = await fineRepo.getFines(req.actor.id,tournId);
+	const data = await fineRepo.getFines(KyselyDb,req.actor.id,tournId);
 
 	return res.json(data.map((row) => ({
 		...row,

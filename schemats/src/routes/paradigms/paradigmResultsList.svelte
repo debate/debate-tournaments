@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { RestParadigms200Item, Problem } from '$indexcards/schemas';
+	import type { RestParadigms200Item, ProblemSchema } from '$indexcards/schemas';
 	import type { CreateInfiniteQueryResult } from '@tanstack/svelte-query';
 
 	import ParadigmListItem from './[id]/paradigmListItem.svelte';
@@ -9,7 +9,7 @@
 		results: RestParadigms200Item[];
 		searchTerm: string;
 		selectedHref: (id: number) => string;
-		paradigmsQuery: CreateInfiniteQueryResult<unknown, Problem>;
+		paradigmsQuery: CreateInfiniteQueryResult<unknown, ProblemSchema>;
 	};
 
 	const {

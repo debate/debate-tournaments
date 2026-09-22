@@ -3,26 +3,28 @@ import request from 'supertest';
 import server from '../../../../../app.js';
 import z from 'zod';
 import { StudentSchema } from '@tabroom/types';
+import studentRepo from '../../../../repos/studentRepo.js';
+import { db } from '../../../../data/database.js';
 
 describe('studentsRouter', () => {
 	let personId : number;
 	let userkey: string;
 	beforeAll(async () => {
-		({ personId } = await factories.person.create());
-		({ userkey } = await factories.session.createTestSession({ person: personId }));
+		({ id: personId } = await factories.person.create());
+		({ userkey } = await factories.session.create({ person: personId }));
 	});
 	describe("POST /user/students/claim", () => {
 		it('should allow a user to claim a student', async () => {
 			//setup - create a chapter student with no person_request
-			const { chapterId } = await factories.chapter.create();
-			const { studentId, getStudent } = await factories.student.create({
+			const Chapter = await factories.chapter.create();
+			const Student = await factories.student.create({
 				person_request: null,
-				chapter: chapterId,
+				chapter: Chapter.id,
 			});
 			//make the request to claim the chapter student
 			const res = await request(server)
 				.post('/v1/user/students/claim')
-				.query({ studentId })
+				.query({ studentId: Student.id })
 				.set('Accept', 'application/json')
 				.set('Authorization', `Bearer ${userkey}`)
 				.expect(200);
@@ -31,51 +33,51 @@ describe('studentsRouter', () => {
 				   message: 'Competitor claim request submitted',
 				   detail: expect.any(String)
 			});
-			const updatedStudent = await getStudent() as unknown as { person_request: number | null };
+			const updatedStudent = await studentRepo.getStudent(db, Student.id);
 			expect(updatedStudent?.person_request).toBe(personId);
 		});
 		it('should return 400 if the user is already linked to a student on the roster', async () => {
 			//setup - create a chapter student with a person_request for the user
-			const { chapterId } = await factories.chapter.create();
+			const Chapter = await factories.chapter.create();
 			await factories.student.create({
 				person_request: personId,
-				chapter: chapterId,
+				chapter: Chapter.id,
 			});
 			//make the request to claim another chapter student
-		 const { studentId, getStudent } = await factories.student.create({
+		 const Student = await factories.student.create({
 				person_request: null,
-				chapter: chapterId,
+				chapter: Chapter.id,
 			});
 			const res = await request(server)
 				.post('/v1/user/students/claim')
-				.query({ studentId })
+				.query({ studentId: Student.id })
 				.set('Accept', 'application/json')
 				.set('Authorization', `Bearer ${userkey}`)
 				.expect(400);
 			//assert that the response contains the appropriate error message
 			expect(res).toBeProblemResponse(400);
 			expect(res.body.detail).toContain('You are already linked or have requested to be linked to another student on that school\'s roster.');
-			const updatedStudent = await getStudent() as unknown as { person_request: number | null, person: number | null };
+			const updatedStudent = await studentRepo.getStudent(db, Student.id);
 			expect(updatedStudent?.person_request).toBeNull();
 			expect(updatedStudent?.person).toBeNull();
 			
 		});
 		it('should automatically approve the claim if the user is a chapter admin', async () => {
 			//setup - create a chapter student with no person_request and a chapter admin session for the user
-			const { chapterId } = await factories.chapter.create();
-			const { studentId, getStudent } = await factories.student.create({
+			const Chapter = await factories.chapter.create();
+			const Student = await factories.student.create({
 				person_request: null,
-				chapter: chapterId,
+				chapter: Chapter.id,
 			});
 			await factories.permission.create({
 				person: personId,
-				chapter: chapterId,
+				chapter: Chapter.id,
 				tag: 'chapter',
 			});
 			//make the request to claim the chapter student
 			const res = await request(server)
 				.post('/v1/user/students/claim')
-				.query({ studentId })
+				.query({ studentId: Student.id })
 				.set('Accept', 'application/json')
 				.set('Authorization', `Bearer ${userkey}`)
 				.expect(200);
@@ -84,7 +86,7 @@ describe('studentsRouter', () => {
 				message: 'Competitor linked successfully.',
 				detail: expect.any(String)
 			});
-			const updatedStudent = await getStudent() as unknown as { person_request: number | null, person: number | null };
+			const updatedStudent = await studentRepo.getStudent(db, Student.id);
 			expect(updatedStudent?.person_request).toBeNull();
 			expect(updatedStudent?.person).toBe(personId);
 		});
@@ -92,10 +94,10 @@ describe('studentsRouter', () => {
 	describe("POST /user/students/linkRequests", () => {
 		it("should return a list of pending link requests for the user", async () => {
 			//setup - create a chapter student with a person_request for the user
-			const { chapterId } = await factories.chapter.create();
-			const { studentId } = await factories.student.create({
+			const Chapter = await factories.chapter.create();
+			const Student = await factories.student.create({
 				person_request: personId,
-				chapter: chapterId,
+				chapter: Chapter.id,
 			});
 			//make the request to get pending link requests
 			const res = await request(server)
@@ -107,7 +109,7 @@ describe('studentsRouter', () => {
 			expect(res.body).toMatchSchema(z.array(StudentSchema));
 			expect(res.body).toEqual(
 				expect.arrayContaining([
-					expect.objectContaining({ id: studentId })
+					expect.objectContaining({ id: Student.id })
 				])
 			);
 		});

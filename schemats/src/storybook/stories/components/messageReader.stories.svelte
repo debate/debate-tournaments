@@ -9,8 +9,8 @@
 		subject: 'Welcome to your inbox',
 		body: '<p>Plain text body fallback.</p>',
 		url: null,
-		visibleAt: '2026-04-21T12:30:00.000Z',
-		readAt: null,
+		visible_at: '2026-04-21T12:30:00.000Z',
+		read_at: null,
 		Tourn: {
 			id: 12,
 			name: 'Metro Championship',

@@ -24,8 +24,8 @@
 				subject: unread ? `Unread notice ${id}` : `Read notice ${id}`,
 				body: `<p>This is message ${id}.</p>`,
 				url: null,
-				visibleAt: `2026-04-${String(10 + idx).padStart(2, '0')}T09:00:00.000Z`,
-				readAt: unread ? null : nowISO,
+				visible_at: `2026-04-${String(10 + idx).padStart(2, '0')}T09:00:00.000Z`,
+				read_at: unread ? null : nowISO,
 				Tourn: {
 					id: 100 + id,
 					name: `Tournament ${id}`,
@@ -47,7 +47,7 @@
 		return [
 			getUserInboxMockHandler(() => inbox),
 			getUserInboxUnreadMockHandler(() => ({
-				count: inbox.filter((msg) => !msg.readAt).length,
+				count: inbox.filter((msg) => !msg.read_at).length,
 			})),
 			getUserInboxGetMessageMockHandler((info) => {
 				const messageId = Number(info.params.messageId ?? 0);

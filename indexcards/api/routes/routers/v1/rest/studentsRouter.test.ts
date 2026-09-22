@@ -10,13 +10,12 @@ describe('GET /rest/students/unlinked/search', () => {
 	let last: string;
 
 	beforeAll(async () => {
-		const { chapterId } = await factories.chapter.create();
-		const { getStudent } = await factories.student.create({ chapter: chapterId });
-		const student = await getStudent() as { first: string; last: string };
-		first = student.first;
-		last = student.last;
+		const Chapter = await factories.chapter.create();
+		const Student = await factories.student.create({ chapter: Chapter.id });
+		first = Student.first;
+		last = Student.last;
 
-		({ userkey } = await factories.session.createTestSession({
+		({ userkey } = await factories.session.create({
 			Person: {
 				first,
 				last,

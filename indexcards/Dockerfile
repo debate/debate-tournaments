@@ -16,6 +16,7 @@ ENV NODE_ENV=development
 RUN npm ci --include=dev --ignore-scripts
 
 COPY types ./types
+RUN npm run build --workspace=types
 COPY indexcards ./indexcards
 
 ENV TZ="UTC"

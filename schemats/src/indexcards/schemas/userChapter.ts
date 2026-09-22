@@ -18,23 +18,38 @@ export interface UserChapter {
 	id: number;
 	/** Name of the chapter */
 	name: string;
+	/** @nullable */
 	formal?: string | null;
+	/** @nullable */
 	street?: string | null;
+	/** @nullable */
 	city?: string | null;
 	state?: string | null;
+	/** @nullable */
 	zip?: number | null;
 	postal?: string | null;
 	country?: string | null;
+	/** @nullable */
 	coaches?: string | null;
+	/** @nullable */
 	self_prefs?: boolean | null;
+	/** @nullable */
 	level?: string | null;
+	/** @nullable */
 	nsda?: number | null;
+	/** @nullable */
 	district?: number | null;
+	/** @nullable */
 	naudl?: boolean | null;
+	/** @nullable */
 	ipeds?: string | null;
+	/** @nullable */
 	nces?: string | null;
+	/** @nullable */
 	ceeb?: string | null;
+	/** @nullable */
 	timestamp?: string | null;
+	/** @nullable */
 	created_at?: string | null;
 	/** Permission level for the user in this chapter */
 	permission: string;

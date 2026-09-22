@@ -1,5 +1,7 @@
 import { Router } from 'express';
 import * as controller from '../../../../controllers/rest/pageController.js';
+import { z } from 'zod';
+import { WebpageSchema } from '@tabroom/types';
 
 const router = Router();
 
@@ -14,12 +16,7 @@ router.route('/').get(controller.getPublicPages).openapi = {
 				description: 'List of public webpages',
 				content: {
 					'application/json': {
-						schema: {
-							type: 'array',
-							items: {
-								$ref: '#/components/schemas/Webpage',
-							},
-						},
+						schema: z.array(WebpageSchema)
 					},
 				},
 			},
@@ -41,9 +38,7 @@ router.route('/:slug').get(controller.getPublicPages).openapi = {
 				description: 'A public webpages',
 				content: {
 					'application/json': {
-						schema: {
-							$ref: '#/components/schemas/Webpage',
-						},
+						schema: WebpageSchema,
 					},
 				},
 			},

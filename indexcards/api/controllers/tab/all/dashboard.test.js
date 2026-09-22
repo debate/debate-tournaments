@@ -18,16 +18,16 @@ const testTourn = {
 describe('Status Board', () => {
 	let personId, userkey;
 	beforeAll(async () => {
-		const session = await factories.session.createTestSession();
+		const session = await factories.session.create();
 		userkey = session.userkey;
-		personId = session.personId;
+		personId = session.person;
 		const permission = {
 			person : personId,
 			tourn  : testTourn.id,
 			tag    : 'tabber',
 		};
 
-		await db.permission.create(permission);
+		await factories.permission.create(permission);
 
 		const campusLogs = [
 			{ 	tag         : 'present',
@@ -168,7 +168,7 @@ describe('Status Board', () => {
 describe.todo('Event Dashboard', () => {
 	let personId, userkey;
 	beforeAll(async () => {
-		const session = await factories.session.createTestSession();
+		const session = await factories.session.create();
 		userkey = session.userkey;
 		personId = session.personId;
 		const permission = {
@@ -177,7 +177,7 @@ describe.todo('Event Dashboard', () => {
 			tag    : 'tabber',
 		};
 
-		await db.permission.create(permission);
+		await factories.permission.create(permission);
 	});
 
 	it('Return a correct JSON status object for the event dashboard', async () => {

@@ -1,5 +1,31 @@
 import type { NextFunction, Request, Response } from 'express';
+import { createActor } from '../api/middleware/authorization/authorization.js';
 import { vi } from 'vitest';
+
+export function createPersonContext(
+	person: { id: number; first: string | null; last: string | null; email: string; site_admin: number | null },
+	reqOverrides: Partial<Request> = {}
+) {
+	reqOverrides = {
+		session: {
+			id: 1,
+			person: person.id,
+			su: null,
+			Person: {
+				id: person.id,
+				first: person.first,
+				last: person.last,
+				email: person.email,
+				site_admin: person.site_admin
+			},
+			Su: null,
+		},
+		...reqOverrides,
+	};
+	let con = createContext(reqOverrides);
+	con.req.actor = createActor(con.req);
+	return con;
+}
 
 //Mocks for unit testing middleware and controllers
 export function createContext(reqOverrides: Partial<Request> = {}) {
@@ -23,7 +49,11 @@ export function createReq(overrides: Partial<Request> & Record<string, unknown> 
 		session: undefined,
 		params: {},
 		query: {},
-		valid: {},
+		valid: {
+			body: {},
+			params: {},
+			query: {},
+		},
 		get: () => {},
 		...overrides,
 	} as unknown as Request;

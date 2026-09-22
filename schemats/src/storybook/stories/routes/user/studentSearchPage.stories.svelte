@@ -2,7 +2,7 @@
 	import { defineMeta } from '@storybook/addon-svelte-csf';
 	import { expect, within } from 'storybook/test';
 	import { HttpResponse, http } from 'msw';
-	import type { UnlinkedStudentSearch } from '$indexcards/schemas/index';
+	import type { UnlinkedStudentSearchSchema } from '$indexcards/schemas/index';
 	import { getRestStudentsUnlinkedSearchMockHandler } from '$indexcards/index.msw';
 	import StudentSearchPage from '../../../../routes/user/student/search/+page.svelte';
 	import { faker } from '@faker-js/faker';
@@ -11,7 +11,7 @@
 		first: faker.person.firstName(),
 		last: faker.person.lastName(),
 	};
-	const sampleRows: UnlinkedStudentSearch[] = [
+	const sampleRows: UnlinkedStudentSearchSchema[] = [
 		{
 			id: 101,
 			first: first,

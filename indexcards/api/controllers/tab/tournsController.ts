@@ -1,0 +1,56 @@
+import tournRepo from '../../repos/tournRepo.js';
+import { createPermission } from '../../repos/permissionRepo.js';
+import type { Request, Response } from 'express';
+import { BadRequest, NotFound } from '../../helpers/problem.js';
+import { db } from '../../data/database.js';
+
+async function getTourn(req: Request, res: Response) {
+	const { tournId } = req.params;
+	if(!tournId) return BadRequest(req,res,'Tournament ID is required');
+	const tourn = await tournRepo.getTourn(db, tournId as string, { settings: true, unpublished: true });
+	if (!tourn) return NotFound(req, res, 'Tournament not found');
+	return res.json(tourn);
+}
+
+async function createTourn(req: Request, res: Response) {
+	//TODO need to make the requesting user the owner of the tourn
+	const data = req.valid.body;
+	if(!req.actor.Person?.id) return BadRequest(req,res,'Actor person ID is required');
+	const tourn = await tournRepo.createTourn(db,data);
+	//TODO this should be handled and validated by a middleware plugin
+	await createPermission(db, {
+		tourn: tourn.id,
+		person: req.actor.Person?.id,
+		tag: 'owner',
+	});
+	return res.status(201).json(tourn);
+}
+
+async function updateTourn(req: Request, res: Response) {
+	const { tournId } = req.params;
+	if (!tournId) return BadRequest(req, res, 'Tournament ID is required');
+
+	const updates = req.body;
+	delete updates.id;
+
+	await tournRepo.updateTourn(db,Number(tournId), updates);
+
+	const updatedTourn = await tournRepo.getTourn(db, Number(tournId));
+	return res.json(updatedTourn);
+}
+
+async function deleteTourn(req: Request, res: Response) {
+	const { tournId } = req.params;
+	if (!tournId) return BadRequest(req, res, 'Tournament ID is required');
+
+	await tournRepo.deleteTourn(db, Number(tournId));
+
+	return res.status(204).send();
+}
+
+export default {
+	getTourn,
+	createTourn,
+	updateTourn,
+	deleteTourn,
+};

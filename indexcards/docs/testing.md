@@ -93,9 +93,9 @@ describe('fooRepo', () => {
 	describe('getById', () => {
 		it('returns foo for a given id', async () => {
 			// Arrange
-			const { fooId } = await factories.foo.createTestFoo();
+			const Foo = await factories.foo.create();
 			// Act
-			const foo = await fooRepo.getById(fooId);
+			const foo = await fooRepo.getById(Foo.id);
 			// Assert
 			expect(foo).toBeDefined();
 			//...
