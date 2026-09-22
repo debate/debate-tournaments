@@ -207,10 +207,12 @@ export const getResultSet = async (scope = {}, query = {}, opts = {}) => {
 
 				if (result.cache) {
 					cache = JSON.parse(result.cache);
-					Object.keys(cache).forEach( (key) => {
-						result[key] = cache[key];
-					});
-					delete result.cache;
+					if (cache && Object.keys(cache)) {
+						Object.keys(cache).forEach( (key) => {
+							result[key] = cache[key];
+						});
+						delete result.cache;
+					}
 				}
 				return stripNulls(result);
 			});

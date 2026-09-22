@@ -163,7 +163,7 @@ export async function getSchematic (req,res) {
 	// right royal nightmare, and I don't trust other frontends to do it
 	// properly either because localization can lie.
 
-	round.times = showFlightTimes(round, req.person.tz);
+	round.times = showFlightTimes(round, req.person?.tz || 'UTC');
 
 	// Now the publication level determines what the person gets back.  Entry
 	// List is the easiest.

@@ -41,7 +41,7 @@ export const ConfigSchema = z.object({
 		notify_slack: z.string().min(1),
 	}).optional(),
 	//--------------------------------------------------------------------------
-	// DATABASE 
+	// DATABASE
 	// ------------------------------------------------------------------------
 	db: z.object({
 		host: z.string(),
@@ -162,7 +162,7 @@ export const ConfigSchema = z.object({
 		port: z.int().default(25),
 		pool: z.int().positive().default(128),
 		admin: z.object({
-		secure: z.boolean().default(false),	
+		secure: z.boolean().default(false),
 		server: z.string().default('localhost'),
 		port: z.int().default(25),
 		pool: z.int().positive().default(128),
@@ -214,7 +214,7 @@ function loadConfigFile(filePath: string): Record<string, object> {
 async function loadRuntimeConfig(): Promise<RuntimeConfig> {
   const configDir = process.env.CONFIG_DIR || './config';
   const nodeEnv = process.env.NODE_ENV || 'development';
-  
+
   const baseConfigPath = path.join(configDir, 'config.json');
   const envConfigPath = path.join(configDir, `config.${nodeEnv}.json`);
 
@@ -237,7 +237,7 @@ async function loadRuntimeConfig(): Promise<RuntimeConfig> {
   try {
     const validated = ConfigSchema.parse(mergedData);
     console.info('Configuration validated successfully against schema');
-    
+
     return validated;
   } catch (error) {
     if (error instanceof z.ZodError) {

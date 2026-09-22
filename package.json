@@ -43,5 +43,6 @@
 	"devDependencies": {
 		"eslint-plugin-storybook": "^10.5.10",
 		"oxlint": "^1.80.0"
-	}
+	},
+	"allowScripts": {}
 }
