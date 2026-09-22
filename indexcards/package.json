@@ -98,6 +98,6 @@
 		"tsx": "^4.19.2",
 		"typescript": "^7.0.2",
 		"vitest": "^4.0.17",
-		"zod-openapi": "^5.4.6"
+		"zod-openapi": "^6.0.2"
 	}
 }
