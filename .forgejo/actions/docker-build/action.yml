@@ -1,27 +1,22 @@
 name: Build Docker Image
 
-on:
-  workflow_call:
-    inputs:
-      image:
-        required: true
-        type: string
-      dockerfile:
-        required: true
-        type: string
+inputs:
+  image:
+    required: true
+    description: Docker image name
 
-jobs:
-  build:
-    runs-on: linux-amd64
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v7
+  dockerfile:
+    required: true
+    description: Path to Dockerfile
 
-      - name: Build image
-        run: |
-          docker build \
-            -f "${{ inputs.dockerfile }}" \
-            -t "${{ inputs.image }}:${FORGEJO_SHA}" \
-            -t "${{ inputs.image }}:production" \
-            .
-
+runs:
+  using: composite
+  steps:
+    - name: Build image
+      shell: bash
+      run: |
+        docker build \
+          -f "${{ inputs.dockerfile }}" \
+          -t "${{ inputs.image }}:${FORGEJO_SHA}" \
+          -t "${{ inputs.image }}:production" \
+          .
