@@ -26,9 +26,6 @@ describe('judgesController', () => {
 	beforeAll(async () => {
 		person = await factories.person.create();
 	});
-	beforeEach(() => {
-		vi.clearAllMocks();
-	});
 	describe('linkRequests', () => {
 		it('should return linked judges and chapter judges for the user', async () => {
 			const Judge1 = await factories.judge.create({ person_request: person.id });

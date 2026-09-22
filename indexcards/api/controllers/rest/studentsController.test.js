@@ -5,10 +5,6 @@ import personRepo from '../../repos/personRepo.js';
 import changeLogRepo from '../../repos/changeLogRepo.js';
 import logger from '../../helpers/logger.js';
 
-afterEach(() => {
-	vi.restoreAllMocks();
-});
-
 describe('studentsController', () => {
 	describe('unlinkedSearch', () => {
 		it('returns mapped student results and updates settings for non-admin actor', async () => {

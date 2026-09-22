@@ -16,10 +16,6 @@ import judgeRepo from '../../repos/judgeRepo.js';
 import chapterJudgeRepo from '../../repos/chapterJudgeRepo.js';
 
 describe('judgesController.unlinkedSearch', () => {
-	beforeEach(() => {
-		vi.clearAllMocks();
-	});
-
 	it('combines judge and chapter_judge results', async () => {
 		vi.mocked(judgeRepo.unlinkedSearch).mockResolvedValue([
 			{ id: 1, first: 'Alex', middle: null, last: 'Smith', tourn_name: 'State', school_name: 'Central High' },

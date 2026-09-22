@@ -171,7 +171,6 @@ describe('HandleFetch Hook', () => {
 	let mockFetch: MockedFunction<typeof fetch>;
 
 	beforeEach(() => {
-		vi.clearAllMocks();
 		mockFetch = vi.fn().mockResolvedValue(new Response('ok')) as MockedFunction<typeof fetch>;
 	});
 
@@ -278,10 +277,6 @@ describe('HandleFetch Hook', () => {
 });
 
 describe('HandleError Hook', () => {
-	beforeEach(() => {
-		vi.clearAllMocks();
-	});
-
 	it('logs unhandled errors with request metadata and returns error message and id', () => {
 		const error = new Error('Something went wrong');
 		const event = createRequestEvent({

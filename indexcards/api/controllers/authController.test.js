@@ -7,10 +7,6 @@ import sessionRepo from '../repos/sessionRepo.js';
 import { ValidationError } from '../helpers/errors/errors.js';
 import personRepo from '../repos/personRepo.js';
 
-afterEach(() => {
-	vi.restoreAllMocks();
-});
-
 describe('authController',() => {
 	describe('login', () => {
 		it('returns 401 when credentials are invalid', async () => {
