@@ -18,6 +18,9 @@ async function getParadigms(req: Request, res: Response) {
 		limit: limit,
 		offset: offset,
 	});
+	if (!paradigms || paradigms.length === 0) {
+		return res.json([]);
+	}
 	const Judges = await getJudgesForPersons(db, paradigms.map(p => p.id));
 	const results = paradigms.map(p => {
 		const nameParts = [p.first, p.middle, p.last].filter(Boolean);

@@ -95,6 +95,15 @@ describe('paradigmsController', () => {
 			expect(paradigm.schools[0].name).toBe('lt5Years');
 
 		});
+		it('returns an empty array if no paradigms are found', async () => {
+			vi.spyOn(personRepo, 'personSearch').mockResolvedValue([]);
+			const { req, res } = createContext({
+				valid: {query: {}},
+			});
+			await paradigmsController.getParadigms(req, res);
+			expect(res).not.toBeProblemResponse();
+			expect(res.body).toEqual([]);
+		});
 	});
 	describe('getParadigmByPersonId', async () => {
 		it('should return paradigms for a given personId', async () => {
