@@ -15,8 +15,6 @@ jobs:
     services:
       mariadb:
         image: mariadb:12
-        ports:
-          - '3307:3306'
         env:
           MARIADB_DATABASE: tabroom
           MARIADB_USER: tabroom
