@@ -5,9 +5,9 @@
  * Tabroom.com data & operational API
  * OpenAPI spec version: 1.2.0
  */
-import type { Problem } from './problem';
+import type { ProblemSchema } from './problemSchema';
 
 /**
  * Forbidden - You do not have permission to perform this action.
  */
-export type ForbiddenResponse = Problem;
+export type ForbiddenResponse = ProblemSchema;

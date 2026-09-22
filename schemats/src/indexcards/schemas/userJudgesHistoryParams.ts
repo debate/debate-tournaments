@@ -8,15 +8,13 @@
 
 export type UserJudgesHistoryParams = {
 	/**
-	 * The number of results to return.
+	 * @minimum -9007199254740991
 	 * @maximum 9007199254740991
-	 * @exclusiveMinimum 0
 	 */
 	limit?: number;
 	/**
-	 * The number of results to skip when returning.
+	 * @minimum -9007199254740991
 	 * @maximum 9007199254740991
-	 * @exclusiveMinimum 0
 	 */
 	offset?: number;
 };

@@ -7,7 +7,7 @@ config({ quiet: true});
 export default defineConfig({
 	indexcards: {
 		input: {
-			target: `${process.env.INDEXCARDS_HOST}${process.env.INDEXCARDS_BASE_PATH ?? '/v1'}`,
+			target: `../../indexcards/api/routes/openapi/openapi.json`,
 			filters: {
 				tags: ['Orval'],
 			},

@@ -59,79 +59,27 @@ export const TournRequestSchema = z.object({
 	id: 'TournRequest',
 }) satisfies ZodOpenApiSchemaObject;
 
-export const TournContactSchema = {
-	type : 'object',
+export const TournContactSchema = z.object({
+	id: z.number().int(),
+	first: z.string(),
+	middle: z.string().nullable(),
+	last: z.string(),
+	email: z.email(),
+}).meta({
+	id: 'TournContact',
 	description: 'A tournament contact person',
-	properties: {
-		id: {
-			type: 'integer',
-			description: 'The unique identifier for the contact person',
-			readOnly: true,
-			example: 456,
-		},
-		first: {
-			type: 'string',
-			description: 'The first name of the contact person',
-			example: 'John',
-		},
-		middle: {
-			type: ['string', 'null'],
-			description: 'The middle name of the contact person',
-			example: 'A.',
-		},
-		last: {
-			type: 'string',
-			description: 'The last name of the contact person',
-			example: 'Doe',
-		},
-		email: {
-			type: 'string',
-			format: 'email',
-			description: 'The email address of the contact person',
-			example: 'johndoe@example.com',
-		},
-	},
-} as const satisfies ZodOpenApiSchemaObject;
+}).strict() satisfies ZodOpenApiSchemaObject;
 
-export const BackupRequestSchema = {
-	type: 'object',
+export const BackupRequestSchema = z.object({
+	scope: z.object({
+		type: z.enum(['tournament', 'category', 'event', 'school']),
+		id: z.number().int().optional(),
+	}).strict(),
+	options: z.object({
+		ignoreComments: z.boolean().optional(),
+		ignoreBallots: z.boolean().optional(),
+	}).strict().optional(),
+}).strict().meta({
+	id: 'BackupRequest',
 	description: 'A request to create a backup for a tournament or part of a tournament',
-	required: ['scope'],
-	properties: {
-		scope: {
-			type: 'object',
-			description: 'Defines what part of the tournament to back up',
-			required: ['type'],
-			properties: {
-				type: {
-					type: 'string',
-					description: 'The scope of the backup',
-					enum: ['tournament', 'category', 'event', 'school'],
-				},
-				id: {
-					type: 'integer',
-					description:
-				'The ID of the category, event, or school being backed up (required when scope type is not "tournament")',
-				},
-			},
-			additionalProperties: false,
-		},
-
-		options: {
-			type: 'object',
-			description: 'Optional flags that affect how the backup is generated',
-			properties: {
-				ignoreComments: {
-					type: 'boolean',
-					description: 'Exclude comments from the backup',
-				},
-				ignoreBallots: {
-					type: 'boolean',
-					description: 'Exclude ballots from the backup',
-				},
-			},
-			additionalProperties: false,
-		},
-	},
-	additionalProperties: false,
-} as const satisfies ZodOpenApiSchemaObject;
+}) satisfies ZodOpenApiSchemaObject;

@@ -2,13 +2,13 @@
 	import { TabItem, Tabs, Skeleton } from 'flowbite-svelte';
 	import { showDateTime } from '$lib/helpers/dt';
 	import Quiz from './Quiz.svelte';
-	import type { ParadigmDetails } from '$indexcards/schemas';
+	import type { ParadigmDetailsSchema } from '$indexcards/schemas';
 	import { getPerson } from '$lib/helpers/SessionContext.svelte';
     import type { JudgeRecord } from '$indexcards/schemas';
 	import JudgeRecordTable from './judgeRecord.svelte';
 
 	type Props = {
-		data         : ParadigmDetails | null;
+		data         : ParadigmDetailsSchema | null;
 		record       : JudgeRecord[] | null;
 		isLoading    : boolean;
 		recordLoading : boolean;

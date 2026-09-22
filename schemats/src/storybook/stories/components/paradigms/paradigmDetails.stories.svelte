@@ -1,13 +1,13 @@
 <script lang="ts" module>
 	import { faker } from '@faker-js/faker';
-	import type { ParadigmDetails as ParadigmDetailsData } from '$indexcards/schemas';
+	import type { ParadigmDetailsSchema } from '$indexcards/schemas';
 	import { getRestParadigmResponseMock } from '$indexcards/index.msw';
 	import { fakeParadigmCertBadge } from '../../../utils/fakerUtils';
 	import { defineMeta } from '@storybook/addon-svelte-csf';
 	import ParadigmDetails from '../../../../routes/paradigms/[id]/paradigmDetails.svelte';
 	import { fn } from 'storybook/test';
 
-	const generateFakeData = (): ParadigmDetailsData => ({
+	const generateFakeData = (): ParadigmDetailsSchema => ({
 		...getRestParadigmResponseMock(),
 		name: faker.person.fullName(),
 		paradigm: `<p>${faker.lorem.paragraphs(10)}</p>`,

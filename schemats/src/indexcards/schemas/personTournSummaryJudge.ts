@@ -8,5 +8,6 @@
 
 export type PersonTournSummaryJudge = {
 	categoryName: string;
+	/** @nullable */
 	schoolName: string | null;
 } | null;

@@ -5,9 +5,9 @@
  * Tabroom.com data & operational API
  * OpenAPI spec version: 1.2.0
  */
-import type { Problem } from './problem';
+import type { ProblemSchema } from './problemSchema';
 
 /**
  * Unauthorized - authentication failed or was not provided.
  */
-export type UnauthorizedResponse = Problem;
+export type UnauthorizedResponse = ProblemSchema;

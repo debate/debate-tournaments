@@ -9,14 +9,14 @@
 export type UserJudgesClaimParams = {
 	/**
 	 * ID of the judge to claim (if claiming a judge)
+	 * @minimum -9007199254740991
 	 * @maximum 9007199254740991
-	 * @exclusiveMinimum 0
 	 */
 	judgeId?: number;
 	/**
 	 * ID of the chapter judge to claim (if claiming a chapter judge)
+	 * @minimum -9007199254740991
 	 * @maximum 9007199254740991
-	 * @exclusiveMinimum 0
 	 */
 	chapterJudgeId?: number;
 };

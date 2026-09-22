@@ -22,10 +22,16 @@ export interface InboxMessage {
 	body: string | null;
 	/** The URL associated with the message */
 	url: string | null;
-	/** The timestamp when the message became visible */
-	visibleAt: string | null;
-	/** The timestamp when the message was read */
-	readAt: string | null;
+	/**
+	 * The timestamp when the message became visible
+	 * @nullable
+	 */
+	visible_at: string | null;
+	/**
+	 * The timestamp when the message was read
+	 * @nullable
+	 */
+	read_at: string | null;
 	/** The tournament associated with the message */
 	Tourn: InboxMessageTourn;
 	/** The sender of the message */

@@ -10,7 +10,10 @@
  * The sender of the message
  */
 export type InboxMessageSender = {
-	/** The name of the sender */
+	/**
+	 * The name of the sender
+	 * @nullable
+	 */
 	name: string | null;
 	/** The email of the sender */
 	email: string | null;

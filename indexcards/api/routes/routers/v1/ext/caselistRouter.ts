@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import * as controller from '../../../../controllers/ext/caselistController.js';
 import z from 'zod';
-import { StudentSchema } from '@tabroom/types';
+import { StudentSchema, ChapterSchema } from '@tabroom/types'; 
 import { requireExtApiKey } from '../../../openapi/security.js';
 
 const router = Router();
@@ -28,10 +28,7 @@ router.route('/chapters').get(controller.getPersonChapters).openapi = {
 			description: 'Person Chapters',
 			content: {
 				'application/json': {
-					schema: {
-						type: 'array',
-						items: { $ref: '#/components/schemas/Chapter' },
-					},
+					schema: z.array(ChapterSchema),
 				},
 			},
 		},

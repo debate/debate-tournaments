@@ -1,25 +1,18 @@
 import type { ZodOpenApiSchemaObject } from 'zod-openapi';
+import { z } from 'zod';
+import { datetime } from './utils.js';
+import { EventSchema } from './Event.js';
+import { PersonSchema } from './Person.js';
 
-export const TopicSchema = {
-	type: 'object',
-	required: ['id', 'tag', 'source', 'schoolYear', 'topicText'],
-	properties: {
-		id  : { type : 'integer' } ,
-		tag : { type : 'string' }  ,
-		source   : {
-			type : 'string',
-			enum : ['NSDA', 'NCFL', 'CEDA', 'NFHS', 'CPFL', 'NFA', 'AFA'],
-		},
-		schoolYear : { type : 'integer' } ,
-		eventType  : { type : 'string' }  ,
-		pattern    : { type : 'string' }  ,
-		topicText  : { type : 'string' }  ,
-
-		createdAt : { type : 'string'    , format : 'date-time' }        ,
-		createdBy : { $ref: '#/components/schemas/Person' },
-		Events: {
-			type: 'array',
-			items: { $ref: '#/components/schemas/Event' },
-		},
-	},
-} as const satisfies ZodOpenApiSchemaObject;
+export const TopicZodSchema = z.object({
+	id: z.number().int(),
+	tag: z.string(),
+	source: z.enum(['NSDA', 'NCFL', 'CEDA', 'NFHS', 'CPFL', 'NFA', 'AFA']),
+	schoolYear: z.number().int(),
+	eventType: z.string(),
+	pattern: z.string(),
+	topicText: z.string(),
+	createdAt: datetime(),
+	createdBy: PersonSchema,
+	Events: z.array(EventSchema),
+}) satisfies ZodOpenApiSchemaObject;

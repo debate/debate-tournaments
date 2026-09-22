@@ -1,6 +1,8 @@
 import { Router } from 'express';
 import { requireAccess } from '../../../../../middleware/authorization/authorization.js';
 import * as controller from '../../../../../controllers/tab/schoolController.js';
+import { z } from 'zod';
+import { SchoolSchema } from '@tabroom/types';
 
 const router = Router({ mergeParams: true });
 
@@ -14,10 +16,7 @@ router.route('/').get( requireAccess('tourn', 'read'), controller.getSchools).op
 			description: 'Schools retrieved successfully',
 			content: {
 				'application/json': {
-					schema: {
-						type: 'array',
-						items: { $ref: '#/components/schemas/School' },
-					},
+					schema: z.array(SchoolSchema)
 				},
 			},
 		},
@@ -65,7 +64,7 @@ router.route('/:schoolId').get(   requireAccess('tourn', 'read'),  controller.ge
 			description: 'School retrieved successfully',
 			content: {
 				'application/json': {
-					schema: { $ref: '#/components/schemas/School' },
+					schema: SchoolSchema
 				},
 			},
 		},

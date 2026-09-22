@@ -1,28 +1,14 @@
 import type { ZodOpenApiSchemaObject } from 'zod-openapi';
+import { FileSchema } from './File.js';
+import { WebpageSchema } from './Webpage.js';
+import { EventSchema } from './Event.js';
+import { TournSchema, TournContactSchema } from './Tourn.js';
+import { z } from 'zod';
 
-export const TournInviteSchema = {
-	allOf: [
-		{ $ref: '#/components/schemas/Tourn' },
-		{
-			type: 'object',
-			properties: {
-				Webpages: {
-					type: 'array',
-					items: { $ref: '#/components/schemas/Webpage' },
-				},
-				Files: {
-					type: 'array',
-					items: { $ref: '#/components/schemas/File' },
-				},
-				Events: {
-					type: 'array',
-					items: { $ref: '#/components/schemas/EventInviteSchema' },
-				},
-				Contacts: {
-					type: 'array',
-					items: { $ref: '#/components/schemas/TournContact' },
-				},
-			},
-		},
-	],
-} as const satisfies ZodOpenApiSchemaObject;
+export const TournInviteSchema = z.object({
+	...TournSchema.shape,
+	Webpages: z.array(WebpageSchema),
+	Files: z.array(FileSchema),
+	Events: z.array(EventSchema),
+	Contacts: z.array(TournContactSchema),
+}) satisfies ZodOpenApiSchemaObject;

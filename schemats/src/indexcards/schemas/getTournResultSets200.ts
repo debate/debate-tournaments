@@ -5,6 +5,6 @@
  * Tabroom.com data & operational API
  * OpenAPI spec version: 1.2.0
  */
-import type { EventResultSets } from './eventResultSets';
+import type { EventResultSetsSchema } from './eventResultSetsSchema';
 
-export type GetTournResultSets200 = { [key: string]: EventResultSets };
+export type GetTournResultSets200 = { [key: string]: EventResultSetsSchema };

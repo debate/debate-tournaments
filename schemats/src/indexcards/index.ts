@@ -28,7 +28,7 @@ import type {
 } from '@tanstack/svelte-query';
 
 import type {
-	ActiveCircuitsResponse,
+	ActiveCircuitsResponseSchema,
 	AuthSuBody,
 	BadRequestResponse,
 	CurrentBallot,
@@ -44,7 +44,7 @@ import type {
 	LoginRequest,
 	LoginResponse,
 	NotFoundResponse,
-	ParadigmDetails,
+	ParadigmDetailsSchema,
 	PersonTournSummary,
 	PostUserJudgesParadigmBody,
 	QuizOutput,
@@ -57,13 +57,13 @@ import type {
 	RestQuizzesParams,
 	RestStudentsUnlinkedSearchParams,
 	RestTournsParams,
-	ResultSet,
+	ResultSetSchema,
 	Session,
-	Student,
+	StudentSchema,
 	Tourn,
 	UnauthorizedResponse,
-	UnlinkedJudge,
-	UnlinkedStudentSearch,
+	UnlinkedJudgeSchema,
+	UnlinkedStudentSearchSchema,
 	UserChapter,
 	UserInboxUnread200,
 	UserJudgesClaim200,
@@ -270,7 +270,7 @@ export const prefetchRestAdsQuery = async <
 };
 
 export type restCircuitsActiveResponse200 = {
-	data: ActiveCircuitsResponse;
+	data: ActiveCircuitsResponseSchema;
 	status: 200;
 };
 
@@ -783,7 +783,7 @@ export const prefetchRestCircuitQuery = async <
 };
 
 export type restJudgesUnlinkedSearchResponse200 = {
-	data: UnlinkedJudge[];
+	data: UnlinkedJudgeSchema[];
 	status: 200;
 };
 
@@ -1639,7 +1639,7 @@ export const prefetchGetTournResultSetsQuery = async <
 };
 
 export type getResultSetResponse200 = {
-	data: ResultSet[];
+	data: ResultSetSchema[];
 	status: 200;
 };
 
@@ -2194,7 +2194,7 @@ export const prefetchRestParadigmsQuery = async <
 };
 
 export type restParadigmResponse200 = {
-	data: ParadigmDetails;
+	data: ParadigmDetailsSchema;
 	status: 200;
 };
 
@@ -2879,7 +2879,7 @@ export const prefetchRestQuizzesQuery = async <
 };
 
 export type restStudentsUnlinkedSearchResponse200 = {
-	data: UnlinkedStudentSearch[];
+	data: UnlinkedStudentSearchSchema[];
 	status: 200;
 };
 
@@ -6109,7 +6109,7 @@ export const prefetchUserSessionQuery = async <
 };
 
 export type userJudgesLinkRequestsResponse200 = {
-	data: UnlinkedJudge[];
+	data: UnlinkedJudgeSchema[];
 	status: 200;
 };
 
@@ -7258,7 +7258,7 @@ export const prefetchUserJudgesLiveDocsQuery = async <
 };
 
 export type userStudentsLinkRequestsResponse200 = {
-	data: Student[];
+	data: StudentSchema[];
 	status: 200;
 };
 

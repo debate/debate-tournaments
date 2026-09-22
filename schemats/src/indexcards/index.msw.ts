@@ -11,7 +11,7 @@ import { HttpResponse, http } from 'msw';
 import type { RequestHandlerOptions } from 'msw';
 
 import type {
-	ActiveCircuitsResponse,
+	ActiveCircuitsResponseSchema,
 	CurrentBallot,
 	Fine,
 	GetTournResultSets200,
@@ -20,17 +20,17 @@ import type {
 	JudgeHistory,
 	JudgeRecord,
 	LoginResponse,
-	ParadigmDetails,
+	ParadigmDetailsSchema,
 	PersonTournSummary,
 	QuizOutput,
 	RestCircuit,
 	RestParadigms200Item,
-	ResultSet,
+	ResultSetSchema,
 	Session,
-	Student,
+	StudentSchema,
 	Tourn,
-	UnlinkedJudge,
-	UnlinkedStudentSearch,
+	UnlinkedJudgeSchema,
+	UnlinkedStudentSearchSchema,
 	UserChapter,
 	UserInboxUnread200,
 	UserJudgesClaim200,
@@ -52,24 +52,25 @@ export const getRestAdsResponseMock = (): HomepageAd[] =>
 		]),
 	}));
 
-export const getRestCircuitsActiveResponseMock = (): ActiveCircuitsResponse =>
-	Array.from(
-		{ length: faker.number.int({ min: 1, max: 10 }) },
-		(_, i) => i + 1,
-	).map(() => ({
-		id: faker.number.int({ min: 0, max: 9007199254740991 }),
-		name: faker.string.alpha({ length: { min: 10, max: 63 } }),
-		abbr: faker.string.alpha({ length: { min: 10, max: 15 } }),
-		state: faker.helpers.arrayElement([
-			faker.helpers.fromRegExp('^[A-Z]{2}$'),
-			null,
-		]),
-		country: faker.helpers.arrayElement([
-			faker.helpers.fromRegExp('^[A-Z]{2}$'),
-			null,
-		]),
-		tournCount: faker.number.int({ min: 0, max: 9007199254740991 }),
-	}));
+export const getRestCircuitsActiveResponseMock =
+	(): ActiveCircuitsResponseSchema =>
+		Array.from(
+			{ length: faker.number.int({ min: 1, max: 10 }) },
+			(_, i) => i + 1,
+		).map(() => ({
+			id: faker.number.int({ min: 0, max: 9007199254740991 }),
+			name: faker.string.alpha({ length: { min: 10, max: 63 } }),
+			abbr: faker.string.alpha({ length: { min: 10, max: 15 } }),
+			state: faker.helpers.arrayElement([
+				faker.helpers.fromRegExp('^[A-Z]{2}$'),
+				null,
+			]),
+			country: faker.helpers.arrayElement([
+				faker.helpers.fromRegExp('^[A-Z]{2}$'),
+				null,
+			]),
+			tournCount: faker.number.int({ min: 0, max: 9007199254740991 }),
+		}));
 
 export const getRestCircuitResponseMock = (
 	overrideResponse: Partial<Extract<RestCircuit, object>> = {},
@@ -96,10 +97,7 @@ export const getRestCircuitResponseMock = (
 		]),
 		undefined,
 	]),
-	active: faker.helpers.arrayElement([
-		faker.helpers.arrayElement([faker.datatype.boolean(), null]),
-		undefined,
-	]),
+	active: faker.helpers.arrayElement([faker.datatype.boolean(), undefined]),
 	state: faker.helpers.arrayElement([
 		faker.helpers.arrayElement([
 			faker.helpers.fromRegExp('^[A-Z]{2}$'),
@@ -124,40 +122,44 @@ export const getRestCircuitResponseMock = (
 	...overrideResponse,
 });
 
-export const getRestJudgesUnlinkedSearchResponseMock = (): UnlinkedJudge[] =>
-	Array.from(
-		{ length: faker.number.int({ min: 1, max: 10 }) },
-		(_, i) => i + 1,
-	).map(() => ({
-		id: faker.number.int({ min: 0, max: 9007199254740991 }),
-		type: faker.helpers.arrayElement(['judge', 'chapter_judge'] as const),
-		first: faker.helpers.arrayElement([
-			faker.string.alpha({ length: { min: 10, max: 20 } }),
-			null,
-		]),
-		last: faker.helpers.arrayElement([
-			faker.string.alpha({ length: { min: 10, max: 20 } }),
-			null,
-		]),
-		schoolName: faker.helpers.arrayElement([
-			faker.helpers.arrayElement([
+export const getRestJudgesUnlinkedSearchResponseMock =
+	(): UnlinkedJudgeSchema[] =>
+		Array.from(
+			{ length: faker.number.int({ min: 1, max: 10 }) },
+			(_, i) => i + 1,
+		).map(() => ({
+			id: faker.number.int({ min: 0, max: 9007199254740991 }),
+			type: faker.helpers.arrayElement([
+				'judge',
+				'chapter_judge',
+			] as const),
+			first: faker.helpers.arrayElement([
 				faker.string.alpha({ length: { min: 10, max: 20 } }),
 				null,
 			]),
-			undefined,
-		]),
-		tournName: faker.helpers.arrayElement([
-			faker.helpers.arrayElement([
+			last: faker.helpers.arrayElement([
 				faker.string.alpha({ length: { min: 10, max: 20 } }),
 				null,
 			]),
-			undefined,
-		]),
-		tournCount: faker.helpers.arrayElement([
-			faker.number.int({ min: 0, max: 9007199254740991 }),
-			undefined,
-		]),
-	}));
+			schoolName: faker.helpers.arrayElement([
+				faker.helpers.arrayElement([
+					faker.string.alpha({ length: { min: 10, max: 20 } }),
+					null,
+				]),
+				undefined,
+			]),
+			tournName: faker.helpers.arrayElement([
+				faker.helpers.arrayElement([
+					faker.string.alpha({ length: { min: 10, max: 20 } }),
+					null,
+				]),
+				undefined,
+			]),
+			tournCount: faker.helpers.arrayElement([
+				faker.number.int({ min: 0, max: 9007199254740991 }),
+				undefined,
+			]),
+		}));
 
 export const getRestTournsResponseMock = (): Tourn[] =>
 	Array.from(
@@ -181,10 +183,10 @@ export const getRestTournsResponseMock = (): Tourn[] =>
 		tz: faker.string.alpha({ length: { min: 10, max: 31 } }),
 		webname: faker.string.alpha({ length: { min: 10, max: 20 } }),
 		hidden: faker.datatype.boolean(),
-		start: faker.date.past().toISOString().slice(0, 19) + 'Z',
-		end: faker.date.past().toISOString().slice(0, 19) + 'Z',
-		regStart: faker.date.past().toISOString().slice(0, 19) + 'Z',
-		regEnd: faker.date.past().toISOString().slice(0, 19) + 'Z',
+		start: faker.string.alpha({ length: { min: 10, max: 20 } }),
+		end: faker.string.alpha({ length: { min: 10, max: 20 } }),
+		regStart: faker.string.alpha({ length: { min: 10, max: 20 } }),
+		regEnd: faker.string.alpha({ length: { min: 10, max: 20 } }),
 	}));
 
 export const getGetTournResultSetsResponseMock = (): GetTournResultSets200 => ({
@@ -208,7 +210,7 @@ export const getGetTournResultSetsResponseMock = (): GetTournResultSets200 => ({
 	},
 });
 
-export const getGetResultSetResponseMock = (): ResultSet[] =>
+export const getGetResultSetResponseMock = (): ResultSetSchema[] =>
 	Array.from(
 		{ length: faker.number.int({ min: 1, max: 10 }) },
 		(_, i) => i + 1,
@@ -273,8 +275,8 @@ export const getRestParadigmsResponseMock = (): RestParadigms200Item[] =>
 	}));
 
 export const getRestParadigmResponseMock = (
-	overrideResponse: Partial<Extract<ParadigmDetails, object>> = {},
-): ParadigmDetails => ({
+	overrideResponse: Partial<Extract<ParadigmDetailsSchema, object>> = {},
+): ParadigmDetailsSchema => ({
 	id: faker.number.int({ min: 0, max: 9007199254740991 }),
 	name: faker.helpers.arrayElement([
 		faker.string.alpha({ length: { min: 10, max: 20 } }),
@@ -426,7 +428,7 @@ export const getRestQuizzesResponseMock = (): QuizOutput[] =>
 	}));
 
 export const getRestStudentsUnlinkedSearchResponseMock =
-	(): UnlinkedStudentSearch[] =>
+	(): UnlinkedStudentSearchSchema[] =>
 		Array.from(
 			{ length: faker.number.int({ min: 1, max: 10 }) },
 			(_, i) => i + 1,
@@ -506,10 +508,10 @@ export const getUserTournsResponseMock = (): Tourn[] =>
 		tz: faker.string.alpha({ length: { min: 10, max: 31 } }),
 		webname: faker.string.alpha({ length: { min: 10, max: 20 } }),
 		hidden: faker.datatype.boolean(),
-		start: faker.date.past().toISOString().slice(0, 19) + 'Z',
-		end: faker.date.past().toISOString().slice(0, 19) + 'Z',
-		regStart: faker.date.past().toISOString().slice(0, 19) + 'Z',
-		regEnd: faker.date.past().toISOString().slice(0, 19) + 'Z',
+		start: faker.string.alpha({ length: { min: 10, max: 20 } }),
+		end: faker.string.alpha({ length: { min: 10, max: 20 } }),
+		regStart: faker.string.alpha({ length: { min: 10, max: 20 } }),
+		regEnd: faker.string.alpha({ length: { min: 10, max: 20 } }),
 	}));
 
 export const getUserTournsSummaryResponseMock = (
@@ -518,8 +520,8 @@ export const getUserTournsSummaryResponseMock = (
 	id: faker.number.int({ min: 0, max: 9007199254740991 }),
 	name: faker.string.alpha({ length: { min: 10, max: 63 } }),
 	webname: faker.string.alpha({ length: { min: 10, max: 20 } }),
-	start: faker.date.past().toISOString().slice(0, 19) + 'Z',
-	end: faker.date.past().toISOString().slice(0, 19) + 'Z',
+	start: faker.string.alpha({ length: { min: 10, max: 20 } }),
+	end: faker.string.alpha({ length: { min: 10, max: 20 } }),
 	tz: faker.string.alpha({ length: { min: 10, max: 31 } }),
 	roles: faker.helpers.arrayElements(['student', 'coach', 'judge'] as const),
 	livedocs: Array.from(
@@ -593,8 +595,8 @@ export const getUserTournsBallotsResponseMock = (): CurrentBallot[] =>
 		show_async: faker.datatype.boolean(),
 		onlineBallots: faker.datatype.boolean(),
 		legion: faker.datatype.boolean(),
-		start: faker.date.past().toISOString().slice(0, 19) + 'Z',
-		deadline: faker.date.past().toISOString().slice(0, 19) + 'Z',
+		start: faker.string.alpha({ length: { min: 10, max: 20 } }),
+		deadline: faker.string.alpha({ length: { min: 10, max: 20 } }),
 		roomId: faker.helpers.arrayElement([
 			faker.number.int({ min: 0, max: 9007199254740991 }),
 			null,
@@ -699,8 +701,8 @@ export const getUserTournsBallotsCurrentResponseMock = (): CurrentBallot[] =>
 		show_async: faker.datatype.boolean(),
 		onlineBallots: faker.datatype.boolean(),
 		legion: faker.datatype.boolean(),
-		start: faker.date.past().toISOString().slice(0, 19) + 'Z',
-		deadline: faker.date.past().toISOString().slice(0, 19) + 'Z',
+		start: faker.string.alpha({ length: { min: 10, max: 20 } }),
+		deadline: faker.string.alpha({ length: { min: 10, max: 20 } }),
 		roomId: faker.helpers.arrayElement([
 			faker.number.int({ min: 0, max: 9007199254740991 }),
 			null,
@@ -790,11 +792,11 @@ export const getUserInboxResponseMock = (): InboxMessage[] =>
 			null,
 		]),
 		url: faker.helpers.arrayElement([faker.internet.url(), null]),
-		visibleAt: faker.helpers.arrayElement([
+		visible_at: faker.helpers.arrayElement([
 			faker.string.alpha({ length: { min: 10, max: 20 } }),
 			null,
 		]),
-		readAt: faker.helpers.arrayElement([
+		read_at: faker.helpers.arrayElement([
 			faker.string.alpha({ length: { min: 10, max: 20 } }),
 			null,
 		]),
@@ -856,11 +858,11 @@ export const getUserInboxGetMessageResponseMock = (
 		null,
 	]),
 	url: faker.helpers.arrayElement([faker.internet.url(), null]),
-	visibleAt: faker.helpers.arrayElement([
+	visible_at: faker.helpers.arrayElement([
 		faker.string.alpha({ length: { min: 10, max: 20 } }),
 		null,
 	]),
-	readAt: faker.helpers.arrayElement([
+	read_at: faker.helpers.arrayElement([
 		faker.string.alpha({ length: { min: 10, max: 20 } }),
 		null,
 	]),
@@ -917,35 +919,7 @@ export const getUserSessionResponseMock = (
 			id: faker.number.int({ min: 0, max: 9007199254740991 }),
 			email: faker.internet.email(),
 			first: faker.string.alpha({ length: { min: 10, max: 20 } }),
-			middle: faker.helpers.arrayElement([
-				faker.string.alpha({ length: { min: 10, max: 20 } }),
-				null,
-			]),
 			last: faker.string.alpha({ length: { min: 10, max: 20 } }),
-			state: faker.helpers.arrayElement([
-				faker.helpers.arrayElement([
-					faker.helpers.fromRegExp('^[A-Z]{2}$'),
-					null,
-				]),
-				undefined,
-			]),
-			country: faker.helpers.arrayElement([
-				faker.helpers.arrayElement([
-					faker.string.alpha({ length: { min: 10, max: 20 } }),
-					null,
-				]),
-				undefined,
-			]),
-			tz: faker.helpers.arrayElement([
-				faker.helpers.arrayElement([
-					faker.string.alpha({ length: { min: 10, max: 20 } }),
-					null,
-				]),
-				undefined,
-			]),
-			createdAt: faker.date.past().toISOString().slice(0, 19) + 'Z',
-			settings: faker.helpers.arrayElement([{}, undefined]),
-			metadata: faker.helpers.arrayElement([{}, undefined]),
 		},
 		null,
 	]),
@@ -953,73 +927,49 @@ export const getUserSessionResponseMock = (
 		id: faker.number.int({ min: 0, max: 9007199254740991 }),
 		email: faker.internet.email(),
 		first: faker.string.alpha({ length: { min: 10, max: 20 } }),
-		middle: faker.helpers.arrayElement([
-			faker.string.alpha({ length: { min: 10, max: 20 } }),
-			null,
-		]),
 		last: faker.string.alpha({ length: { min: 10, max: 20 } }),
-		state: faker.helpers.arrayElement([
-			faker.helpers.arrayElement([
-				faker.helpers.fromRegExp('^[A-Z]{2}$'),
-				null,
-			]),
-			undefined,
-		]),
-		country: faker.helpers.arrayElement([
-			faker.helpers.arrayElement([
-				faker.string.alpha({ length: { min: 10, max: 20 } }),
-				null,
-			]),
-			undefined,
-		]),
-		tz: faker.helpers.arrayElement([
-			faker.helpers.arrayElement([
-				faker.string.alpha({ length: { min: 10, max: 20 } }),
-				null,
-			]),
-			undefined,
-		]),
-		createdAt: faker.date.past().toISOString().slice(0, 19) + 'Z',
-		settings: faker.helpers.arrayElement([{}, undefined]),
-		metadata: faker.helpers.arrayElement([{}, undefined]),
 	},
 	...overrideResponse,
 });
 
-export const getUserJudgesLinkRequestsResponseMock = (): UnlinkedJudge[] =>
-	Array.from(
-		{ length: faker.number.int({ min: 1, max: 10 }) },
-		(_, i) => i + 1,
-	).map(() => ({
-		id: faker.number.int({ min: 0, max: 9007199254740991 }),
-		type: faker.helpers.arrayElement(['judge', 'chapter_judge'] as const),
-		first: faker.helpers.arrayElement([
-			faker.string.alpha({ length: { min: 10, max: 20 } }),
-			null,
-		]),
-		last: faker.helpers.arrayElement([
-			faker.string.alpha({ length: { min: 10, max: 20 } }),
-			null,
-		]),
-		schoolName: faker.helpers.arrayElement([
-			faker.helpers.arrayElement([
+export const getUserJudgesLinkRequestsResponseMock =
+	(): UnlinkedJudgeSchema[] =>
+		Array.from(
+			{ length: faker.number.int({ min: 1, max: 10 }) },
+			(_, i) => i + 1,
+		).map(() => ({
+			id: faker.number.int({ min: 0, max: 9007199254740991 }),
+			type: faker.helpers.arrayElement([
+				'judge',
+				'chapter_judge',
+			] as const),
+			first: faker.helpers.arrayElement([
 				faker.string.alpha({ length: { min: 10, max: 20 } }),
 				null,
 			]),
-			undefined,
-		]),
-		tournName: faker.helpers.arrayElement([
-			faker.helpers.arrayElement([
+			last: faker.helpers.arrayElement([
 				faker.string.alpha({ length: { min: 10, max: 20 } }),
 				null,
 			]),
-			undefined,
-		]),
-		tournCount: faker.helpers.arrayElement([
-			faker.number.int({ min: 0, max: 9007199254740991 }),
-			undefined,
-		]),
-	}));
+			schoolName: faker.helpers.arrayElement([
+				faker.helpers.arrayElement([
+					faker.string.alpha({ length: { min: 10, max: 20 } }),
+					null,
+				]),
+				undefined,
+			]),
+			tournName: faker.helpers.arrayElement([
+				faker.helpers.arrayElement([
+					faker.string.alpha({ length: { min: 10, max: 20 } }),
+					null,
+				]),
+				undefined,
+			]),
+			tournCount: faker.helpers.arrayElement([
+				faker.number.int({ min: 0, max: 9007199254740991 }),
+				undefined,
+			]),
+		}));
 
 export const getUserJudgesClaimResponseMock = (
 	overrideResponse: Partial<Extract<UserJudgesClaim200, object>> = {},
@@ -1057,7 +1007,10 @@ export const getUserJudgesLiveDocsResponseMock =
 			{ length: faker.number.int({ min: 1, max: 10 }) },
 			(_, i) => i + 1,
 		).map(() => ({
-			judgeId: faker.number.int({ min: 0, max: 9007199254740991 }),
+			judgeId: faker.number.int({
+				min: -9007199254740991,
+				max: 9007199254740991,
+			}),
 			categoryAbbr: faker.string.alpha({ length: { min: 10, max: 20 } }),
 			tournName: faker.string.alpha({ length: { min: 10, max: 20 } }),
 			tournEnd: faker.date.past().toISOString().slice(0, 19) + 'Z',
@@ -1069,7 +1022,7 @@ export const getUserJudgesLiveDocsResponseMock =
 			]),
 		}));
 
-export const getUserStudentsLinkRequestsResponseMock = (): Student[] =>
+export const getUserStudentsLinkRequestsResponseMock = (): StudentSchema[] =>
 	Array.from(
 		{ length: faker.number.int({ min: 1, max: 10 }) },
 		(_, i) => i + 1,
@@ -1201,10 +1154,7 @@ export const getUserStudentsLinkRequestsResponseMock = (): Student[] =>
 					undefined,
 				]),
 				self_prefs: faker.helpers.arrayElement([
-					faker.helpers.arrayElement([
-						faker.datatype.boolean(),
-						null,
-					]),
+					faker.datatype.boolean(),
 					undefined,
 				]),
 				level: faker.helpers.arrayElement([
@@ -1229,10 +1179,7 @@ export const getUserStudentsLinkRequestsResponseMock = (): Student[] =>
 					undefined,
 				]),
 				naudl: faker.helpers.arrayElement([
-					faker.helpers.arrayElement([
-						faker.datatype.boolean(),
-						null,
-					]),
+					faker.datatype.boolean(),
 					undefined,
 				]),
 				ipeds: faker.helpers.arrayElement([
@@ -1387,7 +1334,7 @@ export const getUserChaptersResponseMock = (): UserChapter[] =>
 			undefined,
 		]),
 		self_prefs: faker.helpers.arrayElement([
-			faker.helpers.arrayElement([faker.datatype.boolean(), null]),
+			faker.datatype.boolean(),
 			undefined,
 		]),
 		level: faker.helpers.arrayElement([
@@ -1412,7 +1359,7 @@ export const getUserChaptersResponseMock = (): UserChapter[] =>
 			undefined,
 		]),
 		naudl: faker.helpers.arrayElement([
-			faker.helpers.arrayElement([faker.datatype.boolean(), null]),
+			faker.datatype.boolean(),
 			undefined,
 		]),
 		ipeds: faker.helpers.arrayElement([
@@ -1479,10 +1426,12 @@ export const getRestAdsMockHandler = (
 
 export const getRestCircuitsActiveMockHandler = (
 	overrideResponse?:
-		| ActiveCircuitsResponse
+		| ActiveCircuitsResponseSchema
 		| ((
 				info: Parameters<Parameters<typeof http.get>[1]>[0],
-		  ) => Promise<ActiveCircuitsResponse> | ActiveCircuitsResponse),
+		  ) =>
+				| Promise<ActiveCircuitsResponseSchema>
+				| ActiveCircuitsResponseSchema),
 	options?: RequestHandlerOptions,
 ) => {
 	return http.get(
@@ -1527,10 +1476,10 @@ export const getRestCircuitMockHandler = (
 
 export const getRestJudgesUnlinkedSearchMockHandler = (
 	overrideResponse?:
-		| UnlinkedJudge[]
+		| UnlinkedJudgeSchema[]
 		| ((
 				info: Parameters<Parameters<typeof http.get>[1]>[0],
-		  ) => Promise<UnlinkedJudge[]> | UnlinkedJudge[]),
+		  ) => Promise<UnlinkedJudgeSchema[]> | UnlinkedJudgeSchema[]),
 	options?: RequestHandlerOptions,
 ) => {
 	return http.get(
@@ -1599,10 +1548,10 @@ export const getGetTournResultSetsMockHandler = (
 
 export const getGetResultSetMockHandler = (
 	overrideResponse?:
-		| ResultSet[]
+		| ResultSetSchema[]
 		| ((
 				info: Parameters<Parameters<typeof http.get>[1]>[0],
-		  ) => Promise<ResultSet[]> | ResultSet[]),
+		  ) => Promise<ResultSetSchema[]> | ResultSetSchema[]),
 	options?: RequestHandlerOptions,
 ) => {
 	return http.get(
@@ -1647,10 +1596,10 @@ export const getRestParadigmsMockHandler = (
 
 export const getRestParadigmMockHandler = (
 	overrideResponse?:
-		| ParadigmDetails
+		| ParadigmDetailsSchema
 		| ((
 				info: Parameters<Parameters<typeof http.get>[1]>[0],
-		  ) => Promise<ParadigmDetails> | ParadigmDetails),
+		  ) => Promise<ParadigmDetailsSchema> | ParadigmDetailsSchema),
 	options?: RequestHandlerOptions,
 ) => {
 	return http.get(
@@ -1719,10 +1668,12 @@ export const getRestQuizzesMockHandler = (
 
 export const getRestStudentsUnlinkedSearchMockHandler = (
 	overrideResponse?:
-		| UnlinkedStudentSearch[]
+		| UnlinkedStudentSearchSchema[]
 		| ((
 				info: Parameters<Parameters<typeof http.get>[1]>[0],
-		  ) => Promise<UnlinkedStudentSearch[]> | UnlinkedStudentSearch[]),
+		  ) =>
+				| Promise<UnlinkedStudentSearchSchema[]>
+				| UnlinkedStudentSearchSchema[]),
 	options?: RequestHandlerOptions,
 ) => {
 	return http.get(
@@ -2151,10 +2102,10 @@ export const getUserSessionMockHandler = (
 
 export const getUserJudgesLinkRequestsMockHandler = (
 	overrideResponse?:
-		| UnlinkedJudge[]
+		| UnlinkedJudgeSchema[]
 		| ((
 				info: Parameters<Parameters<typeof http.get>[1]>[0],
-		  ) => Promise<UnlinkedJudge[]> | UnlinkedJudge[]),
+		  ) => Promise<UnlinkedJudgeSchema[]> | UnlinkedJudgeSchema[]),
 	options?: RequestHandlerOptions,
 ) => {
 	return http.get(
@@ -2294,10 +2245,10 @@ export const getUserJudgesLiveDocsMockHandler = (
 
 export const getUserStudentsLinkRequestsMockHandler = (
 	overrideResponse?:
-		| Student[]
+		| StudentSchema[]
 		| ((
 				info: Parameters<Parameters<typeof http.get>[1]>[0],
-		  ) => Promise<Student[]> | Student[]),
+		  ) => Promise<StudentSchema[]> | StudentSchema[]),
 	options?: RequestHandlerOptions,
 ) => {
 	return http.get(

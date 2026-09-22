@@ -9,7 +9,7 @@ import resultSetRouter from './resultSetRouter.js';
 import eventRouter from './eventRouter.js';
 import entryRouter from './entryRouter.js';
 
-import { FileSchema } from '@tabroom/types';
+import { FileSchema, TournInviteSchema, TournSchema } from '@tabroom/types';
 const router = Router({ mergeParams: true });
 
 router.route('/').get(ValidateRequest,controller.getTourns).openapi = {
@@ -62,9 +62,7 @@ router.route('/:tournId').get(controller.getTourn).openapi = {
 			description: 'Tournament information',
 			content: {
 				'application/json': {
-					schema: {
-						$ref: '#/components/schemas/Tourn',
-					},
+					schema: TournSchema,
 				},
 			},
 		},
@@ -90,9 +88,7 @@ router.route('/:tournId/invite').get(controller.getTournInvite).openapi = {
 			description: 'Public facing page data for a given tournament',
 			content: {
 				'application/json': {
-					schema: {
-						$ref: '#/components/schemas/TournInvite',
-					},
+					schema: TournInviteSchema,
 				},
 			},
 		},

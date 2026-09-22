@@ -5,9 +5,9 @@
  * Tabroom.com data & operational API
  * OpenAPI spec version: 1.2.0
  */
-import type { Problem } from './problem';
+import type { ProblemSchema } from './problemSchema';
 
 /**
  * NotFound - the requested resource was not found or you do not have access.
  */
-export type NotFoundResponse = Problem;
+export type NotFoundResponse = ProblemSchema;

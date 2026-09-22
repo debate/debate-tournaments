@@ -8,5 +8,6 @@
 
 export type PersonTournSummaryLivedocsItem = {
 	url: string;
+	/** @nullable */
 	caption: string | null;
 };

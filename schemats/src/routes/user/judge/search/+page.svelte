@@ -5,7 +5,7 @@
 		createUserJudgesClaim,
 	} from '$indexcards';
 	import type {
-		UnlinkedJudge,
+		UnlinkedJudgeSchema,
 		RestJudgesUnlinkedSearchParams,
 	} from '$indexcards/schemas';
 	import { Button } from 'flowbite-svelte';
@@ -39,12 +39,12 @@
 
 	// determine if a given row has an active link request by checking if its id is in the lookup sets
 	const linkRequests = $derived(handleOrval(linkRequestsQuery) ?? []);
-	const isRequested = (row: UnlinkedJudge) => {
+	const isRequested = (row: UnlinkedJudgeSchema) => {
 		return linkRequests.some((request) => row.type === request.type && row.id === request.id);
 	};
 	//build the table
 	const rows = $derived(handleOrval(unlinkedSearchQuery) ?? []);
-	const columnHelper = createAppColumnHelper<UnlinkedJudge>();
+	const columnHelper = createAppColumnHelper<UnlinkedJudgeSchema>();
 	const columns = columnHelper.columns([
 		columnHelper.accessor((row) => `${row.first?.trim() ?? ''} ${row.last?.trim() ?? ''}`.trim(), {
 			id: 'name',
@@ -70,7 +70,7 @@
 		}),
 	]);
 
-	const requestLink = async (row: UnlinkedJudge) => {
+	const requestLink = async (row: UnlinkedJudgeSchema) => {
 		void row;
 		const res = await claimRequest.mutateAsync({ params: {
 			judgeId: row.type === 'judge' ? row.id : undefined,
@@ -113,7 +113,7 @@
 	);
 </script>
 
-{#snippet requestCell(row: UnlinkedJudge)}
+{#snippet requestCell(row: UnlinkedJudgeSchema)}
 	{#if isRequested(row)}
 		<span class="block text-center text-sm font-semibold text-red-700">
 			Request made, awaiting coach/tournament approval.

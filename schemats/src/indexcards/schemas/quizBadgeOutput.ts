@@ -10,7 +10,10 @@
  * The badge associated with the certification
  */
 export interface QuizBadgeOutput {
-	/** The alt text for the badge image */
+	/**
+	 * The alt text for the badge image
+	 * @nullable
+	 */
 	altText: string | null;
 	/** The link to the badge */
 	link: string | null;

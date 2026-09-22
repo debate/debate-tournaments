@@ -15,6 +15,7 @@ export interface RestCircuit {
 	name?: string | null;
 	abbr?: string | null;
 	tz?: string | null;
+	/** @nullable */
 	active?: boolean | null;
 	state?: string | null;
 	country?: string | null;
