@@ -18,7 +18,7 @@ export const entryWins = async ({eventId, roundId, ...options}) => {
 
 		if (!round) return {error: 'No such round found'};
 
-		replacements.eventId   = round.eventId;
+		replacements.eventId   = eventId || round.Event?.id;
 		replacements.roundName = round.name;
 		if (options.includePresent) replacements.roundName = parseInt(round.name) + 1;
 

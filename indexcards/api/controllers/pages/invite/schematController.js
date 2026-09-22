@@ -320,8 +320,12 @@ export async function getSchematic (req,res) {
 			}
 		});
 
-		if (round.postPrimary) {
-			const brackets = await entryWins({ roundId: round.id, eventId: round.Event.id });
+		if (round.postPrimary && round.Event) {
+
+			const brackets = await entryWins({
+				roundId: round.id,
+				eventId: round.Event.id
+			});
 
 			Object.keys(round.Sections).forEach( (sectionId) => {
 
