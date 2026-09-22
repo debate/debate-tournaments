@@ -41,7 +41,7 @@
 	const columnHelper = createAppColumnHelper<InboxMessage>();
 
 	const columns = columnHelper.columns([
-		columnHelper.accessor('readAt',{
+		columnHelper.accessor('read_at',{
 			id: 'status',
 			header: '',
 			size: 10,
@@ -50,7 +50,7 @@
 			enableSorting: false,
 			cell: (info) => renderSnippet(statusCell, info.getValue()),
 		}),
-		columnHelper.accessor((row) => showDateTime({dtISO: row.visibleAt}), {
+		columnHelper.accessor((row) => showDateTime({dtISO: row.visible_at}), {
 			id: 'date',
 			header: 'Date',
 			size: 15,
@@ -113,7 +113,7 @@
 {/snippet}
 
 {#snippet subjectCell(msg: InboxMessage)}
-	<span class:font-semibold={!msg.readAt}>{msg.subject ?? 'No subject'}</span>
+	<span class:font-semibold={!msg.read_at}>{msg.subject ?? 'No subject'}</span>
 {/snippet}
 
 <div class="flex flex-1 flex-col bg-slate-50">
