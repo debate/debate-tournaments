@@ -11,17 +11,17 @@ env:
 
 jobs:
   jobs:
-  build-indexcards:
-    uses: ./.forgejo/actions/build-docker.yml
-    with:
-      image: indexcards
-      dockerfile: indexcards/Dockerfile
-
-  build-schemats:
-    uses: ./.forgejo/actions/build-docker.yml
-    with:
-      image: schemats
-      dockerfile: schemats/Dockerfile
+    build-indexcards:
+      uses: ./.forgejo/actions/build-docker.yml
+      with:
+        image: indexcards
+        dockerfile: indexcards/Dockerfile
+  
+    build-schemats:
+      uses: ./.forgejo/actions/build-docker.yml
+      with:
+        image: schemats
+        dockerfile: schemats/Dockerfile
 
   publish:
       runs-on: linux-amd64
