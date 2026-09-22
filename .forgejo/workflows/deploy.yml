@@ -10,20 +10,18 @@ env:
   IMAGE: registry.speechanddebate.org/indexcards
 
 jobs:
-  build:
-    runs-on: linux-amd64
+  jobs:
+  build-indexcards:
+    uses: ./.forgejo/workflows/build-docker.yml
+    with:
+      image: indexcards
+      dockerfile: indexcards/Dockerfile
 
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v7
-
-      - name: Build image
-        run: |
-          docker build \
-            -f indexcards/Dockerfile \
-            -t "$IMAGE:${FORGEJO_SHA}" \
-            -t "$IMAGE:production" \
-            .
+  build-schemats:
+    uses: ./.forgejo/workflows/build-docker.yml
+    with:
+      image: schemats
+      dockerfile: schemats/Dockerfile
 
   publish:
       runs-on: linux-amd64

@@ -1,0 +1,26 @@
+name: Build Docker Image
+
+on:
+  workflow_call:
+    inputs:
+      image:
+        required: true
+        type: string
+      dockerfile:
+        required: true
+        type: string
+
+jobs:
+  build:
+    runs-on: linux-amd64
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Build image
+        run: |
+          docker build \
+            -f "${{ inputs.dockerfile }}" \
+            -t "${{ inputs.image }}:${FORGEJO_SHA}" \
+            -t "${{ inputs.image }}:production" \
+            .
