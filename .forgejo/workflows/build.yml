@@ -10,11 +10,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v7
-        with:
-          ref: ${{ github.event.workflow_run.head_sha }}
 
       - name: Build image
-        uses: ./.forgejo/actions/build-docker
+        uses: ./.forgejo/actions/docker-build
         with:
           image: indexcards
           dockerfile: indexcards/Dockerfile
@@ -32,11 +30,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v7
-        with:
-          ref: ${{ github.event.workflow_run.head_sha }}
 
       - name: Build image
-        uses: ./.forgejo/actions/build-docker
+        uses: ./.forgejo/actions/docker-build
         with:
           image: schemats
           dockerfile: schemats/Dockerfile
