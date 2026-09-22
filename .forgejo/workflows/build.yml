@@ -2,15 +2,9 @@ name: Build
 
 on:
   workflow_dispatch:
-  workflow_run:
-    workflows:
-      - CI
-    types:
-      - completed
 
 jobs:
   build-indexcards:
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: linux-amd64
 
     steps:
@@ -33,7 +27,6 @@ jobs:
           registry_password: ${{ secrets.REGISTRY_PASSWORD }}
 
   build-schemats:
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: linux-amd64
 
     steps:
