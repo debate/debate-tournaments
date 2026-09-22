@@ -6,6 +6,7 @@ import z from 'zod';
 import { InboxMessageSchema } from '@tabroom/types';
 import messageRepo from '../../../../repos/messageRepo.js';
 import { db } from '../../../../data/database.js';
+import { faker } from '@faker-js/faker';
 
 describe('Inbox Router', () => {
 	let personId : number;
@@ -28,6 +29,30 @@ describe('Inbox Router', () => {
 
 			expect(res).not.toBeProblemResponse();
 			expect(res.body).toMatchSchema(z.array(InboxMessageSchema));
+			expect(res.body.length).toBe(1);
+		});
+		it('does not return deleted or non visible messages', async () => {
+			const DeletedMessage = await factories.message.create({
+				person: personId,
+				deleted_at: faker.date.recent(),
+			})
+			const InvisibleMessage = await factories.message.create({
+				person: personId,
+				visible_at: faker.date.soon(),
+			})
+			const res = await request(server)
+				.get('/v1/user/inbox')
+				.set('Accept', 'application/json')
+				.set('Authorization', `Bearer ${userkey}`)
+				.expect('Content-Type', /json/)
+				.expect(200);
+
+			expect(res).not.toBeProblemResponse();
+			expect(res.body).toMatchSchema(z.array(InboxMessageSchema));
+			const messages = z.array(InboxMessageSchema).parse(res.body);
+
+			expect(messages.some(message => message.id === DeletedMessage.id)).toBe(false);
+			expect(messages.some(message => message.id === InvisibleMessage.id)).toBe(false);
 		});
 	});
 	describe('GET /user/inbox/unread', () => {

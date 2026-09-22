@@ -5,17 +5,16 @@ import { db } from '../../data/database.js';
 import type { Request, Response } from 'express';
 
 export const inboxList = async (req: Request, res: Response) => {
-	const personId = req.actor.Person?.id;
-	const messages = await messageRepo.getMessages(db, personId ?? 0);
+	const personId = req.actor.Person!.id;
+	const messages = await messageRepo.getMessages(db, personId,{
+		excludeDeleted: true,
+		excludeInvisible: true
+	});
 	return res.status(200).json(messages);
 };
 
 export const getUnreadCount = async (req: Request, res: Response) => {
-    const personId = req.actor.Person?.id;
-
-    if (!personId) {
-        return res.status(400).json({ error: 'Person ID is required' });
-    }
+    const personId = req.actor.Person!.id;
 
     const result = await db
         .selectFrom('message')
@@ -33,7 +32,7 @@ export const readAllMessages = async (req: Request, res: Response) => {
 	await db
 		.updateTable('message')
 		.set({ read_at: new Date() })
-		.where('person', '=', req.actor.Person?.id ?? 0)
+		.where('person', '=', req.actor.Person!.id)
 		.where('deleted_at', 'is', null)
 		.where('visible_at', '<', new Date())
 		.where('read_at', 'is', null)
@@ -54,7 +53,7 @@ export const readMessage = async (req: Request, res: Response) => {
 		.updateTable('message')
 		.set({ read_at: new Date() })
 		.where('id', '=', req.valid.params.messageId)
-		.where('person', '=', req.actor.Person?.id ?? 0)
+		.where('person', '=', req.actor.Person!.id)
 		.execute();
 	return res.status(204).end();
 };
@@ -66,7 +65,7 @@ export const unreadMessage = async (req: Request, res: Response) => {
 		.updateTable('message')
 		.set({ read_at: null })
 		.where('id', '=', req.valid.params.messageId)
-		.where('person', '=', req.actor.Person?.id ?? 0)
+		.where('person', '=', req.actor.Person!.id)
 		.execute();
 	return res.status(204).end();
 };
@@ -78,7 +77,7 @@ export const deleteMessage = async (req: Request, res: Response) => {
 		.updateTable('message')
 		.set({ deleted_at: new Date() })
 		.where('id', '=', req.valid.params.messageId)
-		.where('person', '=', req.actor.Person?.id ?? 0)
+		.where('person', '=', req.actor.Person!.id)
 		.execute();
 	return res.status(204).end();
 };

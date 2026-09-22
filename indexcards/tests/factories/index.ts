@@ -5,6 +5,7 @@ import chapter from './chapter.js';
 import chapterJudge from './chapterJudge.js';
 import changeLog from './changelog.js';
 import circuit from './circuit.js';
+import email from './email.js';
 import entry from './entry.js';
 import event from './event.js';
 import file from './file.js';
@@ -35,6 +36,7 @@ const factories = {
 	chapterJudge,
 	changeLog,
 	circuit,
+	email,
 	entry,
 	event,
 	file,

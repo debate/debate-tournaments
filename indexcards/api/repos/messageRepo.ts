@@ -2,13 +2,13 @@ import type { Database } from '../data/database.js';
 import type { Message } from '../data/schema.js';
 import type { Insertable } from 'kysely';
 
-type QueryOpts = {
+type queryOpts = {
 	unread?: boolean;
 	excludeDeleted?: boolean;
 	excludeInvisible?: boolean;
 };
 
-function buildMessageQuery(db: Database, opts: QueryOpts = {}) {
+function buildMessageQuery(db: Database, opts: queryOpts = {}) {
 	let query = db.selectFrom('message');
 	if (opts.unread) {
 		query = query.where('read_at', 'is', null);
@@ -22,7 +22,7 @@ function buildMessageQuery(db: Database, opts: QueryOpts = {}) {
 	return query;
 }
 
-async function getMessage(db: Database, messageId: number, personId?: number,opts={}) {
+async function getMessage(db: Database, messageId: number, personId?: number, opts: queryOpts = {}) {
 	let query = buildMessageQuery(db, opts)
 		.where('message.id', '=', messageId)
 		.leftJoin('tourn', 'tourn.id', 'message.tourn')
@@ -75,10 +75,8 @@ async function getMessage(db: Database, messageId: number, personId?: number,opt
  *  return the list of messages to be displayed in a persons inbox
  * @param personId 
  */
-async function getMessages(db: Database, personId: number,opts: {
-	unread?: boolean
-} = {}){
-	let query = buildMessageQuery(db)
+async function getMessages(db: Database, personId: number, opts: queryOpts = {} ){
+	let query = buildMessageQuery(db,opts)
 		.leftJoin('tourn', 'tourn.id', 'message.tourn')
 		.leftJoin('person as sender', 'sender.id', 'message.sender')
 		.leftJoin('email', 'email.id', 'message.email')
