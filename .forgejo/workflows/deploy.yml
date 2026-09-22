@@ -12,13 +12,13 @@ env:
 jobs:
   jobs:
   build-indexcards:
-    uses: ./.forgejo/workflows/build-docker.yml
+    uses: ./.forgejo/actions/build-docker.yml
     with:
       image: indexcards
       dockerfile: indexcards/Dockerfile
 
   build-schemats:
-    uses: ./.forgejo/workflows/build-docker.yml
+    uses: ./.forgejo/actions/build-docker.yml
     with:
       image: schemats
       dockerfile: schemats/Dockerfile
