@@ -1,0 +1,55 @@
+name: Build
+
+on:
+  workflow_run:
+    workflows:
+      - CI
+    types:
+      - completed
+
+jobs:
+  build-indexcards:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: linux-amd64
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+
+      - name: Build image
+        uses: ./.forgejo/actions/build-docker
+        with:
+          image: indexcards
+          dockerfile: indexcards/Dockerfile
+
+      - name: Publish image
+        uses: ./.forgejo/actions/docker-publish
+        with:
+          image: indexcards
+          registry_username: ${{ secrets.REGISTRY_USERNAME }}
+          registry_password: ${{ secrets.REGISTRY_PASSWORD }}
+
+  build-schemats:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: linux-amd64
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+
+      - name: Build image
+        uses: ./.forgejo/actions/build-docker
+        with:
+          image: schemats
+          dockerfile: schemats/Dockerfile
+
+      - name: Publish image
+        uses: ./.forgejo/actions/docker-publish
+        with:
+          image: schemats
+          registry_username: ${{ secrets.REGISTRY_USERNAME }}
+          registry_password: ${{ secrets.REGISTRY_PASSWORD }}
