@@ -2,10 +2,11 @@ import factories from '../../../../../tests/factories/index.js';
 import request from 'supertest';
 import server from '../../../../../app.js';
 import z from 'zod';
-import { JudgeHistorySchema } from '@tabroom/types';
+import { JudgeHistorySchema, UnlinkedJudgeSchema } from '@tabroom/types';
 import personRepo from '../../../../repos/personRepo.js';
 import { db } from '../../../../../api/data/database.js';
 import chapterJudgeRepo from '../../../../repos/chapterJudgeRepo.js';
+import judgeRepo from '../../../../repos/judgeRepo.js';
 
 describe('judgesRouter', () => {
 	let personId : number;
@@ -13,6 +14,43 @@ describe('judgesRouter', () => {
 	beforeAll(async () => {
 		({ id: personId } = await factories.person.create());
 		({ userkey } = await factories.session.create({ person: personId }));
+	});
+	describe('GET /user/judges/linkRequests', () => {
+		it('should return the link requests for the logged in user', async () => {
+			const Chapter = await factories.chapter.create();
+			const CJ = await factories.chapterJudge.create({
+				person_request: personId,
+				chapter: Chapter.id,
+			});
+			const Judge = await factories.judge.create({
+				person_request: personId,
+				category: (await factories.category.create()).id,
+			});
+
+			const res = await request(server)
+				.get('/v1/user/judges/linkRequests')
+				.set('Accept', 'application/json')
+				.set('Authorization', `Bearer ${userkey}`)
+				.expect(200);
+
+			expect(res.body).toMatchSchema(z.array(UnlinkedJudgeSchema))
+			expect(res.body).toEqual(
+				expect.arrayContaining([
+					expect.objectContaining({
+						id: Judge.id,
+						type: 'judge',
+						first: Judge.first,
+						last: Judge.last,
+					}),
+					expect.objectContaining({
+						id: CJ.id,
+						type: 'chapter_judge',
+						first: CJ.first,
+						last: CJ.last,
+					}),
+				])
+			);
+		});
 	});
 	describe("POST /user/judges/claim", () => {
 		it('should allow a user to claim a chapter judge', async () => {
@@ -52,7 +90,19 @@ describe('judgesRouter', () => {
 			const updatedChapterJudge = await chapterJudgeRepo.getChapterJudge(db,ChapterJudge.id);
 			expect(updatedChapterJudge?.person).toBe(personId);
 		});
-		it.todo('should allow a user to claim a judge', async () => {
+		it('should allow a user to claim a judge', async () => {
+			const Cat = await factories.category.create();
+			const Judge = await factories.judge.create({ category: Cat.id });
+
+			await request(server)
+				.post('/v1/user/judges/claim')
+				.query({ judgeId: Judge.id })
+				.set('Accept', 'application/json')
+				.set('Authorization', `Bearer ${userkey}`)
+				.expect(200);
+
+			const updatedJudge = await judgeRepo.getJudge(db, Judge.id);
+			expect(updatedJudge?.person_request).toBe(personId);
 			//setup - create a judge with no person_request
 			//make the request to claim the judge
 			//assert that the judge's person_request is updated and that an email was sent to the chapter email with the correct content
@@ -76,6 +126,28 @@ describe('judgesRouter', () => {
 				.set('Authorization', `Bearer ${userkey}`)
 				.expect(200);
 			expect(res.body).toMatchSchema(z.array(JudgeHistorySchema));
+		});
+	});
+	describe("GET /user/judges/paradigm", () => {
+		it("should return the paradigm for a person", async () => {
+			const Person = await factories.person.create({ settings: { paradigm: 'Initial paradigm' } });
+			const { userkey } = await factories.session.create({ person: Person.id });
+			const res = await request(server)
+				.get('/v1/user/judges/paradigm')
+				.set('Accept', 'application/json')
+				.set('Authorization', `Bearer ${userkey}`)
+				.expect(200);
+			expect(res.body).toHaveProperty('paradigm');
+			expect(res.body.paradigm).toBe('Initial paradigm');
+		});
+		it("returns 404 when the person has no paradigm", async () => {
+			const Person = await factories.person.create();
+			const { userkey } = await factories.session.create({ person: Person.id });
+			const res = await request(server)
+				.get('/v1/user/judges/paradigm')
+				.set('Accept', 'application/json')
+				.set('Authorization', `Bearer ${userkey}`);
+			expect(res).toBeProblemResponse(404);
 		});
 	});
 	describe("POST /user/judges/paradigm", () => {

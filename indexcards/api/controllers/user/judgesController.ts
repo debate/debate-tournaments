@@ -136,10 +136,7 @@ async function history(req: Request, res: Response) {
 };
 
 async function getParadigm(req: Request, res: Response) {
-	const person = req.actor.Person?.id;
-	if(!person) {
-		return BadRequest(req, res, 'Request not made by a person');
-	}
+	const person = req.actor.Person!.id;
 	const paradigm = await personRepo.getPerson(db,person, {
 		settings: ['paradigm'],
 	});
