@@ -227,7 +227,7 @@
 			<div class="flex flex-col items-end gap-2">
 				<div id="auth-user-buttons" class="flex gap-2">
 					{#snippet authButton({link,linkLabel,tooltip, type}:
-						{link: string, linkLabel: string, tooltip: string, type: 'home' | 'inbox' | 'profile'})}
+						{link: string, linkLabel: string, tooltip: string, type: 'home' | 'User: Inbox' | 'profile'})}
 						<Button
 							id="{type}-button"
 							class="
@@ -248,7 +248,7 @@
 							pill={true}
 						>
 						{#if type === 'home'}<HomeSolid class="h-6 w-6" />{/if}
-						{#if type === 'inbox'}
+						{#if type === 'User: Inbox'}
 							<EnvelopeSolid class="h-6 w-6" />
 							{#if notificationCount > 0}
 							<Indicator color="red" placement="top-right" size="xl">
@@ -263,7 +263,7 @@
 						<Tooltip placement="bottom">{tooltip}</Tooltip>
 					{/snippet}
 					{@render authButton({link: '/user/home', linkLabel: 'go to user Home', tooltip: 'Home', type: 'home'})}
-					{@render authButton({link: '/user/inbox', linkLabel: 'go to user Inbox', tooltip: 'Inbox', type: 'inbox'})}
+					{@render authButton({link: '/user/inbox', linkLabel: 'go to user Inbox', tooltip: 'User: Inbox', type: 'User: Inbox'})}
 					{@render authButton({link: '/user/profile', linkLabel: 'open user dropdown', tooltip: 'Profile', type: 'profile'})}
 				</div>
 				<div id="auth-user-details"

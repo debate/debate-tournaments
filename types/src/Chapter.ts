@@ -24,7 +24,7 @@ export const ChapterSchema = z.object({
 	timestamp: z.string().nullish(),
 	created_at: z.string().nullish(),
 }).meta({
-	id: 'Chapter',
+	id: 'User: Chapter',
 	description: 'A chapter object representing a chapter entity'
 }).strict() satisfies ZodOpenApiSchemaObject;
 

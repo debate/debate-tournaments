@@ -4,6 +4,7 @@ import * as schematController from '../../../../controllers/pages/invite/schemat
 import * as pageResultController from '../../../../controllers/pages/invite/resultsController.js';
 import * as resultSetController from '../../../../controllers/rest/resultSetController.js';
 import z from 'zod';
+import config from '../../../../config.js';
 
 import { ValidateRequest } from '../../../../middleware/validation.js';
 const router = Router();
@@ -21,7 +22,6 @@ router.route('/invite/nsdaCategories').get(inviteController.getNSDACategories).o
 		},
 	},
 };
-
 router.route('/invite/upcoming').get(inviteController.getFutureTourns).openapi = {
 	path: '/pages/invite/upcoming',
 	summary     : 'Returns the public listing of upcoming tournaments',
@@ -31,9 +31,20 @@ router.route('/invite/upcoming').get(inviteController.getFutureTourns).openapi =
 			content: { 'application/json': { schema: { $ref: '#/components/schemas/Tourn' } } },
 		},
 	},
-	tags: ['futureTourns', 'invite', 'public'],
+	tags: ['futureTourns', 'Invite', 'public'],
 };
-
+router.route('/invite/webname/:webname').get(inviteController.getTournIdByWebname).openapi = {
+	path: '/pages/invite/webname/{webname}',
+	summary: 'Get Tournament ID by Webname',
+	description: 'Retrieve the tournament ID and details by webname.',
+	tags: ['Invite', 'Public'],
+	responses: {
+		200: {
+			description: 'Tournament information',
+		},
+	},
+};
+if(!config.features.HIDE_DEV_ENDPOINTS) {
 router.route('/invite/:circuit').get(inviteController.getFutureTourns).openapi = {
 	path: '/pages/invite/{circuit}',
 	summary     : 'Returns the public listing of upcoming tournaments',
@@ -43,7 +54,7 @@ router.route('/invite/:circuit').get(inviteController.getFutureTourns).openapi =
 			content: { 'application/json': { schema: { $ref: '#/components/schemas/Tourn' } } },
 		},
 	},
-	tags: ['futureTourns', 'invite', 'public'],
+	tags: ['futureTourns', 'Invite', 'public'],
 };
 
 router.route('/invite/nextweek').get(inviteController.getThisWeekTourns).openapi = {
@@ -56,21 +67,32 @@ router.route('/invite/nextweek').get(inviteController.getThisWeekTourns).openapi
 			content: { 'application/json': { schema: { $ref: '#/components/schemas/Tourn' } } },
 		},
 	},
-	tags: ['invite', 'public'],
+	tags: ['Invite', 'public'],
 };
-
-router.route('/invite/webname/:webname').get(inviteController.getTournIdByWebname).openapi = {
-	path: '/pages/invite/webname/{webname}',
-	summary: 'Get Tournament ID by Webname',
-	description: 'Retrieve the tournament ID and details by webname.',
-	tags: ['Invite', 'Public'],
+router.route('/tiebreaks/:roundId').get(resultSetController.getTiebreaks).openapi = {
+	path: '/pages/tiebreaks/{roundId}',
+	summary: 'Get tiebreaks needed for a protocol id.  This is just for Palmer testing and will go poof.',
+	description: 'for testing and dev',
+	tags: ['Invite', 'Public', 'Schematic', 'Round'],
 	responses: {
 		200: {
-			description: 'Tournament information',
+			description: 'Round Information',
 		},
 	},
 };
 
+router.route('/protocol/round/:roundId').get(resultSetController.getTiebreaks).openapi = {
+	path: '/pages/protocol/round/{roundId}',
+	summary: 'Get tiebreaks needed for a protocol id',
+	description: 'for testing and dev',
+	tags: ['Invite', 'Public', 'Schematic', 'Round'],
+	responses: {
+		200: {
+			description: 'Round Information',
+		},
+	},
+};
+}
 router.route('/invite/:tournId/').get(inviteController.getTournIdByWebname).openapi = {
 	path: '/pages/invite/webname/{webname}',
 	summary: 'Get Tournament ID by Webname',
@@ -119,31 +141,8 @@ router.route('/invite/:tournId/:eventAbbr/:roundName/results').get(ValidateReque
 			},
 		},
 	},
-	tags: ['invite', 'public', 'results', 'pairings'],
+	tags: ['Invite', 'public', 'results', 'pairings'],
 };
 
-router.route('/tiebreaks/:roundId').get(resultSetController.getTiebreaks).openapi = {
-	path: '/pages/tiebreaks/{roundId}',
-	summary: 'Get tiebreaks needed for a protocol id.  This is just for Palmer testing and will go poof.',
-	description: 'for testing and dev',
-	tags: ['Invite', 'Public', 'Schematic', 'Round'],
-	responses: {
-		200: {
-			description: 'Round Information',
-		},
-	},
-};
-
-router.route('/protocol/round/:roundId').get(resultSetController.getTiebreaks).openapi = {
-	path: '/pages/protocol/round/{roundId}',
-	summary: 'Get tiebreaks needed for a protocol id',
-	description: 'for testing and dev',
-	tags: ['Invite', 'Public', 'Schematic', 'Round'],
-	responses: {
-		200: {
-			description: 'Round Information',
-		},
-	},
-};
 
 export default router;

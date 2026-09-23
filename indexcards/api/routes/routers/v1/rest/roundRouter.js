@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import * as controller from '../../../../controllers/rest/roundController.js';
+import config from '../../../../config.js';
 
 const router = Router({ mergeParams: true });
 
@@ -25,7 +26,7 @@ router.route('/').get(controller.getPublishedRounds).openapi = {
 		},
 	},
 };
-
+if(!config.features.HIDE_DEV_ENDPOINTS) {
 router.route('/:roundId').get(controller.getPublishedRound).openapi = {
 	path: '/rest/tourns/{tournId}/rounds/{roundId}',
 	summary     : 'Returns a single Round object an ID if it is published',
@@ -43,7 +44,7 @@ router.route('/:roundId').get(controller.getPublishedRound).openapi = {
 		},
 		default: { $ref: '#/components/responses/ErrorResponse' },
 	},
-	tags: ['invite', 'public', 'schematics', 'rounds', 'pairings'],
+	tags: ['Invite', 'public', 'schematics', 'rounds', 'pairings'],
 };
 
 router.route('/:roundId/schematic').get(controller.getPublishedSchematic).openapi = {
@@ -64,7 +65,7 @@ router.route('/:roundId/schematic').get(controller.getPublishedSchematic).openap
 		},
 		default: { $ref: '#/components/responses/ErrorResponse' },
 	},
-	tags: ['invite', 'public', 'schematics', 'rounds', 'pairings'],
+	tags: ['Invite', 'public', 'schematics', 'rounds', 'pairings'],
 };
 
 router.route('/:roundId/brackets').get(controller.getPublishedBrackets).openapi = {
@@ -96,5 +97,6 @@ router.route('/:roundId/results').get(controller.getPublishedResults).openapi = 
 		},
 	},
 };
+}
 
 export default router;

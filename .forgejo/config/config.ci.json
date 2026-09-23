@@ -4,5 +4,8 @@
 		"port": 3306,
 		"user": "tabroom",
 		"pass": "tabroom"
+	},
+	"features": {
+		"HIDE_DEV_ENDPOINTS": false
 	}
 }

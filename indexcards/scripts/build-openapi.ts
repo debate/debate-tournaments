@@ -8,6 +8,10 @@ import logger from '../api/helpers/logger.js';
 
 const outputPath = new URL('../api/routes/openapi/openapi.json', import.meta.url);
 
+console.log({
+	nodeEnv: process.env.NODE_ENV,
+	routes: Object.keys(apiRouter.stack ?? {}).length,
+});
 try {
 	const spec = createOpenApiSpec(apiRouter);
 

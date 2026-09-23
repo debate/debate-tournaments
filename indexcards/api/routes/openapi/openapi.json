@@ -17,15 +17,7 @@
   "security": [],
   "tags": [
     {
-      "name": "Admin : Servers",
-      "description": "Administrative functions for managing Tabroom servers"
-    },
-    {
-      "name": "Admin : Mail",
-      "description": "Administrative functions for testing mail and notifications"
-    },
-    {
-      "name": "ads",
+      "name": "Ads",
       "description": "Endpoints related to advertisements displayed on Tabroom"
     },
     {
@@ -33,221 +25,25 @@
       "description": "Authentication related endpoints"
     },
     {
-      "name": "Backup and Restore",
-      "description": "Endpoints for managing tournament backups and restores"
-    },
-    {
-      "name": "Ext : Caselist",
-      "description": "Endpoints for external access to Caselist data"
-    },
-    {
-      "name": "Ext : Share",
-      "description": "Endpoints for external access to Share data"
-    },
-    {
-      "name": "Ext : NSDA",
-      "description": "Endpoints for external access to NSDA data"
-    },
-    {
-      "name": "Ext : Mason",
-      "description": "Endpoints for external access to Mason data"
-    },
-    {
-      "name": "Inbox",
+      "name": "User: Inbox",
       "description": "Endpoints for managing user inbox messages"
     },
     {
-      "name": "Push Notifications",
-      "description": "Endpoints for managing user push notifications"
-    },
-    {
-      "name": "Tournament",
-      "description": "Endpoints for managing tournaments"
-    },
-    {
-      "name": "Category",
-      "description": "Endpoints for managing categories within tournaments"
-    },
-    {
-      "name": "Session",
+      "name": "User: Session",
       "description": "Endpoints related to a users session"
-    },
-    {
-      "name": "Sites & Rooms",
-      "description": "Endpoints for managing sites and rooms within tournaments"
-    },
-    {
-      "name": "Schools",
-      "description": "Endpoints for managing schools within tournaments"
-    },
-    {
-      "name": "Timeslots",
-      "description": "Endpoints for managing timeslots within tournaments"
     },
     {
       "name": "Tournaments",
       "description": "Endpoints for managing tournaments"
-    },
-    {
-      "name": "Invite",
-      "description": "Auto-discovered tag"
-    },
-    {
-      "name": "Public",
-      "description": "Auto-discovered tag"
-    },
-    {
-      "name": "futureTourns",
-      "description": "Auto-discovered tag"
-    },
-    {
-      "name": "invite",
-      "description": "Auto-discovered tag"
-    },
-    {
-      "name": "public",
-      "description": "Auto-discovered tag"
-    },
-    {
-      "name": "Schematic",
-      "description": "Auto-discovered tag"
-    },
-    {
-      "name": "Round",
-      "description": "Auto-discovered tag"
-    },
-    {
-      "name": "results",
-      "description": "Auto-discovered tag"
-    },
-    {
-      "name": "pairings",
-      "description": "Auto-discovered tag"
-    },
-    {
-      "name": "Ads",
-      "description": "Auto-discovered tag"
-    },
-    {
-      "name": "Orval",
-      "description": "Auto-discovered tag"
-    },
-    {
-      "name": "Circuits",
-      "description": "Auto-discovered tag"
-    },
-    {
-      "name": "Judges",
-      "description": "Auto-discovered tag"
-    },
-    {
-      "name": "Rounds",
-      "description": "Auto-discovered tag"
-    },
-    {
-      "name": "schematics",
-      "description": "Auto-discovered tag"
-    },
-    {
-      "name": "rounds",
-      "description": "Auto-discovered tag"
-    },
-    {
-      "name": "Events",
-      "description": "Auto-discovered tag"
-    },
-    {
-      "name": "Results",
-      "description": "Auto-discovered tag"
-    },
-    {
-      "name": "Records",
-      "description": "Auto-discovered tag"
-    },
-    {
-      "name": "Entries",
-      "description": "Auto-discovered tag"
-    },
-    {
-      "name": "event",
-      "description": "Auto-discovered tag"
-    },
-    {
-      "name": "eventAbbr",
-      "description": "Auto-discovered tag"
-    },
-    {
-      "name": "Schematics",
-      "description": "Auto-discovered tag"
-    },
-    {
-      "name": "test",
-      "description": "Auto-discovered tag"
-    },
-    {
-      "name": "Paradigms",
-      "description": "Auto-discovered tag"
-    },
-    {
-      "name": "Quizzes",
-      "description": "Auto-discovered tag"
-    },
-    {
-      "name": "Students",
-      "description": "Auto-discovered tag"
-    },
-    {
-      "name": "User Tournament",
-      "description": "Auto-discovered tag"
-    },
-    {
-      "name": "Chapter",
-      "description": "Auto-discovered tag"
-    },
-    {
-      "name": "legacy",
-      "description": "Auto-discovered tag"
-    },
-    {
-      "name": "User Chapters",
-      "description": "Auto-discovered tag"
     }
   ],
   "x-tagGroups": [
     {
-      "name": "Admin",
-      "tags": [
-        "Admin : Servers",
-        "Admin : Mail"
-      ]
-    },
-    {
-      "name": "Ext",
-      "tags": [
-        "Ext",
-        "Ext : Caselist",
-        "Ext : Share",
-        "Ext : NSDA",
-        "Ext : Mason"
-      ]
-    },
-    {
-      "name": "Tournament Management",
-      "tags": [
-        "Tournament",
-        "Timeslots",
-        "Backup and Restore",
-        "Category",
-        "Sites & Rooms",
-        "Schools"
-      ]
-    },
-    {
       "name": "User",
       "tags": [
-        "Inbox",
-        "Session",
-        "Push Notifications"
+        "User: Inbox",
+        "User: Session",
+        "User: Chapter"
       ]
     },
     {
@@ -255,7 +51,6 @@
       "tags": [
         "Ads",
         "Auth",
-        "Chapter",
         "Circuits",
         "Entries",
         "Events",
@@ -275,16 +70,12 @@
         "Tournaments",
         "User Chapters",
         "User Tournament",
-        "event",
-        "eventAbbr",
+        "User: Judges",
         "futureTourns",
-        "invite",
         "legacy",
         "pairings",
         "public",
         "results",
-        "rounds",
-        "schematics",
         "test"
       ]
     }
@@ -317,7 +108,7 @@
         "summary": "Returns the public listing of upcoming tournaments",
         "tags": [
           "futureTourns",
-          "invite",
+          "Invite",
           "public"
         ],
         "description": "GET /pages/invite/upcoming is undocumented. Need to add .openapi to handler",
@@ -325,75 +116,6 @@
         "responses": {
           "200": {
             "description": "List of public upcoming tournaments",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Tourn"
-                }
-              }
-            }
-          },
-          "401": {
-            "$ref": "#/components/responses/Unauthorized"
-          },
-          "500": {
-            "$ref": "#/components/responses/ErrorResponse"
-          }
-        }
-      }
-    },
-    "/pages/invite/{circuit}": {
-      "get": {
-        "summary": "Returns the public listing of upcoming tournaments",
-        "tags": [
-          "futureTourns",
-          "invite",
-          "public"
-        ],
-        "description": "GET /pages/invite/{circuit} is undocumented. Need to add .openapi to handler",
-        "parameters": [
-          {
-            "name": "circuit",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "List of public upcoming tournaments",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Tourn"
-                }
-              }
-            }
-          },
-          "401": {
-            "$ref": "#/components/responses/Unauthorized"
-          },
-          "500": {
-            "$ref": "#/components/responses/ErrorResponse"
-          }
-        }
-      }
-    },
-    "/pages/invite/nextweek": {
-      "get": {
-        "summary": "Returns the public listing of upcoming tournaments in this week",
-        "operationId": "listWeeksTourns",
-        "tags": [
-          "invite",
-          "public"
-        ],
-        "description": "GET /pages/invite/nextweek is undocumented. Need to add .openapi to handler",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "List of this week's tournaments, with some stats",
             "content": {
               "application/json": {
                 "schema": {
@@ -448,7 +170,7 @@
         "description": "Returns results display information for a given round",
         "operationId": "getRoundPublicResults",
         "tags": [
-          "invite",
+          "Invite",
           "public",
           "results",
           "pairings"
@@ -516,62 +238,6 @@
                 }
               }
             }
-          },
-          "401": {
-            "$ref": "#/components/responses/Unauthorized"
-          },
-          "500": {
-            "$ref": "#/components/responses/ErrorResponse"
-          }
-        }
-      }
-    },
-    "/pages/tiebreaks/{roundId}": {
-      "get": {
-        "summary": "Get tiebreaks needed for a protocol id.  This is just for Palmer testing and will go poof.",
-        "description": "for testing and dev",
-        "tags": [
-          "Invite",
-          "Public",
-          "Schematic",
-          "Round"
-        ],
-        "parameters": [
-          {
-            "$ref": "#/components/parameters/roundId"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Round Information"
-          },
-          "401": {
-            "$ref": "#/components/responses/Unauthorized"
-          },
-          "500": {
-            "$ref": "#/components/responses/ErrorResponse"
-          }
-        }
-      }
-    },
-    "/pages/protocol/round/{roundId}": {
-      "get": {
-        "summary": "Get tiebreaks needed for a protocol id",
-        "description": "for testing and dev",
-        "tags": [
-          "Invite",
-          "Public",
-          "Schematic",
-          "Round"
-        ],
-        "parameters": [
-          {
-            "$ref": "#/components/parameters/roundId"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Round Information"
           },
           "401": {
             "$ref": "#/components/responses/Unauthorized"
@@ -1000,167 +666,13 @@
         }
       }
     },
-    "/rest/tourns/{tournId}/rounds/{roundId}": {
-      "get": {
-        "summary": "Returns a single Round object an ID if it is published",
-        "operationId": "getRound",
-        "tags": [
-          "invite",
-          "public",
-          "schematics",
-          "rounds",
-          "pairings"
-        ],
-        "description": "GET /rest/tourns/{tournId}/rounds/{roundId} is undocumented. Need to add .openapi to handler",
-        "parameters": [
-          {
-            "$ref": "#/components/parameters/tournId"
-          },
-          {
-            "$ref": "#/components/parameters/roundId"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Object of Round with public information on it",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object"
-                }
-              }
-            }
-          },
-          "401": {
-            "$ref": "#/components/responses/Unauthorized"
-          },
-          "500": {
-            "$ref": "#/components/responses/ErrorResponse"
-          },
-          "default": {
-            "$ref": "#/components/responses/ErrorResponse"
-          }
-        }
-      }
-    },
-    "/rest/tourns/{tournId}/rounds/{roundId}/schematic": {
-      "get": {
-        "summary": "Returns public round information necessary to create a full schematic",
-        "operationId": "getSchematic",
-        "tags": [
-          "invite",
-          "public",
-          "schematics",
-          "rounds",
-          "pairings"
-        ],
-        "description": "GET /rest/tourns/{tournId}/rounds/{roundId}/schematic is undocumented. Need to add .openapi to handler",
-        "parameters": [
-          {
-            "$ref": "#/components/parameters/tournId"
-          },
-          {
-            "$ref": "#/components/parameters/roundId"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Object of Round with public information on it for a schematic,\n\t\t\t \t\twhich includes a list of entries or sections as appropriate.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object"
-                }
-              }
-            }
-          },
-          "401": {
-            "$ref": "#/components/responses/Unauthorized"
-          },
-          "500": {
-            "$ref": "#/components/responses/ErrorResponse"
-          },
-          "default": {
-            "$ref": "#/components/responses/ErrorResponse"
-          }
-        }
-      }
-    },
-    "/rest/tourns/{tournId}/rounds/{roundId}/brackets": {
-      "get": {
-        "summary": "Get published primary results data leading up to this round for brackets",
-        "description": "Gets the outcome scores of the present round if published",
-        "tags": [
-          "Events",
-          "Results",
-          "Records",
-          "Entries"
-        ],
-        "parameters": [
-          {
-            "$ref": "#/components/parameters/tournId"
-          },
-          {
-            "$ref": "#/components/parameters/roundId"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Entries with Win Loss data attached"
-          },
-          "401": {
-            "$ref": "#/components/responses/Unauthorized"
-          },
-          "404": {
-            "$ref": "#/components/responses/NotFound"
-          },
-          "500": {
-            "$ref": "#/components/responses/ErrorResponse"
-          }
-        }
-      }
-    },
-    "/rest/tourns/{tournId}/rounds/{roundId}/results": {
-      "get": {
-        "summary": "Get Published Results for a Round",
-        "description": "Gets the outcome scores of the present round if published",
-        "tags": [
-          "Events",
-          "Results",
-          "Records",
-          "Entries"
-        ],
-        "parameters": [
-          {
-            "$ref": "#/components/parameters/tournId"
-          },
-          {
-            "$ref": "#/components/parameters/roundId"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Entries with Win Loss data attached"
-          },
-          "401": {
-            "$ref": "#/components/responses/Unauthorized"
-          },
-          "404": {
-            "$ref": "#/components/responses/NotFound"
-          },
-          "500": {
-            "$ref": "#/components/responses/ErrorResponse"
-          }
-        }
-      }
-    },
     "/rest/tourns/{tournId}/results": {
       "get": {
         "summary": "Get tourn public result sets",
         "description": "Returns public result information for a given tournament",
         "operationId": "getTournResultSets",
         "tags": [
-          "invite",
+          "Invite",
           "public",
           "results",
           "pairings",
@@ -1216,7 +728,7 @@
         "description": "Returns result set with full display information given a result set ID if it is public",
         "operationId": "getResultSet",
         "tags": [
-          "invite",
+          "Invite",
           "public",
           "results",
           "pairings",
@@ -1291,103 +803,7 @@
         }
       }
     },
-    "/rest/tourns/{tournId}/results/event/{eventId}": {
-      "get": {
-        "summary": "Get event results",
-        "description": "Returns public result information for a given event",
-        "operationId": "getEventResultSets",
-        "tags": [
-          "invite",
-          "public",
-          "results",
-          "pairings"
-        ],
-        "parameters": [
-          {
-            "in": "path",
-            "name": "tournId",
-            "schema": {
-              "type": "integer",
-              "minimum": -9007199254740991,
-              "maximum": 9007199254740991,
-              "description": "ID of the tournament to get results for"
-            },
-            "required": true,
-            "description": "ID of the tournament to get results for"
-          },
-          {
-            "in": "path",
-            "name": "eventId",
-            "schema": {
-              "type": "integer",
-              "minimum": -9007199254740991,
-              "maximum": 9007199254740991,
-              "description": "ID of the event to get results for"
-            },
-            "required": true,
-            "description": "ID of the event to get results for"
-          },
-          {
-            "$ref": "#/components/parameters/tournId"
-          },
-          {
-            "name": "eventId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "integer"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Result Sets connected to a given event, with published aggregated result data attached",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object"
-                }
-              }
-            }
-          },
-          "401": {
-            "$ref": "#/components/responses/Unauthorized"
-          },
-          "500": {
-            "$ref": "#/components/responses/ErrorResponse"
-          }
-        }
-      }
-    },
-    "/rest/tourns/{tournId}/events": {
-      "get": {
-        "summary": "Get Tournament Events",
-        "description": "Retrieve a list of events associated with a specific tournament.",
-        "tags": [
-          "Tournaments"
-        ],
-        "parameters": [
-          {
-            "$ref": "#/components/parameters/tournId"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "List of tournament events"
-          },
-          "401": {
-            "$ref": "#/components/responses/Unauthorized"
-          },
-          "404": {
-            "$ref": "#/components/responses/NotFound"
-          },
-          "500": {
-            "$ref": "#/components/responses/ErrorResponse"
-          }
-        }
-      }
-    },
-    "/rest/tourns/{tournId}/events/{eventId}/entryWins": {
+    "/rest/tourns/{tournId}/events/{eventId}/results": {
       "get": {
         "summary": "Get Published Results by Event",
         "description": "Given an Event ID, get published result records of the entries therein",
@@ -1471,51 +887,6 @@
           },
           "404": {
             "$ref": "#/components/responses/NotFound"
-          },
-          "500": {
-            "$ref": "#/components/responses/ErrorResponse"
-          }
-        }
-      }
-    },
-    "/rest/tourns/{tournId}/events/byAbbr/{eventAbbr}": {
-      "get": {
-        "summary": "Get Event and Round List by Abbr",
-        "description": "Returns Event object with list of published rounds given an event abbreviation",
-        "operationId": "getEventByAbbr",
-        "tags": [
-          "invite",
-          "public",
-          "event",
-          "eventAbbr",
-          "rounds"
-        ],
-        "parameters": [
-          {
-            "$ref": "#/components/parameters/tournId"
-          },
-          {
-            "name": "eventAbbr",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Event and Round List",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object"
-                }
-              }
-            }
-          },
-          "401": {
-            "$ref": "#/components/responses/Unauthorized"
           },
           "500": {
             "$ref": "#/components/responses/ErrorResponse"
@@ -2140,52 +1511,6 @@
         }
       }
     },
-    "/auth/su": {
-      "post": {
-        "summary": "Start Su session",
-        "operationId": "authSu",
-        "tags": [
-          "Auth",
-          "Orval"
-        ],
-        "description": "POST /auth/su is undocumented. Need to add .openapi to handler",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "suId": {
-                    "type": "integer",
-                    "exclusiveMinimum": 0,
-                    "maximum": 9007199254740991
-                  }
-                },
-                "required": [
-                  "suId"
-                ]
-              }
-            }
-          }
-        },
-        "responses": {
-          "204": {
-            "description": "No Content. Successfully logged out."
-          },
-          "400": {
-            "$ref": "#/components/responses/BadRequest"
-          },
-          "401": {
-            "$ref": "#/components/responses/Unauthorized"
-          },
-          "500": {
-            "$ref": "#/components/responses/ErrorResponse"
-          }
-        }
-      }
-    },
     "/auth/suend": {
       "post": {
         "summary": "End Su session",
@@ -2202,40 +1527,6 @@
           },
           "400": {
             "$ref": "#/components/responses/BadRequest"
-          },
-          "401": {
-            "$ref": "#/components/responses/Unauthorized"
-          },
-          "500": {
-            "$ref": "#/components/responses/ErrorResponse"
-          }
-        }
-      }
-    },
-    "/auth/register": {
-      "post": {
-        "summary": "Register",
-        "operationId": "authRegister",
-        "description": "Registers a new user.",
-        "tags": [
-          "Auth",
-          "Orval"
-        ],
-        "security": [],
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/RegisterRequest"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Success"
           },
           "401": {
             "$ref": "#/components/responses/Unauthorized"
@@ -2526,7 +1817,7 @@
         "description": "Get the list of messages for the logged-in user",
         "tags": [
           "Orval",
-          "Inbox"
+          "User: Inbox"
         ],
         "security": [
           {
@@ -2566,7 +1857,7 @@
         "description": "Get the count of unread messages for the logged-in user",
         "operationId": "UserInboxUnread",
         "tags": [
-          "Inbox",
+          "User: Inbox",
           "Orval"
         ],
         "security": [
@@ -2610,7 +1901,7 @@
         "description": "Mark all visible messages for the logged-in user as read",
         "tags": [
           "Orval",
-          "Inbox"
+          "User: Inbox"
         ],
         "security": [
           {
@@ -2638,7 +1929,7 @@
       "get": {
         "tags": [
           "Orval",
-          "Inbox"
+          "User: Inbox"
         ],
         "security": [
           {
@@ -2695,7 +1986,7 @@
       "delete": {
         "tags": [
           "Orval",
-          "Inbox"
+          "User: Inbox"
         ],
         "security": [
           {
@@ -2750,7 +2041,7 @@
         "description": "Mark a specific message as read",
         "tags": [
           "Orval",
-          "Inbox"
+          "User: Inbox"
         ],
         "security": [
           {
@@ -2802,7 +2093,7 @@
         "description": "Mark a specific message as unread",
         "tags": [
           "Orval",
-          "Inbox"
+          "User: Inbox"
         ],
         "security": [
           {
@@ -2853,7 +2144,7 @@
         "description": "Get the current user session",
         "operationId": "UserSession",
         "tags": [
-          "Session",
+          "User: Session",
           "Orval"
         ],
         "parameters": [],
@@ -2886,7 +2177,8 @@
         "description": "Get active judge link requests for the logged in user",
         "operationId": "UserJudgesLinkRequests",
         "tags": [
-          "Orval"
+          "Orval",
+          "User: Judges"
         ],
         "parameters": [],
         "responses": {
@@ -2919,7 +2211,8 @@
         "description": "Claim a judge or chapter judge as the logged in user.",
         "operationId": "UserJudgesClaim",
         "tags": [
-          "Orval"
+          "Orval",
+          "User: Judges"
         ],
         "parameters": [
           {
@@ -2987,6 +2280,7 @@
         "operationId": "UserJudgesHistory",
         "tags": [
           "Orval",
+          "User: Judges",
           "Judges"
         ],
         "parameters": [
@@ -3035,7 +2329,7 @@
       "get": {
         "tags": [
           "Orval",
-          "Judges"
+          "User: Judges"
         ],
         "summary": "get paradigm",
         "operationId": "UserJudgesParadigm",
@@ -3073,7 +2367,7 @@
       "post": {
         "tags": [
           "Orval",
-          "Judges"
+          "User: Judges"
         ],
         "summary": "update paradigm",
         "operationId": "PostUserJudgesParadigm",
@@ -3124,7 +2418,7 @@
         "operationId": "UserJudgesLiveDocs",
         "tags": [
           "Orval",
-          "Judges"
+          "User: Judges"
         ],
         "parameters": [],
         "responses": {
@@ -3286,7 +2580,7 @@
         "operationId": "UserChapters",
         "tags": [
           "Orval",
-          "Chapter"
+          "User: Chapter"
         ],
         "parameters": [],
         "responses": {
@@ -3307,43 +2601,6 @@
             "$ref": "#/components/responses/Unauthorized"
           },
           "500": {
-            "$ref": "#/components/responses/ErrorResponse"
-          }
-        }
-      }
-    },
-    "/user/chapters/byTourn/{tournId}": {
-      "get": {
-        "tags": [
-          "legacy",
-          "User Chapters"
-        ],
-        "summary": "GET /user/chapters/byTourn/{tournId}",
-        "description": "GET /user/chapters/byTourn/{tournId} is undocumented. Need to add .openapi to handler",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "tournId",
-            "required": true,
-            "schema": {
-              "type": "integer"
-            }
-          },
-          {
-            "$ref": "#/components/parameters/tournId"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Chapters by tournament"
-          },
-          "401": {
-            "$ref": "#/components/responses/Unauthorized"
-          },
-          "500": {
-            "$ref": "#/components/responses/ErrorResponse"
-          },
-          "default": {
             "$ref": "#/components/responses/ErrorResponse"
           }
         }
@@ -4202,73 +3459,6 @@
           "circuit",
           "Badge"
         ]
-      },
-      "RegisterRequest": {
-        "type": "object",
-        "properties": {
-          "email": {
-            "type": "string",
-            "format": "email",
-            "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$",
-            "description": "The email address of the new user"
-          },
-          "password": {
-            "type": "string",
-            "description": "The password for the new user"
-          },
-          "first": {
-            "type": "string",
-            "description": "The first name of the new user"
-          },
-          "middleName": {
-            "description": "The middle name of the new user",
-            "type": [
-              "string",
-              "null"
-            ]
-          },
-          "last": {
-            "type": "string",
-            "description": "The last name of the new user"
-          },
-          "phoneNumber": {
-            "description": "The phone number of the new user",
-            "type": [
-              "string",
-              "null"
-            ]
-          },
-          "state": {
-            "description": "The 2 letter state code of the new user",
-            "example": "IA",
-            "type": [
-              "string",
-              "null"
-            ]
-          },
-          "country": {
-            "description": "The 2 letter country code of the new user",
-            "example": "US",
-            "type": [
-              "string",
-              "null"
-            ]
-          },
-          "tz": {
-            "description": "The IANA timezone of the new user",
-            "type": [
-              "string",
-              "null"
-            ]
-          }
-        },
-        "required": [
-          "email",
-          "password",
-          "first",
-          "last"
-        ],
-        "description": "A request to register a new user"
       },
       "ResultSetEventSchema": {
         "type": "object",
@@ -7383,6 +6573,74 @@
           "Quiz"
         ],
         "additionalProperties": false
+      },
+      "RegisterRequest": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$",
+            "description": "The email address of the new user"
+          },
+          "password": {
+            "type": "string",
+            "description": "The password for the new user"
+          },
+          "first": {
+            "type": "string",
+            "description": "The first name of the new user"
+          },
+          "middleName": {
+            "description": "The middle name of the new user",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "last": {
+            "type": "string",
+            "description": "The last name of the new user"
+          },
+          "phoneNumber": {
+            "description": "The phone number of the new user",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "state": {
+            "description": "The 2 letter state code of the new user",
+            "example": "IA",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "country": {
+            "description": "The 2 letter country code of the new user",
+            "example": "US",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "tz": {
+            "description": "The IANA timezone of the new user",
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "email",
+          "password",
+          "first",
+          "last"
+        ],
+        "additionalProperties": false,
+        "description": "A request to register a new user"
       },
       "Room": {
         "type": "object",
