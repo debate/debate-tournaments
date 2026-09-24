@@ -1,6 +1,6 @@
 import os from 'os';
 import config from '../../config.js';
-import { packageData } from '../../../config/json-loader.js';
+import packageData from '../../../package.json' with { type: 'json' };
 
 export const systemStatus = (req, res) => {
 	return res.status(200).json({
