@@ -71,6 +71,7 @@
         "User Chapters",
         "User Tournament",
         "User: Judges",
+        "Webpages",
         "futureTourns",
         "legacy",
         "pairings",
@@ -478,6 +479,82 @@
           },
           "401": {
             "$ref": "#/components/responses/Unauthorized"
+          },
+          "500": {
+            "$ref": "#/components/responses/ErrorResponse"
+          }
+        }
+      }
+    },
+    "/rest/pages": {
+      "get": {
+        "summary": "Get Public Pages",
+        "description": "Retrieve a list of public, sitewide pages",
+        "tags": [
+          "Webpages"
+        ],
+        "security": [],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "List of public webpages",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/WebpageSchemaOutput"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/ErrorResponse"
+          }
+        }
+      }
+    },
+    "/rest/pages/{slug}": {
+      "get": {
+        "summary": "Get Public Page By Slug",
+        "description": "Retrieve a public, sitewide page by it's slug",
+        "tags": [
+          "Webpages"
+        ],
+        "security": [],
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A public webpages",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WebpageSchemaOutput"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
           },
           "500": {
             "$ref": "#/components/responses/ErrorResponse"
