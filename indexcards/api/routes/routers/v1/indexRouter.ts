@@ -1,5 +1,9 @@
 import { Router } from 'express';
 import { fileURLToPath } from 'node:url';
+import tabRouter from './tab/indexRouter.js';
+import legacyCoachRouter from './legacy/coachRouter.js';
+import adminRouter from './admin/adminRouter.js';
+import { requireSiteAdmin } from '../../../middleware/authorization/authorization.js';
 
 import authRouter from './authRouter.js';
 import pagesRouter from './pages/pagesRouter.js';
@@ -12,8 +16,15 @@ import statusRouter from './statusRouter.js';
 import legacyUserRouter from './legacy/userRouter.js';
 import legacyPublicRouter from './legacy/public/indexRouter.js';
 import { requireLogin } from '../../../middleware/authorization/authorization.js';
+import config from '../../../config.js';
 
 const router = Router({ mergeParams: true });
+
+if(!config.features.HIDE_DEV_ENDPOINTS) {
+	router.use('/coach' , legacyCoachRouter);
+	router.use('/tab'   , tabRouter);
+	router.use('/admin' , requireSiteAdmin, adminRouter);
+	}
 
 router.use('/pages'  , pagesRouter);
 router.use('/rest'   , restRouter);
