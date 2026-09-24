@@ -34,7 +34,6 @@ const pkg = JSON.parse(
 export function createOpenApiSpec(apiRouter: RouterLike): OpenAPIObject {
 	// Collect paths + used tags
 	const { paths, usedTags } = collectOpenApi(apiRouter);
-	logger.info(`OpenAPI paths:\n${Object.keys(paths).sort().map(path => `  ${path}`).join('\n')}`);
 	const unusedTags = declaredTags.filter(tag => !usedTags.has(tag.name));
 
 	for (const tag of unusedTags) {
