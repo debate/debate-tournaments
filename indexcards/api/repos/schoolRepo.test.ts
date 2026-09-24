@@ -53,12 +53,12 @@ describe('createSchool', () => {
 		};
 
 		// Act
-		const createdId = await schoolRepo.createSchool(db, schoolData);
+		const created = await schoolRepo.createSchool(db, schoolData);
 
 		// Assert
-		expect(createdId).toBeDefined();
+		expect(created).toBeDefined();
 
-		const fetchedSchool = await schoolRepo.getSchool(db, createdId, { settings: true });
+		const fetchedSchool = await schoolRepo.getSchool(db, created.id, { settings: true });
 		expect(fetchedSchool).toBeDefined();
 		expect(fetchedSchool?.name).toBe(schoolData.name);
 		expect(fetchedSchool?.code).toBe(schoolData.code);
@@ -75,12 +75,12 @@ describe('createSchool', () => {
 		};
 
 		// Act
-		const createdId = await schoolRepo.createSchool(db, schoolData);
+		const created = await schoolRepo.createSchool(db, schoolData);
 
 		// Assert
-		expect(createdId).toBeDefined();
+		expect(created).toBeDefined();
 
-		const fetchedSchool = await schoolRepo.getSchool(db, createdId, { settings: true });
+		const fetchedSchool = await schoolRepo.getSchool(db, created.id, { settings: true });
 		expect(fetchedSchool).toBeDefined();
 		expect(fetchedSchool?.name).toBe(schoolData.name);
 		expect(fetchedSchool?.code).toBe(schoolData.code);
@@ -101,7 +101,7 @@ describe('updateSchool', () => {
 				contact: 600,
 			},
 		};
-		createdId = await schoolRepo.createSchool(db, schoolData);
+		({ id: createdId } = await schoolRepo.createSchool(db, schoolData));
 	});
 
 	it('Updates existing school fields', async () => {
@@ -172,7 +172,7 @@ describe('deleteSchool', () => {
 				contact: 700,
 			},
 		};
-		createdId = await schoolRepo.createSchool(db, schoolData);
+	({ id: createdId } = await schoolRepo.createSchool(db, schoolData));
 	});
 
 	it('Deletes an existing school', async () => {

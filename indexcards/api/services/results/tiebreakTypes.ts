@@ -5,7 +5,6 @@
 // TODO: this one is going to need some pretty extensive testing because it's a
 // big ol' logic bomb in the middle of tabroom for a bunch of functions.
 
-//import db from '../../data/db.js';
 import { db }from '../../data/database.js';
 //import { db as kyselyDb } from '../../data/database.js';
 import { getRound } from '../../repos/roundRepo.js';

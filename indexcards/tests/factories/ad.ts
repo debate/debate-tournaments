@@ -1,4 +1,4 @@
-import db from '../../api/data/db.js';
+import { db } from '../../api/data/database.js';
 import { faker } from '@faker-js/faker';
 
 export function createAdData(overrides = {}) {
@@ -17,12 +17,7 @@ export function createAdData(overrides = {}) {
 
 export async function create(overrides = {}) {
 	const data = createAdData(overrides);
-	const adId = await db.ad.create(data);
-
-	return {
-		adId,
-		getAd: () => db.ad.findByPk(adId),
-	};
+	return await db.insertInto('ad').values(data).returning('id').executeTakeFirst();
 }
 export default {
 	createAdData,

@@ -52,20 +52,20 @@ async function createSchool(db: Database, data: Insertable<School> & { settings?
 		const school = await trx
 			.insertInto('school')
 			.values(schoolData)
+			.returningAll()
 			.executeTakeFirstOrThrow();
 
-		const schoolId = Number(school.insertId);
 
 		if (settings) {
 			await saveSettings({
 				db: trx,
 				table: 'school',
 				settings,
-				ownerId: schoolId,
+				ownerId: school.id,
 			});
 		}
 
-		return schoolId;
+		return school;
 	});
 }
 async function updateSchool(db: Database, id: number, data: Updateable<School> & { settings?: Settings }) {

@@ -66,10 +66,10 @@ export function fakeRoundName() {
 	const roundNum = faker.number.int({ min: 1, max: 10 });
 	return `${category.abbr} Round ${roundNum}`;
 }
-export function noMs(datetime) {
+export function noMs(datetime: Date) {
 	return new Date(Math.floor(datetime.getTime() / 1000) * 1000);
 }
-export function toWebName(name) {
+export function toWebName(name: string) {
 	return name
 		.toLowerCase()
 		.replace(/[^a-z0-9]+/g, '-') // non-alphanumeric dash
