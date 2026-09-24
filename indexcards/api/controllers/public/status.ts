@@ -1,13 +1,14 @@
 import os from 'os';
 import config from '../../config.js';
 import packageData from '../../../package.json' with { type: 'json' };
+import type { Request, Response } from 'express';
 
-export const systemStatus = (req, res) => {
+export function systemStatus(req: Request, res: Response) {
 	return res.status(200).json({
 		message  : 'OK',
 		name     : packageData.name,
 		version  : packageData.version,
-		webhost  : config.dockerhost || config.host || 'undefined',
+		webhost  : config.dockerhost ?? 'undefined',
 		server   : os.hostname(),
 		load     : os.loadavg(),
 		uptime   : os.uptime(),
@@ -19,21 +20,8 @@ export const systemStatus = (req, res) => {
 	});
 };
 
-export const barfPlease = (req, res) => {
+export function barf(req: Request, res: Response) {
 	throw new Error('OMG, we are not happy, because an error has happened!');
-};
-
-systemStatus.apiDoc = {
-	summary     : 'Responds with a 200 if up, with some system data',
-	operationId : 'getStatus',
-	responses   : {
-		200: {
-			description: 'Server is up',
-			content: { '*/*': { schema: { type: 'string' } } },
-		},
-		default: { $ref: '#/components/responses/ErrorResponse' },
-	},
-	tags: ['systemStatus'],
 };
 
 systemStatus.apiDoc = {

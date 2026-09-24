@@ -49,6 +49,7 @@
     {
       "name": "Other",
       "tags": [
+        "Admin",
         "Ads",
         "Auth",
         "Circuits",
@@ -1509,6 +1510,52 @@
           "500": {
             "$ref": "#/components/responses/ErrorResponse"
           }
+        }
+      }
+    },
+    "/status": {
+      "get": {
+        "summary": "Get system status",
+        "description": "Returns the current system status including server load, memory usage, and other relevant information.",
+        "operationId": "getStatus",
+        "tags": [
+          "Admin"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Server is up",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SystemStatusSchema"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "500": {
+            "$ref": "#/components/responses/ErrorResponse"
+          }
+        }
+      }
+    },
+    "/status/barf": {
+      "get": {
+        "summary": "Trigger a barf",
+        "description": "Endpoint to trigger a barf for testing purposes.",
+        "operationId": "barfPlease",
+        "tags": [
+          "Admin"
+        ],
+        "parameters": [],
+        "responses": {
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "500": {}
         }
       }
     },
@@ -5135,6 +5182,64 @@
           "id",
           "chapterId",
           "createdAt"
+        ],
+        "additionalProperties": false
+      },
+      "SystemStatusSchema": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "version": {
+            "type": "string"
+          },
+          "webhost": {
+            "type": "string"
+          },
+          "server": {
+            "type": "string"
+          },
+          "load": {
+            "type": "array",
+            "items": {
+              "type": "number"
+            }
+          },
+          "uptime": {
+            "type": "number"
+          },
+          "freemem": {
+            "type": "number"
+          },
+          "totalmem": {
+            "type": "number"
+          },
+          "node": {
+            "type": "string"
+          },
+          "runtime": {
+            "type": "string"
+          },
+          "database": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "message",
+          "name",
+          "version",
+          "webhost",
+          "server",
+          "load",
+          "uptime",
+          "freemem",
+          "totalmem",
+          "node",
+          "database"
         ],
         "additionalProperties": false
       },
