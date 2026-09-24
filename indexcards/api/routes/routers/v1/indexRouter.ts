@@ -13,6 +13,7 @@ import { apiReference } from '@scalar/express-api-reference';
 // needed for monitoring and testing
 import statusRouter from './statusRouter.js';
 
+import userRouter from './user/indexRouter.js';
 import legacyUserRouter from './legacy/userRouter.js';
 import legacyPublicRouter from './legacy/public/indexRouter.js';
 import { requireLogin } from '../../../middleware/authorization/authorization.js';
@@ -24,14 +25,15 @@ if(!config.features.HIDE_DEV_ENDPOINTS) {
 	router.use('/coach' , legacyCoachRouter);
 	router.use('/tab'   , tabRouter);
 	router.use('/admin' , requireSiteAdmin, adminRouter);
-	}
+	router.use('/public' , legacyPublicRouter);
+	router.use('/user', requireLogin, legacyUserRouter);
+}
 
 router.use('/pages'  , pagesRouter);
 router.use('/rest'   , restRouter);
 router.use('/status' , statusRouter);
 router.use('/auth'   , authRouter);
-router.use('/public' , legacyPublicRouter);
-router.use('/user'   , requireLogin, legacyUserRouter);
+router.use('/user'   , requireLogin, userRouter);
 
 // Serve pre-built OpenAPI spec
 const openApiPath = fileURLToPath(new URL('../../openapi/openapi.json', import.meta.url));

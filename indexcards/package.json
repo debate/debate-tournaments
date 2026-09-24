@@ -40,7 +40,6 @@
 		"@scalar/express-api-reference": "^0.10.1",
 		"@speechanddebate/nsda-js-utils": "^1.0.15",
 		"@tabroom/types": "1.0.0",
-		"authorizenet": "^1.0.10",
 		"axios": "^1.5.1",
 		"basic-auth": "^2.0.1",
 		"body-parser": "^2.2.2",
