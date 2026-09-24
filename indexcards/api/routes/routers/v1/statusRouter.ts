@@ -27,7 +27,9 @@ router.route('/barf').get(requireSiteAdmin,controller.barf).openapi = {
 	path: '/status/barf',
 	operationId: 'barfPlease',
 	responses: {
-		500:{},
+		500:{
+			description: 'Server threw an error as a result of the barf endpoint being triggered.',
+		},
 	},
 	tags: ['Admin'],
 };

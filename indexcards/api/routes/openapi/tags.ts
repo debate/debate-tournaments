@@ -88,6 +88,9 @@ export const declaredTagGroups = [
 			'User: Inbox',
 			'User: Session',
 			'User: Chapter',
+			'User: Tournament',
+			'User: Chapter',
+			'User: Judge'
 		],
 	},
 ];

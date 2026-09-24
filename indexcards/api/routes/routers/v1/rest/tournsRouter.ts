@@ -82,7 +82,7 @@ router.route('/:tournId/invite').get(controller.getTournInvite).openapi = {
 	summary: 'Get Tournament Invite',
 	operationId: 'getTournInvite',
 	description: 'Retrieve a public invite for a specific tournament, including pages, files, events, and contacts.',
-	tags: ['Tournaments','test'],
+	tags: ['Tournaments'],
 	responses: {
 		200: {
 			description: 'Public facing page data for a given tournament',

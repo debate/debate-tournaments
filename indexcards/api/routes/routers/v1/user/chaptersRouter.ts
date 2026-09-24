@@ -29,7 +29,7 @@ if(!config.features.HIDE_DEV_ENDPOINTS) {
 router.route('/byTourn/:tournId')
 	.get(controller.userChaptersByTourn).openapi = {
 	path: '/user/chapters/byTourn/{tournId}',
-	tags: ['legacy', 'User Chapters'],
+	tags: ['legacy', 'User: Chapter'],
 	parameters: [{ in: 'path', name: 'tournId', required: true, schema: { type: 'integer' } }],
 	responses: { 200: { description: 'Chapters by tournament' }, default: { $ref: '#/components/responses/ErrorResponse' } },
 };
@@ -37,14 +37,14 @@ router.route('/byTourn/:tournId')
 router.route('/byTourn/:tournId/mySchools')
 	.get(controller.getMySchoolsByTourn).openapi = {
 	path: '/user/chapters/byTourn/{tournId}/mySchools',
-	tags: ['legacy', 'User Chapters'],
+	tags: ['legacy', 'User: Chapter'],
 	parameters: [{ in: 'path', name: 'tournId', required: true, schema: { type: 'integer' } }],
 	responses: { 200: { description: 'My schools by tournament' }, default: { $ref: '#/components/responses/ErrorResponse' } },
 };
 router.route('/byTourn/:tournId/nonSchools')
 	.get(controller.getMyChaptersNonTourn).openapi = {
 	path: '/user/chapters/byTourn/{tournId}/nonSchools',
-	tags: ['legacy', 'User Chapters'],
+	tags: ['legacy', 'User: Chapter'],
 	parameters: [{ in: 'path', name: 'tournId', required: true, schema: { type: 'integer' } }],
 	responses: { 200: { description: 'Non-school chapters by tournament' }, default: { $ref: '#/components/responses/ErrorResponse' } },
 };

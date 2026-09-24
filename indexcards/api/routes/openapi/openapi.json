@@ -43,7 +43,10 @@
       "tags": [
         "User: Inbox",
         "User: Session",
-        "User: Chapter"
+        "User: Chapter",
+        "User: Tournament",
+        "User: Chapter",
+        "User: Judge"
       ]
     },
     {
@@ -58,27 +61,18 @@
         "Invite",
         "Judges",
         "Orval",
+        "Pairings",
         "Paradigms",
-        "Public",
         "Quizzes",
         "Records",
         "Results",
-        "Round",
         "Rounds",
-        "Schematic",
         "Schematics",
         "Students",
         "Tournaments",
-        "User Chapters",
-        "User Tournament",
-        "User: Judges",
         "Webpages",
         "futureTourns",
-        "legacy",
-        "pairings",
-        "public",
-        "results",
-        "test"
+        "legacy"
       ]
     }
   ],
@@ -88,8 +82,7 @@
         "summary": "Get NSDA Event Categories",
         "description": "Retrieve a list of NSDA event categories.",
         "tags": [
-          "Invite",
-          "Public"
+          "Invite"
         ],
         "parameters": [],
         "responses": {
@@ -110,8 +103,7 @@
         "summary": "Returns the public listing of upcoming tournaments",
         "tags": [
           "futureTourns",
-          "Invite",
-          "public"
+          "Invite"
         ],
         "description": "GET /pages/invite/upcoming is undocumented. Need to add .openapi to handler",
         "parameters": [],
@@ -140,8 +132,7 @@
         "summary": "Get Tournament ID by Webname",
         "description": "Retrieve the tournament ID and details by webname.",
         "tags": [
-          "Invite",
-          "Public"
+          "Invite"
         ],
         "parameters": [
           {
@@ -173,9 +164,8 @@
         "operationId": "getRoundPublicResults",
         "tags": [
           "Invite",
-          "public",
-          "results",
-          "pairings"
+          "Results",
+          "Pairings"
         ],
         "parameters": [
           {
@@ -751,9 +741,8 @@
         "operationId": "getTournResultSets",
         "tags": [
           "Invite",
-          "public",
-          "results",
-          "pairings",
+          "Results",
+          "Pairings",
           "Orval"
         ],
         "parameters": [
@@ -807,9 +796,8 @@
         "operationId": "getResultSet",
         "tags": [
           "Invite",
-          "public",
-          "results",
-          "pairings",
+          "Results",
+          "Pairings",
           "Orval"
         ],
         "parameters": [
@@ -1027,8 +1015,7 @@
         "operationId": "getTournInvite",
         "description": "Retrieve a public invite for a specific tournament, including pages, files, events, and contacts.",
         "tags": [
-          "Tournaments",
-          "test"
+          "Tournaments"
         ],
         "parameters": [
           {
@@ -1555,7 +1542,9 @@
           "401": {
             "$ref": "#/components/responses/Unauthorized"
           },
-          "500": {}
+          "500": {
+            "description": "Server threw an error as a result of the barf endpoint being triggered."
+          }
         }
       }
     },
@@ -1566,7 +1555,6 @@
         "description": "Logs in a user and creates a session.",
         "tags": [
           "Auth",
-          "Public",
           "Orval"
         ],
         "security": [],
@@ -1666,7 +1654,7 @@
         "summary": "Get Current Tourns",
         "operationId": "UserTourns",
         "tags": [
-          "User Tournament",
+          "User: Tournament",
           "Orval"
         ],
         "description": "Returns an array of Tourns a person is involved in.",
@@ -1709,7 +1697,7 @@
         "summary": "Get Tournament Presence",
         "operationId": "UserTourn",
         "tags": [
-          "User Tournament"
+          "User: Tournament"
         ],
         "description": "Get a user connections to a tournament, if any",
         "parameters": [
@@ -1747,7 +1735,7 @@
         "summary": "Get Summary",
         "operationId": "UserTournsSummary",
         "tags": [
-          "User Tournament",
+          "User: Tournament",
           "Orval"
         ],
         "description": "Returns a summary of a users role in a tourn.",
@@ -1791,7 +1779,7 @@
         "summary": "Get Fines",
         "operationId": "UserTournsFines",
         "tags": [
-          "User Tournament",
+          "User: Tournament",
           "Orval"
         ],
         "description": "Returns an array of Fines for the tourn.",
@@ -1838,7 +1826,7 @@
         "summary": "Get Ballots",
         "operationId": "UserTournsBallots",
         "tags": [
-          "User Tournament",
+          "User: Tournament",
           "Orval"
         ],
         "description": "Returns an array of Fines for the tourn.",
@@ -2302,7 +2290,7 @@
         "operationId": "UserJudgesLinkRequests",
         "tags": [
           "Orval",
-          "User: Judges"
+          "User: Judge"
         ],
         "parameters": [],
         "responses": {
@@ -2336,7 +2324,7 @@
         "operationId": "UserJudgesClaim",
         "tags": [
           "Orval",
-          "User: Judges"
+          "User: Judge"
         ],
         "parameters": [
           {
@@ -2404,7 +2392,7 @@
         "operationId": "UserJudgesHistory",
         "tags": [
           "Orval",
-          "User: Judges",
+          "User: Judge",
           "Judges"
         ],
         "parameters": [
@@ -2453,7 +2441,7 @@
       "get": {
         "tags": [
           "Orval",
-          "User: Judges"
+          "User: Judge"
         ],
         "summary": "get paradigm",
         "operationId": "UserJudgesParadigm",
@@ -2491,7 +2479,7 @@
       "post": {
         "tags": [
           "Orval",
-          "User: Judges"
+          "User: Judge"
         ],
         "summary": "update paradigm",
         "operationId": "PostUserJudgesParadigm",
@@ -2542,7 +2530,7 @@
         "operationId": "UserJudgesLiveDocs",
         "tags": [
           "Orval",
-          "User: Judges"
+          "User: Judge"
         ],
         "parameters": [],
         "responses": {
@@ -2734,7 +2722,7 @@
       "get": {
         "tags": [
           "legacy",
-          "User Chapters"
+          "User: Chapter"
         ],
         "summary": "GET /user/chapters/byTourn/{tournId}/mySchools",
         "description": "GET /user/chapters/byTourn/{tournId}/mySchools is undocumented. Need to add .openapi to handler",
@@ -2771,7 +2759,7 @@
       "get": {
         "tags": [
           "legacy",
-          "User Chapters"
+          "User: Chapter"
         ],
         "summary": "GET /user/chapters/byTourn/{tournId}/nonSchools",
         "description": "GET /user/chapters/byTourn/{tournId}/nonSchools is undocumented. Need to add .openapi to handler",
@@ -3412,6 +3400,12 @@
               {
                 "type": "null"
               }
+            ]
+          },
+          "site_admin": {
+            "type": [
+              "boolean",
+              "null"
             ]
           },
           "country": {
@@ -5014,6 +5008,12 @@
                   },
                   "last": {
                     "type": "string"
+                  },
+                  "site_admin": {
+                    "type": [
+                      "boolean",
+                      "null"
+                    ]
                   }
                 },
                 "required": [
@@ -5047,6 +5047,12 @@
               },
               "last": {
                 "type": "string"
+              },
+              "site_admin": {
+                "type": [
+                  "boolean",
+                  "null"
+                ]
               }
             },
             "required": [
@@ -5983,6 +5989,12 @@
               {
                 "type": "null"
               }
+            ]
+          },
+          "site_admin": {
+            "type": [
+              "boolean",
+              "null"
             ]
           },
           "country": {

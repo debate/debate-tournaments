@@ -10,6 +10,7 @@ export const PersonSchema = z.object({
 	middle: z.string().nullable(),
 	last: z.string(),
 	state: utils.TwoLetterCode.nullish(),
+	site_admin: z.boolean().nullish(),
 	country: z.string().nullish(),
 	tz: z.string().nullish(),
 	createdAt: z.iso.datetime(),
@@ -31,14 +32,16 @@ export const SessionSchema = z.object({
 		email: true,
 		first: true,
 		last: true,
+		site_admin: true,
 	}).nullable(),
 	Person: PersonSchema.pick({
 		id: true,
 		email: true,
 		first: true,
 		last: true,
+		site_admin: true,
 	}),
-}).meta({
+}).strict().meta({
 	id: 'Session',
 	description: 'A user session',
 }) satisfies ZodOpenApiSchemaObject;

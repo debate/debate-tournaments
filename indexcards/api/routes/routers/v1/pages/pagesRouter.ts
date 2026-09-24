@@ -15,7 +15,7 @@ router.route('/invite/nsdaCategories').get(inviteController.getNSDACategories).o
 	path: '/pages/invite/nsdaCategories',
 	summary: 'Get NSDA Event Categories',
 	description: 'Retrieve a list of NSDA event categories.',
-	tags: ['Invite', 'Public'],
+	tags: ['Invite'],
 	responses: {
 		200: {
 			description: 'List of NSDA event categories',
@@ -31,13 +31,13 @@ router.route('/invite/upcoming').get(inviteController.getFutureTourns).openapi =
 			content: { 'application/json': { schema: { $ref: '#/components/schemas/Tourn' } } },
 		},
 	},
-	tags: ['futureTourns', 'Invite', 'public'],
+	tags: ['futureTourns', 'Invite'],
 };
 router.route('/invite/webname/:webname').get(inviteController.getTournIdByWebname).openapi = {
 	path: '/pages/invite/webname/{webname}',
 	summary: 'Get Tournament ID by Webname',
 	description: 'Retrieve the tournament ID and details by webname.',
-	tags: ['Invite', 'Public'],
+	tags: ['Invite'],
 	responses: {
 		200: {
 			description: 'Tournament information',
@@ -54,7 +54,7 @@ router.route('/invite/:circuit').get(inviteController.getFutureTourns).openapi =
 			content: { 'application/json': { schema: { $ref: '#/components/schemas/Tourn' } } },
 		},
 	},
-	tags: ['futureTourns', 'Invite', 'public'],
+	tags: ['futureTourns', 'Invite'],
 };
 
 router.route('/invite/nextweek').get(inviteController.getThisWeekTourns).openapi = {
@@ -67,13 +67,13 @@ router.route('/invite/nextweek').get(inviteController.getThisWeekTourns).openapi
 			content: { 'application/json': { schema: { $ref: '#/components/schemas/Tourn' } } },
 		},
 	},
-	tags: ['Invite', 'public'],
+	tags: ['Invite'],
 };
 router.route('/tiebreaks/:roundId').get(resultSetController.getTiebreaks).openapi = {
 	path: '/pages/tiebreaks/{roundId}',
 	summary: 'Get tiebreaks needed for a protocol id.  This is just for Palmer testing and will go poof.',
 	description: 'for testing and dev',
-	tags: ['Invite', 'Public', 'Schematic', 'Round'],
+	tags: ['Invite', 'Schematics', 'Rounds'],
 	responses: {
 		200: {
 			description: 'Round Information',
@@ -85,7 +85,7 @@ router.route('/protocol/round/:roundId').get(resultSetController.getTiebreaks).o
 	path: '/pages/protocol/round/{roundId}',
 	summary: 'Get tiebreaks needed for a protocol id',
 	description: 'for testing and dev',
-	tags: ['Invite', 'Public', 'Schematic', 'Round'],
+	tags: ['Invite', 'Schematics', 'Rounds'],
 	responses: {
 		200: {
 			description: 'Round Information',
@@ -97,7 +97,7 @@ router.route('/invite/:tournId/').get(inviteController.getTournIdByWebname).open
 	path: '/pages/invite/webname/{webname}',
 	summary: 'Get Tournament ID by Webname',
 	description: 'Retrieve the tournament ID and details by webname.',
-	tags: ['Invite', 'Public'],
+	tags: ['Invite'],
 	responses: {
 		200: {
 			description: 'Tournament information',
@@ -109,7 +109,7 @@ router.route('/invite/:tournId/:eventAbbr/:roundName').get(schematController.get
 	path: '/pages/invite/{tournId}/{eventAbbr}/{roundName}',
 	summary: 'Round Schematic',
 	description: 'Gives data for the display of a public round schematic',
-	tags: ['Invite', 'Public', 'Schematic', 'Round'],
+	tags: ['Invite', 'Schematics', 'Rounds'],
 	responses: {
 		200: {
 			description: 'Round Information',
@@ -141,7 +141,7 @@ router.route('/invite/:tournId/:eventAbbr/:roundName/results').get(ValidateReque
 			},
 		},
 	},
-	tags: ['Invite', 'public', 'results', 'pairings'],
+	tags: ['Invite', 'Results', 'Pairings'],
 };
 
 

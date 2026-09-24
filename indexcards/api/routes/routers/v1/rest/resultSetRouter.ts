@@ -33,7 +33,7 @@ router.route('/').get(ValidateRequest, controller.getResultSets).openapi = {
 			},
 		},
 	},
-	tags: ['Invite', 'public', 'results', 'pairings', 'Orval'],
+	tags: ['Invite', 'Results', 'Pairings', 'Orval'],
 };
 
 router.route('/:resultSetId').get(ValidateRequest, controller.getResultSet).openapi = {
@@ -62,7 +62,7 @@ router.route('/:resultSetId').get(ValidateRequest, controller.getResultSet).open
 			},
 		},
 	},
-	tags: ['Invite', 'public', 'results', 'pairings','Orval'],
+	tags: ['Invite', 'Results', 'Pairings','Orval'],
 };
 if(!config.features.HIDE_DEV_ENDPOINTS) {
 router.route('/event/:eventId').get(ValidateRequest, controller.getResultSets).openapi = {
@@ -88,7 +88,7 @@ router.route('/event/:eventId').get(ValidateRequest, controller.getResultSets).o
 			},
 		},
 	},
-	tags: ['Invite', 'public', 'results', 'pairings'],
+	tags: ['Invite', 'Results', 'Pairings'],
 };
 }
 

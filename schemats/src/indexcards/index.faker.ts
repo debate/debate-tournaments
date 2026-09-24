@@ -917,6 +917,10 @@ export const getUserSessionResponseMock = (
 			email: faker.internet.email(),
 			first: faker.string.alpha({ length: { min: 10, max: 20 } }),
 			last: faker.string.alpha({ length: { min: 10, max: 20 } }),
+			site_admin: faker.helpers.arrayElement([
+				faker.datatype.boolean(),
+				undefined,
+			]),
 		},
 		null,
 	]),
@@ -925,6 +929,10 @@ export const getUserSessionResponseMock = (
 		email: faker.internet.email(),
 		first: faker.string.alpha({ length: { min: 10, max: 20 } }),
 		last: faker.string.alpha({ length: { min: 10, max: 20 } }),
+		site_admin: faker.helpers.arrayElement([
+			faker.datatype.boolean(),
+			undefined,
+		]),
 	},
 	...overrideResponse,
 });
@@ -1232,6 +1240,10 @@ export const getUserStudentsLinkRequestsResponseMock = (): StudentSchema[] =>
 						faker.helpers.fromRegExp('^[A-Z]{2}$'),
 						null,
 					]),
+					undefined,
+				]),
+				site_admin: faker.helpers.arrayElement([
+					faker.datatype.boolean(),
 					undefined,
 				]),
 				country: faker.helpers.arrayElement([

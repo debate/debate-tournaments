@@ -8,7 +8,6 @@
 
 export * from './activeCircuitsResponseSchema';
 export * from './activeCircuitsResponseSchemaItem';
-export * from './authSuBody';
 export * from './badRequestResponse';
 export * from './chapterSchema';
 export * from './currentBallot';
@@ -48,7 +47,6 @@ export * from './postUserJudgesParadigmBody';
 export * from './problemSchema';
 export * from './quizBadgeOutput';
 export * from './quizOutput';
-export * from './registerRequest';
 export * from './restCircuit';
 export * from './restCircuitsActiveParams';
 export * from './restJudgesUnlinkedSearchParams';

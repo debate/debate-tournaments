@@ -17,13 +17,15 @@ export interface PersonOutput {
 	 * @exclusiveMinimum 0
 	 */
 	id: number;
-	/** @pattern ^(?!\.)(?!.*\.\.)([A-Za-z0-9_'+\-\.]*)[A-Za-z0-9_+-]@([A-Za-z0-9][A-Za-z0-9\-]*\.)+[A-Za-z]{2,}$ */
+	/** @pattern ^(?:[A-Za-z0-9_'+\-]+\.)*[A-Za-z0-9_'+\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\-]*\.)+[A-Za-z]{2,}$ */
 	email: string;
 	first: string;
 	/** @nullable */
 	middle: string | null;
 	last: string;
 	state?: string | null;
+	/** @nullable */
+	site_admin?: boolean | null;
 	/** @nullable */
 	country?: string | null;
 	/** @nullable */

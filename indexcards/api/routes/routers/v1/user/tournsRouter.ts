@@ -11,7 +11,7 @@ router.route('/').get(ValidateRequest,controller.getPersonTourns).openapi = {
 	summary: 'Get Current Tourns',
 	operationId: 'UserTourns',
 	path : '/user/tourns',
-	tags : ['User Tournament','Orval'],
+	tags : ['User: Tournament','Orval'],
 	description: 'Returns an array of Tourns a person is involved in.',
 	requestParams: {
 		query: z.object({
@@ -34,7 +34,7 @@ router.route('/:tournId').get(controller.getPersonTournPresence).openapi = {
 	summary: 'Get Tournament Presence',
 	operationId: 'UserTourn',
 	path : '/user/tourns/{tournId}',
-	tags : ['User Tournament'],
+	tags : ['User: Tournament'],
 	description: 'Get a user connections to a tournament, if any',
 	requestParams: {
 		path: z.object({
@@ -50,7 +50,7 @@ router.route('/:tournId/summary').get(ValidateRequest,controller.getTournSummary
 	summary: 'Get Summary',
 	operationId: 'UserTournsSummary',
 	path : '/user/tourns/{tournId}/summary',
-	tags : ['User Tournament','Orval'],
+	tags : ['User: Tournament','Orval'],
 	description: 'Returns a summary of a users role in a tourn.',
 	requestParams: {
 		path: z.object({ tournId: z.coerce.number().int().positive() })
@@ -71,7 +71,7 @@ router.route('/:tournId/fines').get(ValidateRequest,controller.getTournFines).op
 	summary: 'Get Fines',
 	operationId: 'UserTournsFines',
 	path : '/user/tourns/{tournId}/fines',
-	tags : ['User Tournament','Orval'],
+	tags : ['User: Tournament','Orval'],
 	description: 'Returns an array of Fines for the tourn.',
 	requestParams: {
 		path: z.object({ tournId: z.coerce.number().int().positive() })
@@ -92,7 +92,7 @@ router.route('/:tournId/ballots').get(ValidateRequest,controller.getTournBallots
 	summary: 'Get Ballots',
 	operationId: 'UserTournsBallots',
 	path : '/user/tourns/{tournId}/ballots',
-	tags : ['User Tournament','Orval'],
+	tags : ['User: Tournament','Orval'],
 	description: 'Returns an array of Fines for the tourn.',
 	requestParams: {
 		path: z.object({ tournId: z.coerce.number().int().positive() }),

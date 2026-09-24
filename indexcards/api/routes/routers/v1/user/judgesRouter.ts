@@ -12,7 +12,7 @@ router.route('/linkRequests')
 		description: 'Get active judge link requests for the logged in user',
 		path: '/user/judges/linkRequests',
 		operationId: 'UserJudgesLinkRequests',
-		tags: ['Orval','User: Judges'],
+		tags: ['Orval','User: Judge'],
 		responses: {
 			200: {
 				description: 'Successful response',
@@ -33,7 +33,7 @@ router.route('/claim')
 		description: 'Claim a judge or chapter judge as the logged in user.',
 		path: '/user/judges/claim',
 		operationId: 'UserJudgesClaim',
-		tags: ['Orval','User: Judges'],
+		tags: ['Orval','User: Judge'],
 		requestParams: {
 			query: z.object({
 				judgeId: z.coerce.number().int().optional().meta({
@@ -69,7 +69,7 @@ router.route('/history')
 		description: 'Gets a persons history of judging',
 		path: '/user/judges/history',
 		operationId: 'UserJudgesHistory',
-		tags: ['Orval','User: Judges','Judges'],
+		tags: ['Orval','User: Judge','Judges'],
 		requestParams: {
 			query: z.object({
 			limit: z.coerce.number().int().default(100),
@@ -92,7 +92,7 @@ router.route('/paradigm')
 	.get(judgesController.getParadigm)
 	.post(ValidateRequest, judgesController.updateParadigm).openapi = {
 		path: '/user/judges/paradigm',
-		tags: ['Orval','User: Judges'],
+		tags: ['Orval','User: Judge'],
 		get: {
 			summary: 'get paradigm',
 			operationId: 'UserJudgesParadigm',
@@ -141,7 +141,7 @@ router.route('/livedocs')
 		description: 'Get live docs for the logged in user',
 		path: '/user/judges/livedocs',
 		operationId: 'UserJudgesLiveDocs',
-		tags: ['Orval','User: Judges'],
+		tags: ['Orval','User: Judge'],
 		responses: {
 			200: {
 				description: 'Successful response',

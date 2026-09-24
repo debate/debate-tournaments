@@ -920,6 +920,10 @@ export const getUserSessionResponseMock = (
 			email: faker.internet.email(),
 			first: faker.string.alpha({ length: { min: 10, max: 20 } }),
 			last: faker.string.alpha({ length: { min: 10, max: 20 } }),
+			site_admin: faker.helpers.arrayElement([
+				faker.datatype.boolean(),
+				undefined,
+			]),
 		},
 		null,
 	]),
@@ -928,6 +932,10 @@ export const getUserSessionResponseMock = (
 		email: faker.internet.email(),
 		first: faker.string.alpha({ length: { min: 10, max: 20 } }),
 		last: faker.string.alpha({ length: { min: 10, max: 20 } }),
+		site_admin: faker.helpers.arrayElement([
+			faker.datatype.boolean(),
+			undefined,
+		]),
 	},
 	...overrideResponse,
 });
@@ -1235,6 +1243,10 @@ export const getUserStudentsLinkRequestsResponseMock = (): StudentSchema[] =>
 						faker.helpers.fromRegExp('^[A-Z]{2}$'),
 						null,
 					]),
+					undefined,
+				]),
+				site_admin: faker.helpers.arrayElement([
+					faker.datatype.boolean(),
 					undefined,
 				]),
 				country: faker.helpers.arrayElement([
@@ -1737,27 +1749,6 @@ export const getAuthLogoutMockHandler = (
 	);
 };
 
-export const getAuthSuMockHandler = (
-	overrideResponse?:
-		| void
-		| ((
-				info: Parameters<Parameters<typeof http.post>[1]>[0],
-		  ) => Promise<void> | void),
-	options?: RequestHandlerOptions,
-) => {
-	return http.post(
-		'*/auth/su',
-		async (info: Parameters<Parameters<typeof http.post>[1]>[0]) => {
-			if (typeof overrideResponse === 'function') {
-				await overrideResponse(info);
-			}
-
-			return new HttpResponse(null, { status: 204 });
-		},
-		options,
-	);
-};
-
 export const getAuthSuEndMockHandler = (
 	overrideResponse?:
 		| void
@@ -1774,27 +1765,6 @@ export const getAuthSuEndMockHandler = (
 			}
 
 			return new HttpResponse(null, { status: 204 });
-		},
-		options,
-	);
-};
-
-export const getAuthRegisterMockHandler = (
-	overrideResponse?:
-		| void
-		| ((
-				info: Parameters<Parameters<typeof http.post>[1]>[0],
-		  ) => Promise<void> | void),
-	options?: RequestHandlerOptions,
-) => {
-	return http.post(
-		'*/auth/register',
-		async (info: Parameters<Parameters<typeof http.post>[1]>[0]) => {
-			if (typeof overrideResponse === 'function') {
-				await overrideResponse(info);
-			}
-
-			return new HttpResponse(null, { status: 200 });
 		},
 		options,
 	);
@@ -2329,9 +2299,7 @@ export const getIndexCardsAPIMock = () => [
 	getRestStudentsUnlinkedSearchMockHandler(),
 	getAuthLoginMockHandler(),
 	getAuthLogoutMockHandler(),
-	getAuthSuMockHandler(),
 	getAuthSuEndMockHandler(),
-	getAuthRegisterMockHandler(),
 	getUserTournsMockHandler(),
 	getUserTournsSummaryMockHandler(),
 	getUserTournsFinesMockHandler(),

@@ -18,7 +18,7 @@ router.route('/login').post(ValidateRequest, controller.login).openapi = {
 	summary: 'Login',
 	operationId: 'authLogin',
 	description: 'Logs in a user and creates a session.',
-	tags: ['Auth', 'Public', 'Orval'],
+	tags: ['Auth', 'Orval'],
 	security: [],
 	requestBody: {
 		required: true,

@@ -44,7 +44,7 @@ router.route('/:roundId').get(controller.getPublishedRound).openapi = {
 		},
 		default: { $ref: '#/components/responses/ErrorResponse' },
 	},
-	tags: ['Invite', 'public', 'schematics', 'rounds', 'pairings'],
+	tags: ['Invite', 'public', 'schematics', 'rounds', 'Pairings'],
 };
 
 router.route('/:roundId/schematic').get(controller.getPublishedSchematic).openapi = {
@@ -65,7 +65,7 @@ router.route('/:roundId/schematic').get(controller.getPublishedSchematic).openap
 		},
 		default: { $ref: '#/components/responses/ErrorResponse' },
 	},
-	tags: ['Invite', 'public', 'schematics', 'rounds', 'pairings'],
+	tags: ['Invite', 'public', 'schematics', 'rounds', 'Pairings'],
 };
 
 router.route('/:roundId/brackets').get(controller.getPublishedBrackets).openapi = {
