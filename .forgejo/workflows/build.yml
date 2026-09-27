@@ -25,7 +25,7 @@ jobs:
           registry_password: ${{ secrets.REGISTRY_PASSWORD }}
 
   build-schemats:
-    runs-on: linux-amd64
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout

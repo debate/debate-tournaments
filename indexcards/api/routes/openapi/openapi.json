@@ -3596,16 +3596,9 @@
             "type": "string"
           },
           "createdAt": {
-            "anyOf": [
-              {
-                "type": "string",
-                "format": "date-time",
-                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
-              },
-              {
-                "type": "null"
-              }
-            ]
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
           }
         },
         "required": [
@@ -3704,7 +3697,7 @@
               }
             ]
           },
-          "pageOrder": {
+          "page_order": {
             "anyOf": [
               {
                 "type": "integer",
@@ -3716,7 +3709,7 @@
               }
             ]
           },
-          "parentId": {
+          "parent": {
             "anyOf": [
               {
                 "type": "integer",
@@ -3728,7 +3721,7 @@
               }
             ]
           },
-          "updatedAt": {
+          "timestamp": {
             "type": "string",
             "format": "date-time",
             "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
@@ -3742,9 +3735,9 @@
           "sitewide",
           "special",
           "slug",
-          "pageOrder",
-          "parentId",
-          "updatedAt"
+          "page_order",
+          "parent",
+          "timestamp"
         ]
       },
       "ActiveCircuitsResponseSchema": {
@@ -4097,16 +4090,9 @@
             "maximum": 9007199254740991
           },
           "nsdacategory": {
-            "anyOf": [
-              {
-                "type": "integer",
-                "exclusiveMinimum": 0,
-                "maximum": 9007199254740991
-              },
-              {
-                "type": "null"
-              }
-            ]
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "maximum": 9007199254740991
           },
           "name": {
             "type": "string"
@@ -4864,7 +4850,9 @@
             "type": "string"
           },
           "createdAt": {
-            "type": "string"
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
           },
           "noPlacement": {
             "type": "boolean"
@@ -5322,10 +5310,10 @@
           "end": {
             "type": "string"
           },
-          "regStart": {
+          "reg_start": {
             "type": "string"
           },
-          "regEnd": {
+          "reg_end": {
             "type": "string"
           },
           "Webpages": {
@@ -5364,8 +5352,8 @@
           "hidden",
           "start",
           "end",
-          "regStart",
-          "regEnd",
+          "reg_start",
+          "reg_end",
           "Webpages",
           "Files",
           "Events",
@@ -5434,10 +5422,10 @@
           "end": {
             "type": "string"
           },
-          "regStart": {
+          "reg_start": {
             "type": "string"
           },
-          "regEnd": {
+          "reg_end": {
             "type": "string"
           }
         },
@@ -5452,8 +5440,8 @@
           "hidden",
           "start",
           "end",
-          "regStart",
-          "regEnd"
+          "reg_start",
+          "reg_end"
         ],
         "additionalProperties": false
       },
@@ -6207,10 +6195,9 @@
             "type": "string"
           },
           "createdAt": {
-            "type": [
-              "string",
-              "null"
-            ]
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
           }
         },
         "required": [
@@ -6275,7 +6262,7 @@
               }
             ]
           },
-          "pageOrder": {
+          "page_order": {
             "anyOf": [
               {
                 "type": "integer",
@@ -6287,7 +6274,7 @@
               }
             ]
           },
-          "parentId": {
+          "parent": {
             "anyOf": [
               {
                 "type": "integer",
@@ -6299,7 +6286,7 @@
               }
             ]
           },
-          "updatedAt": {
+          "timestamp": {
             "type": "string"
           }
         },
@@ -6311,9 +6298,9 @@
           "sitewide",
           "special",
           "slug",
-          "pageOrder",
-          "parentId",
-          "updatedAt"
+          "page_order",
+          "parent",
+          "timestamp"
         ],
         "additionalProperties": false
       },

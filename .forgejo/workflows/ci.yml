@@ -54,11 +54,6 @@ jobs:
       - name: Typecheck
         run: |
             npm run typecheck --workspace=indexcards
-            
-      - name: Install MariaDB client
-        run: |
-          apt-get update
-          apt-get install -y mariadb-client
       
       - name: Seed database
         run: |
