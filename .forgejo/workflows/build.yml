@@ -5,7 +5,7 @@ on:
 
 jobs:
   build-indexcards:
-    runs-on: linux-amd64
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout
