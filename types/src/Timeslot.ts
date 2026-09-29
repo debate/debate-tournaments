@@ -7,9 +7,8 @@ export const TimeslotResponseSchema = z.object({
 	name: z.string(),
 	start: datetime(),
 	end: datetime(),
-	tournId: z.number().int(),
-	updatedAt: datetime(),
-	createdAt: datetime(),
+	tourn: z.number().int(),
+	timestamp: datetime(),
 }) satisfies ZodOpenApiSchemaObject;
 
 export const TimeslotRequestSchema = z.object({

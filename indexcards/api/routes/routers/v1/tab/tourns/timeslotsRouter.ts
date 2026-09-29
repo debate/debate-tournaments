@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { requireAccess } from '../../../../../middleware/authorization/authorization.js';
 import controller from '../../../../../controllers/tab/timeslotsController.js';
-import { TimeslotRequestSchema } from '@tabroom/types';
+import { TimeslotRequestSchema, TimeslotResponseSchema } from '@tabroom/types';
 import { z } from 'zod';
 import { ValidateRequest } from '../../../../../middleware/validation.js';
 
@@ -25,10 +25,7 @@ router.route('/').get(requireAccess('tourn', 'read'), controller.getTimeslots).o
 			description: 'An array of timeslot objects',
 			content: {
 				'application/json': {
-					schema: {
-						type: 'array',
-						items: { $ref: '#/components/schemas/TimeslotResponse' },
-					},
+					schema: z.array(TimeslotResponseSchema),
 					examples: {
 						timeslotsResponse: {
 							summary: 'Example response',
@@ -123,9 +120,7 @@ router.route('/:timeslotId').get(requireAccess('timeslot', 'read'), controller.g
 			description: 'A timeslot object',
 			content: {
 				'application/json': {
-					schema: {
-						$ref: '#/components/schemas/TimeslotResponse',
-					},
+					schema: TimeslotResponseSchema,
 					examples: {
 						timeslotResponse: {
 							summary: 'Example response',

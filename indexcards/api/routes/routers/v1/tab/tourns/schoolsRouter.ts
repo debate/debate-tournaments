@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { requireAccess } from '../../../../../middleware/authorization/authorization.js';
 import * as controller from '../../../../../controllers/tab/schoolController.js';
 import { z } from 'zod';
-import { SchoolSchema } from '@tabroom/types';
+import { CreateSchoolSchema, SchoolSchema, UpdateSchoolSchema } from '@tabroom/types';
 
 const router = Router({ mergeParams: true });
 
@@ -33,7 +33,7 @@ router.route('/').post(requireAccess('tourn', 'write'), controller.createSchool)
 		required: true,
 		content: {
 			'application/json': {
-				schema: { $ref: '#/components/schemas/CreateSchool' },
+				schema: CreateSchoolSchema,
 			},
 		},
 	},
@@ -81,7 +81,7 @@ router.route('/:schoolId').put(   requireAccess('tourn', 'write'), controller.up
 		required: true,
 		content: {
 			'application/json': {
-				schema: { $ref: '#/components/schemas/UpdateSchool' },
+				schema: UpdateSchoolSchema,
 			},
 		},
 	},

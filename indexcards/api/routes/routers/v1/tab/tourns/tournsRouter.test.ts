@@ -1,6 +1,7 @@
 import request from 'supertest';
 import server from '../../../../../../app.js';
 import factories from '../../../../../../tests/factories/index.js';
+import { TournSchema } from '@tabroom/types';
 let sessionToken = '';
 
 beforeAll(async () => {
@@ -16,12 +17,14 @@ describe('tournsRouter', () => {
 				.set('Authorization', `Bearer ${sessionToken}`)
 				.send(tournRequest);
 			expect(response.status).toBe(201);
+			expect(response.body).toMatchSchema(TournSchema);
 			const tournId = response.body.id;
 
 			response = await request(server)
 				.get(`/v1/tab/tourns/${tournId}`)
 				.set('Authorization', `Bearer ${sessionToken}`);
 			expect(response.status).toBe(200);
+			expect(response.body).toMatchSchema(TournSchema);
 			expect(response.body).toMatchObject({
 				...data,
 				id: tournId,

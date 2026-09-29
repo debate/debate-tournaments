@@ -11,7 +11,8 @@ import { requireAccess } from '../../../../../middleware/authorization/authoriza
 
 import legacyAllRouter from './legacy/allRouter.js';
 import legacyRoundRouter from './legacy/roundRouter.js';
-import { TournRequestSchema } from '@tabroom/types';
+import { BackupRequestSchema, TournRequestSchema, TournSchema } from '@tabroom/types';
+import config from '../../../../../config.js';
 
 const router = Router({mergeParams: true });
 
@@ -34,9 +35,7 @@ router.route('/').post(ValidateRequest,tournController.createTourn).openapi = {
 			description: 'Tournament created',
 			content: {
 				'application/json': {
-					schema: {
-						$ref: '#/components/schemas/Tourn',
-					},
+					schema: TournSchema,
 				},
 			},
 		},
@@ -52,9 +51,7 @@ router.route('/:tournId').get(requireAccess('tourn', 'read'), tournController.ge
 			description: 'Tournament information',
 			content: {
 				'application/json': {
-					schema: {
-						$ref: '#/components/schemas/Tourn',
-					},
+					schema: TournSchema,
 				},
 			},
 		},
@@ -73,8 +70,8 @@ router.route('/:tournId').delete(requireAccess('tourn', 'owner'), tournControlle
 	summary: 'Delete tournament',
 	tags: ['Tournament'],
 };
-
-router.route('/:tournId/backup').post(requireAccess('tourn', 'read'), Backup).openapi = {
+if (!config.features.HIDE_DEV_ENDPOINTS)
+	router.route('/:tournId/backup').post(requireAccess('tourn', 'read'), Backup).openapi = {
 	path: '/tab/tourns/{tournId}/backup',
 	summary: 'Tournament Backup',
 	description: 'Creates a backup dump of the tournament data in JSON format',
@@ -92,9 +89,7 @@ router.route('/:tournId/backup').post(requireAccess('tourn', 'read'), Backup).op
 		required: true,
 		content: {
 			'application/json': {
-				schema: {
-					$ref: '#/components/schemas/BackupRequest',
-				},
+				schema: BackupRequestSchema,
 			},
 		},
 	},

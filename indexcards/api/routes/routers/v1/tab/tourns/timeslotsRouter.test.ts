@@ -2,6 +2,8 @@
 import request from 'supertest';
 import app from '../../../../../../app.js';
 import factories from '../../../../../../tests/factories/index.js';
+import { TimeslotResponseSchema } from '@tabroom/types';
+import z from 'zod';
 
 let tournId: number | null = null;
 let personId: number | null = null;
@@ -44,7 +46,7 @@ describe('Timeslots', () => {
 			.get(`/v1/tab/tourns/${tournId}/timeslots`)
 			.set('Authorization', `Bearer ${userkey}`)
 			.expect(200);
-		expect(Array.isArray(response.body)).toBe(true);
+		expect(response.body).toMatchSchema(z.array(TimeslotResponseSchema));
 		expect(response.body).toEqual(
 			expect.arrayContaining([
 				expect.objectContaining({
@@ -73,6 +75,7 @@ describe('Timeslots', () => {
 			.get(`/v1/tab/tourns/${tournId}/timeslots/${timeslot.id}`)
 			.set('Authorization', `Bearer ${userkey}`)
 			.expect(200);
+		expect(getResponse.body).toMatchSchema(TimeslotResponseSchema);
 		expect(getResponse.body.name).toBe(updatedData.name);
 		expect(new Date(getResponse.body.start).getTime()).toBe(updatedData.start.getTime());
 		expect(new Date(getResponse.body.end).getTime()).toBe(updatedData.end.getTime());

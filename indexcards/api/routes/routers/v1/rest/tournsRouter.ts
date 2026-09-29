@@ -35,12 +35,7 @@ router.route('/').get(ValidateRequest,controller.getTourns).openapi = {
 			description: 'List of tournaments',
 			content: {
 				'application/json': {
-					schema: {
-						type: 'array',
-						items: {
-							$ref: '#/components/schemas/Tourn',
-						},
-					},
+					schema: z.array(TournSchema),
 				},
 			},
 		},

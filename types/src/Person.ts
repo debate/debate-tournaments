@@ -14,7 +14,8 @@ export const PersonSchema = z.object({
 	country: z.string().nullish(),
 	tz: z.string().nullish(),
 	createdAt: z.iso.datetime(),
-	settings: z.object().optional(),
+	settings: utils.settings,
+	settingsTimestamps: utils.settingsTimestamps,
 	metadata: z.object().optional(),
 }).meta({
 	id: 'Person',

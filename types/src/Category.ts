@@ -6,11 +6,12 @@ export const CategorySchema = z.object({
 	id: utils.id,
 	name: z.string(),
 	abbr: z.string(),
-	tournId: utils.id,
+	tourn: utils.id,
 	pattern: z.int().nullable(),
-	settings: z.array(z.object()),
-	createdAt: z.iso.datetime(),
-	updatedAt: z.iso.datetime(),
+	settings: utils.settings,
+	settingsTimestamps: utils.settingsTimestamps,
+	created_at: z.iso.datetime(),
+	timestamp: z.iso.datetime(),
 }).meta({ id: 'Category'}) satisfies ZodOpenApiSchemaObject;
 
 export type Category = z.infer<typeof CategorySchema>;

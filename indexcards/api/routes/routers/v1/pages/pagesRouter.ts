@@ -4,6 +4,7 @@ import * as schematController from '../../../../controllers/pages/invite/schemat
 import * as pageResultController from '../../../../controllers/pages/invite/resultsController.js';
 import * as resultSetController from '../../../../controllers/rest/resultSetController.js';
 import z from 'zod';
+import { UpcomingSchema } from '@tabroom/types';
 import config from '../../../../config.js';
 
 import { ValidateRequest } from '../../../../middleware/validation.js';
@@ -28,7 +29,7 @@ router.route('/invite/upcoming').get(inviteController.getFutureTourns).openapi =
 	responses   : {
 		200: {
 			description: 'List of public upcoming tournaments',
-			content: { 'application/json': { schema: { $ref: '#/components/schemas/Tourn' } } },
+			content: { 'application/json': { schema: z.array(UpcomingSchema) } },
 		},
 	},
 	tags: ['futureTourns', 'Invite'],
@@ -51,7 +52,7 @@ router.route('/invite/:circuit').get(inviteController.getFutureTourns).openapi =
 	responses   : {
 		200: {
 			description: 'List of public upcoming tournaments',
-			content: { 'application/json': { schema: { $ref: '#/components/schemas/Tourn' } } },
+			content: { 'application/json': { schema: z.array(UpcomingSchema) } },
 		},
 	},
 	tags: ['futureTourns', 'Invite'],

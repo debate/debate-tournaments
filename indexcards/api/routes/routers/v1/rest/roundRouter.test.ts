@@ -15,7 +15,7 @@ describe('GET /rounds', () => {
 		expect(typeof body[0]).toBe('object');
 
 		// Property test: every round must be published
-		body.forEach((round) => {
+		body.forEach((round: { published: number; id: number; eventId: number; Event: { name: string; abbr: string } }) => {
 			expect(round.published).toBe(1);
 			expect(typeof round.id).toBe('number');
 			expect(typeof round.eventId).toBe('number');

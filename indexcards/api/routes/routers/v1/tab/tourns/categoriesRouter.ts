@@ -1,4 +1,6 @@
 import { Router } from 'express';
+import z from 'zod';
+import { CategorySchema } from '@tabroom/types';
 import controller from '../../../../../controllers/tab/categoryController.js';
 import { requireAccess } from '../../../../../middleware/authorization/authorization.js';
 
@@ -13,10 +15,7 @@ router.route('/').get(requireAccess('tourn', 'read'), controller.getCategories).
 			description: 'List of categories',
 			content: {
 				'application/json': {
-					schema: {
-						type: 'array',
-						items: { $ref: '#/components/schemas/Category' },
-					},
+					schema: z.array(CategorySchema),
 				},
 			},
 		},
@@ -38,9 +37,7 @@ router.route('/:categoryId').get(requireAccess('category', 'read'), controller.g
 			description: 'Category details',
 			content: {
 				'application/json': {
-					schema: {
-						$ref: '#/components/schemas/Category',
-					},
+					schema: CategorySchema,
 				},
 			},
 		},

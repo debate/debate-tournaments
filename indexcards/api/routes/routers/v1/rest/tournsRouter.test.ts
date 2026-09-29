@@ -1,10 +1,11 @@
 import request from 'supertest';
 import server from '../../../../../app.js';
-import factories from '../../../../../tests/factories';
+import factories from '../../../../../tests/factories/index.js';
 import { faker } from '@faker-js/faker';
-import { FileSchema } from '@tabroom/types';
+import { FileSchema, TournSchema } from '@tabroom/types';
+import z from 'zod';
 
-let testTourn;
+let testTourn: Awaited<ReturnType<typeof factories.tourn.create>>;
 beforeAll(async () => {
 	testTourn = await factories.tourn.create();
 	await factories.file.create({ tourn: testTourn.id, published: true });
@@ -27,9 +28,8 @@ describe('GET /rest/tourns', () => {
 
 		const body = res.body;
 		expect(body).toBeDefined();
-		//expect an array
-		expect(Array.isArray(body)).toBe(true);
-		const tourn = body.find(t => t.id === Tourn.id);
+		expect(body).toMatchSchema(z.array(TournSchema));
+		const tourn = body.find((t: { id: number }) => t.id === Tourn.id);
 		expect(tourn).toBeDefined();
 	});
 	it('Returns the correct shape for the results request', async () => {
@@ -47,8 +47,7 @@ describe('GET /rest/tourns', () => {
 
 		const body = res.body;
 		expect(body).toBeDefined();
-		//expect an array
-		expect(Array.isArray(body)).toBe(true);
+		expect(body).toMatchSchema(z.array(TournSchema));
 		expect(body.length).toBeGreaterThan(0);
 	});
 });
@@ -60,10 +59,7 @@ describe('GET /rest/tourns/:id/files', () => {
             .expect('Content-Type', /json/)
             .expect(200);
 
-		const body = res.body;
-		body.forEach(element => {
-			expect(element).toMatchSchema(FileSchema);
-		});
+		expect(res.body).toMatchSchema(z.array(FileSchema));
 	});
 	it('should return 404 if the tourn does not exist', async () => {
 		const res = await request(server)

@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { SiteResponseSchema } from '@tabroom/types';
 import { requireAccess } from '../../../../../middleware/authorization/authorization.js';
 import controller from '../../../../../controllers/tab/siteController.js';
 
@@ -15,7 +16,7 @@ router.route('/').get( requireAccess('tourn', 'read'),  controller.getSites).ope
 				'application/json': {
 					schema: {
 						type: 'array',
-						items: { $ref: '#/components/schemas/SiteResponse' },
+						items: SiteResponseSchema,
 					},
 					examples: {
 						sites: {
@@ -56,7 +57,7 @@ router.route('/:siteId').get(   requireAccess('tourn', 'read'),  controller.getS
 			description: 'A site object',
 			content: {
 				'application/json': {
-					schema: { $ref: '#/components/schemas/SiteResponse' },
+					schema: SiteResponseSchema,
 					examples: {
 						site: {
 							summary: 'Example response',
