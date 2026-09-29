@@ -1,8 +1,8 @@
 <script lang="ts">
     import { showDateTime } from '$lib/helpers/dt';
     import { getPerson } from '$lib/helpers/SessionContext.svelte';
-import type { PersonTournSummaryFinesItem } from '$indexcards/schemas';
-let { fine }:{fine: PersonTournSummaryFinesItem } = $props();
+import type { Fine } from '$indexcards/schemas';
+let { fine }:{fine: Fine } = $props();
 
 const person = getPerson();
 

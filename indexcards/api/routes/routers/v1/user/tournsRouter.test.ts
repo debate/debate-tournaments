@@ -63,7 +63,7 @@ describe('GET /user/tourns/{tournId}/summary', () => {
 
 describe('GET /user/tourns/{tournId}/fines', () => {
 	it('Returns the users fines for a tournament', async () => {
-		const Tourn = await factories.tourn.create();
+		const Tourn = await factories.tourn.create({ settings: { currency: '€' } });
 		const School = await factories.school.create({ tourn: Tourn.id });
 		const Fine = await factories.fine.create({ person: personId, tourn: Tourn.id, school: School.id });
 
@@ -75,7 +75,8 @@ describe('GET /user/tourns/{tournId}/fines', () => {
 			.expect(200);
 
 		expect(res.body).toMatchSchema(z.array(FineSchema));
-		expect(res.body.some((fine: { id: number }) => fine.id === Fine.id)).toBe(true);
+		const fine = res.body.find((fine: { id: number }) => fine.id === Fine.id);
+		expect(fine.currency).toBe('€');
 	});
 });
 

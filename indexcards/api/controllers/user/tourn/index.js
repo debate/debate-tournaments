@@ -258,6 +258,7 @@ export async function getTournFines(req,res){
 		id: row.id,
 		reason: row.reason,
 		amount: row.amount === null ? null : Number(row.amount),
+		currency: row.currency,
 		school: row.school,
 		schoolName: row.schoolName,
 		leviedAt: row.leviedAt,

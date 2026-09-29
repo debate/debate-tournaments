@@ -6,6 +6,7 @@ export const FineSchema = z.object({
 	id: utils.id,
 	reason: z.string().max(255).nullable(),
 	amount: z.number().nullable(),
+	currency: z.string().nullable().meta({ description: 'The currency symbol for the tournament, if it is set' }),
 	school: utils.id,
 	schoolName: z.string().nullable(),
 	leviedAt: z.iso.datetime(),

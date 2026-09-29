@@ -16,6 +16,11 @@ export interface Fine {
 	/** @nullable */
 	amount: number | null;
 	/**
+	 * The currency symbol for the tournament, if it is set
+	 * @nullable
+	 */
+	currency: string | null;
+	/**
 	 * @maximum 9007199254740991
 	 * @exclusiveMinimum 0
 	 */

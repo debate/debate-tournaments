@@ -1,11 +1,11 @@
 <script lang="ts">
-	import type { RestParadigms200Item } from '$indexcards/schemas';
+	import type { ParadigmSearchResult } from '$indexcards/schemas';
 
 	let {
 		item,
 		href,
 	}: {
-		item: RestParadigms200Item;
+		item: ParadigmSearchResult;
 		href?: string;
 	} = $props();
 </script>

@@ -4353,6 +4353,13 @@
               "null"
             ]
           },
+          "currency": {
+            "description": "The currency symbol for the tournament, if it is set",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
           "school": {
             "type": "integer",
             "exclusiveMinimum": 0,
@@ -4374,6 +4381,7 @@
           "id",
           "reason",
           "amount",
+          "currency",
           "school",
           "schoolName",
           "leviedAt"

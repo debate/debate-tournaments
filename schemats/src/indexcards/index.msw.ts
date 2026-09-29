@@ -650,6 +650,10 @@ export const getUserTournsFinesResponseMock = (): Fine[] =>
 			faker.number.float({ fractionDigits: 2 }),
 			null,
 		]),
+		currency: faker.helpers.arrayElement([
+			faker.string.alpha({ length: { min: 10, max: 20 } }),
+			null,
+		]),
 		school: faker.number.int({ min: 0, max: 9007199254740991 }),
 		schoolName: faker.helpers.arrayElement([
 			faker.string.alpha({ length: { min: 10, max: 20 } }),

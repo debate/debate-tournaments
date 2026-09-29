@@ -1,12 +1,12 @@
 <script lang="ts">
-	import type { RestParadigms200Item, ProblemSchema } from '$indexcards/schemas';
+	import type { ParadigmSearchResult, ProblemSchema } from '$indexcards/schemas';
 	import type { CreateInfiniteQueryResult } from '@tanstack/svelte-query';
 
 	import ParadigmListItem from './[id]/paradigmListItem.svelte';
 	import InfiniteScroll from '$lib/components/utils/infiniteScroll.svelte';
 
 	type Props = {
-		results: RestParadigms200Item[];
+		results: ParadigmSearchResult[];
 		searchTerm: string;
 		selectedHref: (id: number) => string;
 		paradigmsQuery: CreateInfiniteQueryResult<unknown, ProblemSchema>;
