@@ -9,7 +9,7 @@ import type { Request, Response } from 'express';
 import { db } from '../data/database.js';
 
 export async function login(req: Request, res: Response) {
-	const { username, password } = req.valid.body;
+	const { username, password } = req.body;
 	let result;
 	try {
 		result = await authService.login(username, password, {
@@ -51,7 +51,7 @@ export async function su(req: Request, res: Response){
 	if(!req.session?.id) {
 		return BadRequest(req, res, 'You do not have an active session.');
 	}
-	const suTarget = (await personRepo.getPerson(db,req.valid.body.suId));
+	const suTarget = (await personRepo.getPerson(db,req.body.suId));
 	if(!suTarget) return BadRequest(req, res, 'no such person found');
 
 	if(req.session.id === suTarget.id) return BadRequest(req, res, 'You cannot su to yourself');
@@ -81,7 +81,7 @@ export async function suEnd(req: Request, res: Response){
 export async function register(req: Request, res: Response){
 	let result = null;
 	try {
-		result = await authService.register(req.valid.body,{
+		result = await authService.register(req.body,{
 			ip: req.ip,
 			agentData: req.get('User-Agent'),
 		});

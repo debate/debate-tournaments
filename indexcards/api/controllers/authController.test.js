@@ -13,10 +13,8 @@ describe('authController',() => {
 			vi.spyOn(authService, 'login').mockRejectedValue(AUTH_INVALID);
 
 			const { req, res } = createContext({
-				valid: {
-					body: { username: 'bob', password: 'wrong' },
-					ip: '127.0.0.1',
-				},
+				body: { username: 'bob', password: 'wrong' },
+				ip: '127.0.0.1',
 			});
 
 			await controller.login(req, res);
@@ -27,10 +25,8 @@ describe('authController',() => {
 		it('throws on error other than AUTH_INVALID', async () => {
 			vi.spyOn(authService, 'login').mockRejectedValue(new Error('Some other error'));
 			const { req, res } = createContext({
-				valid: {
-					body: { username: 'alice', password: 'badpassword' },
-					ip: '127.0.0.1',
-				},
+				body: { username: 'alice', password: 'badpassword' },
+				ip: '127.0.0.1',
 			});
 			await expect(controller.login(req, res)).rejects.toThrow('Some other error');
 		});
@@ -45,10 +41,8 @@ describe('authController',() => {
 			vi.spyOn(authService, 'login').mockResolvedValue(fakeResult);
 
 			const { req, res } = createContext({
-				valid: {
-					body: { username: 'bob', password: 'pw' },
-					ip: '127.0.0.1',
-				},
+				body: { username: 'bob', password: 'pw' },
+				ip: '127.0.0.1',
 			});
 
 			await controller.login(req, res);
@@ -120,9 +114,7 @@ describe('authController',() => {
 				session: {
 					id: 1,
 				},
-				valid: {
-					body: { suId: 2 },
-				},
+				body: { suId: 2 },
 			});
 			vi.spyOn(personRepo, 'getPerson').mockResolvedValue({ id: 2 });
 			const spy = vi.spyOn(sessionRepo, 'updateSession');
@@ -134,9 +126,7 @@ describe('authController',() => {
 
 		it('returns 400 when no session', async () => {
 			const { req, res } = createContext({
-				valid: {
-					body: { suId: '1' },
-				},
+				body: { suId: '1' },
 			});
 			await controller.su(req, res);
 			expect(res.status).toHaveBeenCalledWith(400);
@@ -149,9 +139,7 @@ describe('authController',() => {
 						id: 2,
 					},
 				},
-				valid: {
-					body: { suId: 'not an id' },
-				},
+				body: { suId: 'not an id' },
 			});
 			vi.spyOn(personRepo, 'getPerson').mockResolvedValue(null);
 			await controller.su(req, res);
@@ -165,9 +153,7 @@ describe('authController',() => {
 						id: 2,
 					},
 				},
-				valid: {
-					body: { suId: 1 },
-				},
+				body: { suId: 1 },
 			});
 			vi.spyOn(personRepo, 'getPerson').mockResolvedValue(undefined);
 			await controller.su(req, res);
@@ -179,9 +165,7 @@ describe('authController',() => {
 				session: {
 					id: 2,
 				},
-				valid: {
-					body: { suId: 2 },
-				},
+				body: { suId: 2 },
 			});
 			vi.spyOn(personRepo, 'getPerson').mockResolvedValue({ id: 2 });
 			await controller.su(req, res);
@@ -229,9 +213,7 @@ describe('authController',() => {
 			vi.spyOn(authService, 'generateCSRFToken').mockReturnValue('csrf456');
 
 			const { req, res } = createContext({
-				valid: {
-					body: { username: 'newuser', password: 'pw' },
-				},
+				body: { username: 'newuser', password: 'pw' },
 				ip: '127.0.0.1',
 				get: () => 'Mozilla',
 			});
@@ -239,7 +221,7 @@ describe('authController',() => {
 			await controller.register(req, res);
 
 			expect(authService.register).toHaveBeenCalledWith(
-				req.valid.body,
+				req.body,
 				{ ip: req.ip, agentData: 'Mozilla' }
 			);
 			expect(res.json).toHaveBeenCalledWith(fakeResult);
@@ -250,10 +232,8 @@ describe('authController',() => {
 			vi.spyOn(authService, 'register').mockRejectedValue(new ValidationError('Invalid data'));
 
 			const { req, res } = createContext({
-				valid: {
-					body: { username: '', password: '' },
-					ip: '127.0.0.1',
-				},
+				body: { username: '', password: '' },
+				ip: '127.0.0.1',
 			});
 
 			await controller.register(req, res);
@@ -265,10 +245,8 @@ describe('authController',() => {
 			vi.spyOn(authService, 'register').mockRejectedValue(new Error('Unexpected error'));
 
 			const { req, res } = createContext({
-				valid: {
-					body: { username: 'fail', password: 'fail' },
-					ip: '127.0.0.1',
-				},
+				body: { username: 'fail', password: 'fail' },
+				ip: '127.0.0.1',
 			});
 
 			await expect(controller.register(req, res)).rejects.toThrow('Unexpected error');

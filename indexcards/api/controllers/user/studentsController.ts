@@ -6,6 +6,7 @@ import logger from '../../helpers/logger.js';
 import  { db } from '../../data/database.js';
 
 import type { Request, Response } from 'express';
+import type { ValidatedRequest } from '../../middleware/validation.js';
 
 async function linkRequests(req: Request, res: Response) {
 	const students = await studentRepo.getStudents(db, {
@@ -23,8 +24,8 @@ async function linkRequests(req: Request, res: Response) {
 	return res.status(200).json(results);
 };
 
-async function claimRequest(req: Request, res: Response) {
-	const { studentId } = req.valid.query;
+async function claimRequest(req: ValidatedRequest, res: Response) {
+	const { studentId } = req.query;
 	if (!studentId) return BadRequest(req, res, 'Must provide studentId');
 
 	const Student = await studentRepo.getStudent(db, studentId);

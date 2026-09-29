@@ -10,6 +10,7 @@ import { notify } from '../../helpers/blast.js';
 import logger from '../../helpers/logger.js';
 import { db } from '../../data/database.js';
 import type { Request, Response } from 'express';
+import type { ValidatedRequest } from '../../middleware/validation.js';
 
 async function linkRequests(req: Request, res: Response) {
 	const [judges, chapterJudges] = await Promise.all([
@@ -37,8 +38,8 @@ async function linkRequests(req: Request, res: Response) {
 	return res.status(200).json(results);
 }
 // handle a request to claim an unlinked judge or chapter judge.
-async function claimRequest(req: Request, res: Response) {
-	const { judgeId, chapterJudgeId } = req.valid.query;
+async function claimRequest(req: ValidatedRequest, res: Response) {
+	const { judgeId, chapterJudgeId } = req.query;
 	// XOR validation: exactly one must be present
 	if ((!!judgeId && !!chapterJudgeId) || (!judgeId && !chapterJudgeId))
 		return BadRequest(req, res, 'Must provide exactly one of judgeId or chapterJudgeId');
@@ -114,8 +115,8 @@ async function claimRequest(req: Request, res: Response) {
 };
 
 //get the judge history for /user/judge/history page.
-async function history(req: Request, res: Response) {
-	const { limit, offset } = req.valid.query;
+async function history(req: ValidatedRequest, res: Response) {
+	const { limit, offset } = req.query;
 
 	if(!req.actor.Person!.id) {
 		return BadRequest(req, res, 'Request not made by a person');
@@ -146,7 +147,7 @@ async function getParadigm(req: Request, res: Response) {
 	return res.status(200).json({ paradigm: paradigm.settings.paradigm });
 }
 
-async function updateParadigm(req: Request, res: Response) {
+async function updateParadigm(req: ValidatedRequest, res: Response) {
 
 	const Person = await personRepo.getPerson(db, req.actor.Person!.id, {
 		settings: ['email_unconfirmed'],
@@ -162,7 +163,7 @@ async function updateParadigm(req: Request, res: Response) {
 	]);
 	if(tabSettings.filter(s => s.tag === 'paradigm_word_limit')[0]?.value){
 		const wordLimit = parseInt(tabSettings.filter(s => s.tag === 'paradigm_word_limit')[0].value);
-		const wordCount = req.valid.body.paradigm.split(/\s+/).length;
+		const wordCount = req.body.paradigm.split(/\s+/).length;
 		if(wordCount > wordLimit){
 			return BadRequest(req, res, `Paradigm exceeds the word limit of ${wordLimit}. Your paradigm has ${wordCount} words.`);
 		}
@@ -170,13 +171,13 @@ async function updateParadigm(req: Request, res: Response) {
 		logger.debug('no paradigm word limit set, skipping word count check');
 	}
 
-	const naughtywords = profanityCheck(req.valid.body.paradigm);
+	const naughtywords = profanityCheck(req.body.paradigm);
 	if(naughtywords.length > 0){
 		return BadRequest(req, res, 'paradigm contains prohibited words', { words: naughtywords });
 	}
-	const cleanParadigm = sanitizeHTML(req.valid.body.paradigm);
-	if(cleanParadigm !== req.valid.body.paradigm){
-		logger.debug('Paradigm was modified by sanitization.', { original: req.valid.body.paradigm, clean: cleanParadigm });
+	const cleanParadigm = sanitizeHTML(req.body.paradigm);
+	if(cleanParadigm !== req.body.paradigm){
+		logger.debug('Paradigm was modified by sanitization.', { original: req.body.paradigm, clean: cleanParadigm });
 	}
 	//update the paradigm and relevant settings
 	await personRepo.updatePerson(db, Person.id, {

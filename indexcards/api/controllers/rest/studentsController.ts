@@ -5,14 +5,15 @@ import personRepo from '../../repos/personRepo.js';
 import { RateLimitExceeded } from '../../helpers/problem.js';
 
 import type { Request, Response } from 'express';
+import type { ValidatedRequest } from '../../middleware/validation.js';
 
 import { db } from '../../data/database.js';
 
 const STUDENT_SEARCH_LIMIT_WINDOW_MS = 24 * 60 * 60 * 1000;
 const STUDENT_SEARCH_LIMIT_MAX = 9;
 
-export async function unlinkedSearch(req: Request, res: Response) {
-	let { first, last, limit, offset } = req.valid.query;
+export async function unlinkedSearch(req: ValidatedRequest, res: Response) {
+	let { first, last, limit, offset } = req.query;
 
 	if(!req.session || !req.actor.Person){
 		throw new Error('Unauthorized: Missing session or actor.Person');

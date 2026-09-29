@@ -19,6 +19,28 @@ describe('GET /pages/invite/upcoming', () => {
 		expect(res.body.some((tourn: { tournId: number }) => tourn.tournId === Tourn.id)).toBe(true);
 		expect(res.body.some((tourn: { districts: string }) => tourn.districts === 'Yes')).toBe(true);
 	});
+	it('Filters by state and limits the number of results', async () => {
+		const res = await request(server)
+			.get(`/v1/pages/invite/upcoming?limit=1&state=il`)
+			.set('Accept', 'application/json')
+			.expect('Content-Type', /json/)
+			.expect(200);
+
+		expect(res.body).toMatchSchema(z.array(UpcomingSchema));
+		expect(res.body.length).toBeLessThanOrEqual(1);
+		expect(res.body.every((tourn: { state: string }) => tourn.state === 'IL')).toBe(true);
+	});
+	it('Rejects a limit or state that is not valid', async () => {
+		const badLimit = await request(server)
+			.get(`/v1/pages/invite/upcoming?limit=${encodeURIComponent('1; drop table tourn')}`)
+			.set('Accept', 'application/json');
+		expect(badLimit).toBeProblemResponse(400);
+
+		const badState = await request(server)
+			.get(`/v1/pages/invite/upcoming?state=${encodeURIComponent("'#")}`)
+			.set('Accept', 'application/json');
+		expect(badState).toBeProblemResponse(400);
+	});
 });
 
 describe('GET /pages/invite/nsdaCategories', () => {

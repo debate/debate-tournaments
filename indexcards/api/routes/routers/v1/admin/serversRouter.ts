@@ -1,5 +1,7 @@
 import { Router } from 'express';
 import * as controller from '../../../../controllers/admin/serverController.js';
+import { ValidateRequest } from '../../../../middleware/validation.js';
+import z from 'zod';
 
 const router = Router();
 
@@ -27,10 +29,13 @@ router.route('/show').get(controller.getInstances).openapi = {
 	},
 };
 
-router.route('/show/:linodeId').get(controller.getTabroomInstance).openapi = {
+router.route('/show/:linodeId').get(ValidateRequest, controller.getTabroomInstance).openapi = {
 	path: '/admin/servers/show/{linodeId}',
 	summary: 'TODO write spec',
 	tags: ['Admin : Servers'],
+	requestParams: {
+		path: z.object({ linodeId: z.coerce.number().int().positive() }),
+	},
 	responses: {
 		'200': {
 			description: 'OK',
@@ -75,10 +80,20 @@ router.route('/reboot').post(controller.rebootInstance).openapi = {
 	},
 };
 
-router.route('/changeCount').post(controller.changeInstanceCount).openapi = {
+router.route('/changeCount').post(ValidateRequest, controller.changeInstanceCount).openapi = {
 	path: '/admin/servers/changeCount',
 	summary: 'TODO write spec',
 	tags: ['Admin : Servers'],
+	requestBody: {
+		required: true,
+		content: {
+			'application/json': {
+				schema: z.object({
+					target: z.int().nonnegative().meta({ description: 'Number of servers to add' }),
+				}),
+			},
+		},
+	},
 	responses: {
 		'200': {
 			description: 'OK',
@@ -87,10 +102,15 @@ router.route('/changeCount').post(controller.changeInstanceCount).openapi = {
 	},
 };
 
-router.route('/changeCount/:id').delete(controller.changeInstanceCount).openapi = {
-	path: '/admin/servers/changeCount/{id}',
+router.route('/changeCount/:target').delete(ValidateRequest, controller.changeInstanceCount).openapi = {
+	path: '/admin/servers/changeCount/{target}',
 	summary: 'TODO write spec',
 	tags: ['Admin : Servers'],
+	requestParams: {
+		path: z.object({
+			target: z.coerce.number().int().nonnegative().meta({ description: 'Number of servers to remove' }),
+		}),
+	},
 	responses: {
 		'200': {
 			description: 'OK',

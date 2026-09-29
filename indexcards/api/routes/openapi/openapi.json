@@ -113,7 +113,29 @@
           "Invite"
         ],
         "description": "GET /pages/invite/upcoming is undocumented. Need to add .openapi to handler",
-        "parameters": [],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "description": "Maximum number of tournaments to return",
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "maximum": 9007199254740991
+            },
+            "description": "Maximum number of tournaments to return"
+          },
+          {
+            "in": "query",
+            "name": "state",
+            "schema": {
+              "description": "Two letter state code to filter tournaments by",
+              "type": "string",
+              "pattern": "^[A-Za-z]{2}$"
+            },
+            "description": "Two letter state code to filter tournaments by"
+          }
+        ],
         "responses": {
           "200": {
             "description": "List of public upcoming tournaments",
@@ -145,6 +167,16 @@
           "Invite"
         ],
         "parameters": [
+          {
+            "in": "path",
+            "name": "webname",
+            "schema": {
+              "type": "string",
+              "description": "The tournament webname, or a tournament id"
+            },
+            "required": true,
+            "description": "The tournament webname, or a tournament id"
+          },
           {
             "name": "webname",
             "in": "path",
@@ -539,6 +571,17 @@
         "security": [],
         "parameters": [
           {
+            "in": "path",
+            "name": "slug",
+            "schema": {
+              "type": "string",
+              "maxLength": 63,
+              "description": "The slug of the page"
+            },
+            "required": true,
+            "description": "The slug of the page"
+          },
+          {
             "name": "slug",
             "in": "path",
             "required": true,
@@ -699,6 +742,16 @@
         ],
         "parameters": [
           {
+            "in": "path",
+            "name": "tournId",
+            "schema": {
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "maximum": 9007199254740991
+            },
+            "required": true
+          },
+          {
             "$ref": "#/components/parameters/tournId"
           }
         ],
@@ -734,6 +787,16 @@
           "Rounds"
         ],
         "parameters": [
+          {
+            "in": "path",
+            "name": "tournId",
+            "schema": {
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "maximum": 9007199254740991
+            },
+            "required": true
+          },
           {
             "$ref": "#/components/parameters/tournId"
           }
@@ -910,18 +973,22 @@
           {
             "in": "path",
             "name": "tournId",
-            "required": true,
             "schema": {
-              "type": "integer"
-            }
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "maximum": 9007199254740991
+            },
+            "required": true
           },
           {
             "in": "path",
             "name": "eventAbbr",
-            "required": true,
             "schema": {
-              "type": "string"
-            }
+              "type": "string",
+              "description": "Abbreviation of the event"
+            },
+            "required": true,
+            "description": "Abbreviation of the event"
           },
           {
             "$ref": "#/components/parameters/tournId"
@@ -968,6 +1035,16 @@
         ],
         "parameters": [
           {
+            "in": "path",
+            "name": "tournId",
+            "schema": {
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "maximum": 9007199254740991
+            },
+            "required": true
+          },
+          {
             "$ref": "#/components/parameters/tournId"
           }
         ],
@@ -1010,7 +1087,7 @@
             "name": "tournId",
             "schema": {
               "type": "integer",
-              "minimum": -9007199254740991,
+              "exclusiveMinimum": 0,
               "maximum": 9007199254740991
             },
             "required": true
@@ -1056,10 +1133,12 @@
           {
             "in": "path",
             "name": "tournId",
-            "required": true,
             "schema": {
-              "type": "integer"
-            }
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "maximum": 9007199254740991
+            },
+            "required": true
           },
           {
             "$ref": "#/components/parameters/tournId"
@@ -2497,10 +2576,12 @@
           {
             "in": "path",
             "name": "tournId",
-            "required": true,
             "schema": {
-              "type": "integer"
-            }
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "maximum": 9007199254740991
+            },
+            "required": true
           },
           {
             "$ref": "#/components/parameters/tournId"
@@ -2544,10 +2625,12 @@
           {
             "in": "path",
             "name": "tournId",
-            "required": true,
             "schema": {
-              "type": "integer"
-            }
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "maximum": 9007199254740991
+            },
+            "required": true
           },
           {
             "$ref": "#/components/parameters/tournId"

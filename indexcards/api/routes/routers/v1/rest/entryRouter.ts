@@ -19,7 +19,10 @@ if(!config.features.HIDE_DEV_ENDPOINTS) {
 	description : 'Shows the published available pairings and results data for a given entry',
 	tags        : ['Tournaments', 'Entries', 'Results', 'Schematics'],
 	requestParams: {
-		path: z.object({entryId: z.coerce.number().int() }),
+		path: z.object({
+			tournId: z.coerce.number().int().positive(),
+			entryId: z.coerce.number().int().positive(),
+		}),
 	},
 	responses: {
 		200: {

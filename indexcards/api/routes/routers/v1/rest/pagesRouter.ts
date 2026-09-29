@@ -2,6 +2,7 @@ import { Router } from 'express';
 import * as controller from '../../../../controllers/rest/pageController.js';
 import { z } from 'zod';
 import { WebpageSchema } from '@tabroom/types';
+import { ValidateRequest } from '../../../../middleware/validation.js';
 
 const router = Router();
 
@@ -26,12 +27,17 @@ router.route('/').get(controller.getPublicPages).openapi = {
 	},
 };
 
-router.route('/:slug').get(controller.getPublicPages).openapi = {
+router.route('/:slug').get(ValidateRequest, controller.getPublicPages).openapi = {
 	summary: 'Get Public Page By Slug',
 	path: '/rest/pages/{slug}',
 	description: "Retrieve a public, sitewide page by it's slug",
 	tags: ['Webpages'],
 	security: [],
+	requestParams: {
+		path: z.object({
+			slug: z.string().max(63).meta({ description: 'The slug of the page' }),
+		}),
+	},
 	responses: {
 		200: {
 			description: 'A public webpages',

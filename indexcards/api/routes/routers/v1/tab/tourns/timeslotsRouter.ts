@@ -7,19 +7,19 @@ import { ValidateRequest } from '../../../../../middleware/validation.js';
 
 const router = Router({ mergeParams: true });
 
-router.route('/').get(requireAccess('tourn', 'read'), controller.getTimeslots).openapi = {
+const tournParams = z.object({
+	tournId: z.coerce.number().int().positive(),
+});
+const timeslotParams = tournParams.extend({
+	timeslotId: z.coerce.number().int().positive(),
+});
+
+router.route('/').get(requireAccess('tourn', 'read'), ValidateRequest, controller.getTimeslots).openapi = {
 	path: '/tab/tourns/{tournId}/timeslots',
 	summary: 'Get all timeslots for a tournament',
 	description: 'Returns an array of timeslot objects for the given tournament.',
 	tags: ['Timeslots'],
-	parameters: [
-		{
-			in: 'path',
-			name: 'tournId',
-			required: true,
-			schema: { type: 'integer' },
-		},
-	],
+	requestParams: { path: tournParams },
 	responses: {
 		200: {
 			description: 'An array of timeslot objects',
@@ -63,14 +63,7 @@ router.route('/').post(requireAccess('tourn', 'write'),ValidateRequest, controll
 	summary: 'Create a new timeslot',
 	description: 'Creates a new timeslot with the provided data and returns the created object.',
 	tags: ['Timeslots'],
-	parameters: [
-		{
-			in: 'path',
-			name: 'tournId',
-			required: true,
-			schema: { type: 'integer' },
-		},
-	],
+	requestParams: { path: tournParams },
 	requestBody: {
 		required: true,
 		content: {
@@ -96,25 +89,12 @@ router.route('/').post(requireAccess('tourn', 'write'),ValidateRequest, controll
 	},
 };
 
-router.route('/:timeslotId').get(requireAccess('timeslot', 'read'), controller.getTimeslot).openapi = {
+router.route('/:timeslotId').get(requireAccess('timeslot', 'read'), ValidateRequest, controller.getTimeslot).openapi = {
 	path: '/tab/tourns/{tournId}/timeslots/{timeslotId}',
 	summary: 'Get a timeslot by ID',
 	description: 'Returns a timeslot object for the given ID.',
 	tags: ['Timeslots'],
-	parameters: [
-		{
-			in: 'path',
-			name: 'tournId',
-			required: true,
-			schema: { type: 'integer' },
-		},
-		{
-			in: 'path',
-			name: 'timeslotId',
-			required: true,
-			schema: { type: 'integer' },
-		},
-	],
+	requestParams: { path: timeslotParams },
 	responses: {
 		200: {
 			description: 'A timeslot object',
@@ -147,12 +127,7 @@ router.route('/:timeslotId').put(requireAccess('timeslot', 'write'),ValidateRequ
 	summary: 'Update an existing timeslot',
 	description: 'Updates the timeslot with the given ID using the provided data and returns the updated object.',
 	tags: ['Timeslots'],
-	requestParams:{
-		path: z.object({
-			tournId: z.coerce.number().int(),
-			timeslotId: z.coerce.number().int(),
-		}),
-	},
+	requestParams: { path: timeslotParams },
 	requestBody: {
 		required: true,
 		content: {
@@ -178,25 +153,12 @@ router.route('/:timeslotId').put(requireAccess('timeslot', 'write'),ValidateRequ
 	},
 };
 
-router.route('/:timeslotId').delete(requireAccess('timeslot', 'write'), controller.deleteTimeslot).openapi = {
+router.route('/:timeslotId').delete(requireAccess('timeslot', 'write'), ValidateRequest, controller.deleteTimeslot).openapi = {
 	path: '/tab/tourns/{tournId}/timeslots/{timeslotId}',
 	summary: 'Delete a timeslot',
 	description: 'Deletes the timeslot with the given ID and returns a success message.',
 	tags: ['Timeslots'],
-	parameters: [
-		{
-			in: 'path',
-			name: 'tournId',
-			required: true,
-			schema: { type: 'integer' },
-		},
-		{
-			in: 'path',
-			name: 'timeslotId',
-			required: true,
-			schema: { type: 'integer' },
-		},
-	],
+	requestParams: { path: timeslotParams },
 	responses: {
 		204: { description: 'Timeslot deleted successfully' },
 		default: { $ref: '#/components/responses/ErrorResponse' },

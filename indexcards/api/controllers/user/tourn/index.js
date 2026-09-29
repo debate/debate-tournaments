@@ -198,7 +198,7 @@ export const getPersonTournSchools = async (personId, tournId) => {
 };
 
 export async function getPersonTourns(req, res){
-	const { endAfter } = req.valid.query;
+	const { endAfter } = req.query;
 	const data = await tournRepo.getPersonTourns(db,req.actor.id, {
 		endAfter,
 		unpublished: false,
@@ -223,7 +223,7 @@ export async function getPersonTourns(req, res){
 };
 
 export async function getTournSummary(req,res){
-	const tourn = await tournRepo.getPersonTournSummary(db,req.actor.id,req.valid.params.tournId);
+	const tourn = await tournRepo.getPersonTournSummary(db,req.actor.id,req.params.tournId);
 	let roles = [];
 	let livedocs = [];
 	if(tourn.judges.length > 0)
@@ -251,7 +251,7 @@ export async function getTournSummary(req,res){
 	});
 }
 export async function getTournFines(req,res){
-	const { tournId } = req.valid.params;
+	const { tournId } = req.params;
 	const data = await fineRepo.getFines(db,req.actor.id,tournId);
 
 	return res.json(data.map((row) => ({

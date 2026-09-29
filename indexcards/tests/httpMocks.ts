@@ -1,10 +1,11 @@
 import type { NextFunction, Request, Response } from 'express';
+import type { ValidatedRequest } from '../api/middleware/validation.js';
 import { createActor } from '../api/middleware/authorization/authorization.js';
 import { vi } from 'vitest';
 
 export function createPersonContext(
 	person: { id: number; first: string | null; last: string | null; email: string; site_admin: number | null },
-	reqOverrides: Partial<Request> = {}
+	reqOverrides: Partial<ValidatedRequest> = {}
 ) {
 	reqOverrides = {
 		session: {
@@ -28,7 +29,7 @@ export function createPersonContext(
 }
 
 //Mocks for unit testing middleware and controllers
-export function createContext(reqOverrides: Partial<Request> = {}) {
+export function createContext(reqOverrides: Partial<ValidatedRequest> = {}) {
 	const req = createReq(reqOverrides);
 	const res = createRes();
 
@@ -39,7 +40,7 @@ export function createContext(reqOverrides: Partial<Request> = {}) {
 	};
 }
 
-export function createReq(overrides: Partial<Request> & Record<string, unknown> = {}): Request {
+export function createReq(overrides: Partial<ValidatedRequest> & Record<string, unknown> = {}): Request {
 	return {
 		method: 'GET',
 		headers: {},
@@ -49,11 +50,6 @@ export function createReq(overrides: Partial<Request> & Record<string, unknown> 
 		session: undefined,
 		params: {},
 		query: {},
-		valid: {
-			body: {},
-			params: {},
-			query: {},
-		},
 		get: () => {},
 		...overrides,
 	} as unknown as Request;

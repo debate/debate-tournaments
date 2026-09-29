@@ -29,7 +29,7 @@ describe('studentsController', () => {
 			]);
 
 			const { req, res } = createContext({
-				valid: { query: { first: 'Te', last: 'St' } },
+				query: { first: 'Te', last: 'St' },
 				actor: { Person: { id: 10, site_admin: false } },
 				session: { id: 88, person: 10, su: null },
 			});
@@ -73,7 +73,7 @@ describe('studentsController', () => {
 			const unlinkedSearchSpy = vi.spyOn(studentRepo, 'unlinkedSearch').mockResolvedValue([]);
 
 			const { req, res } = createContext({
-				valid: { query: { first: 'Te', last: 'St' } },
+				query: { first: 'Te', last: 'St' },
 				actor: { id: 10, Person: { site_admin: false } },
 				session: { id: 90, person: 10, su: null },
 			});
@@ -97,7 +97,7 @@ describe('studentsController', () => {
 			vi.spyOn(personRepo, 'updatePerson').mockResolvedValue(undefined);
 
 			const { req, res } = createContext({
-				valid: { query: { first: 'Ada', last: 'Lovelace' } },
+				query: { first: 'Ada', last: 'Lovelace' },
 				actor: { id: 11, Person: { site_admin: false } },
 				session: {
 					id: 1234,
@@ -124,7 +124,7 @@ describe('studentsController', () => {
 			vi.spyOn(studentRepo, 'unlinkedSearch').mockResolvedValue([]);
 
 			const { req, res } = createContext({
-				valid: { query: { first: 'Test', last: 'User' } },
+				query: { first: 'Test', last: 'User' },
 				actor: { id: 12, Person: { site_admin: true } },
 				session: { id: 222, person: 12, su: null },
 			});
@@ -160,7 +160,7 @@ describe('studentsController', () => {
 			]);
 
 			const { req, res } = createContext({
-				valid: { query: {} },
+				query: {},
 				actor: {
 					Person: {
 						id: 10,

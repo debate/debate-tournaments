@@ -24,9 +24,15 @@ router.route('/invite/nsdaCategories').get(inviteController.getNSDACategories).o
 		},
 	},
 };
-router.route('/invite/upcoming').get(inviteController.getFutureTourns).openapi = {
+router.route('/invite/upcoming').get(ValidateRequest, inviteController.getFutureTourns).openapi = {
 	path: '/pages/invite/upcoming',
 	summary     : 'Returns the public listing of upcoming tournaments',
+	requestParams: {
+		query: z.object({
+			limit: z.coerce.number().int().positive().optional().meta({ description: 'Maximum number of tournaments to return' }),
+			state: z.string().regex(/^[A-Za-z]{2}$/).optional().meta({ description: 'Two letter state code to filter tournaments by' }),
+		}),
+	},
 	responses   : {
 		200: {
 			description: 'List of public upcoming tournaments',
@@ -35,11 +41,16 @@ router.route('/invite/upcoming').get(inviteController.getFutureTourns).openapi =
 	},
 	tags: ['futureTourns', 'Invite'],
 };
-router.route('/invite/webname/:webname').get(inviteController.getTournIdByWebname).openapi = {
+router.route('/invite/webname/:webname').get(ValidateRequest, inviteController.getTournIdByWebname).openapi = {
 	path: '/pages/invite/webname/{webname}',
 	summary: 'Get Tournament ID by Webname',
 	description: 'Retrieve the tournament ID and details by webname.',
 	tags: ['Invite'],
+	requestParams: {
+		path: z.object({
+			webname: z.string().meta({ description: 'The tournament webname, or a tournament id' }),
+		}),
+	},
 	responses: {
 		200: {
 			description: 'Tournament information',
@@ -60,11 +71,14 @@ router.route('/invite/nextweek').get(inviteController.getThisWeekTourns).openapi
 	},
 	tags: ['Invite'],
 };
-router.route('/tiebreaks/:roundId').get(resultSetController.getTiebreaks).openapi = {
+router.route('/tiebreaks/:roundId').get(ValidateRequest, resultSetController.getTiebreaks).openapi = {
 	path: '/pages/tiebreaks/{roundId}',
 	summary: 'Get tiebreaks needed for a protocol id.  This is just for Palmer testing and will go poof.',
 	description: 'for testing and dev',
 	tags: ['Invite', 'Schematics', 'Rounds'],
+	requestParams: {
+		path: z.object({ roundId: z.coerce.number().int().positive() }),
+	},
 	responses: {
 		200: {
 			description: 'Round Information',
@@ -72,11 +86,14 @@ router.route('/tiebreaks/:roundId').get(resultSetController.getTiebreaks).openap
 	},
 };
 
-router.route('/protocol/round/:roundId').get(resultSetController.getTiebreaks).openapi = {
+router.route('/protocol/round/:roundId').get(ValidateRequest, resultSetController.getTiebreaks).openapi = {
 	path: '/pages/protocol/round/{roundId}',
 	summary: 'Get tiebreaks needed for a protocol id',
 	description: 'for testing and dev',
 	tags: ['Invite', 'Schematics', 'Rounds'],
+	requestParams: {
+		path: z.object({ roundId: z.coerce.number().int().positive() }),
+	},
 	responses: {
 		200: {
 			description: 'Round Information',
@@ -84,11 +101,18 @@ router.route('/protocol/round/:roundId').get(resultSetController.getTiebreaks).o
 	},
 };
 
-router.route('/invite/:tournId/:eventAbbr/:roundName').get(schematController.getSchematic).openapi = {
+router.route('/invite/:tournId/:eventAbbr/:roundName').get(ValidateRequest, schematController.getSchematic).openapi = {
 	path: '/pages/invite/{tournId}/{eventAbbr}/{roundName}',
 	summary: 'Round Schematic',
 	description: 'Gives data for the display of a public round schematic',
 	tags: ['Invite', 'Schematics', 'Rounds'],
+	requestParams: {
+		path: z.object({
+			tournId   : z.coerce.number().int().positive(),
+			eventAbbr : z.string(),
+			roundName : z.coerce.number().int(),
+		}),
+	},
 	responses: {
 		200: {
 			description: 'Round Information',

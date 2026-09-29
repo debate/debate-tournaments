@@ -37,14 +37,6 @@ declare module 'express-serve-static-core' {
 		auth?: {
 			perms: Perm[];
 		};
-		valid: {
-			// oxlint-disable-next-line typescript/no-explicit-any
-			body?:any;
-			// oxlint-disable-next-line typescript/no-explicit-any
-			params?:any;
-			// oxlint-disable-next-line typescript/no-explicit-any
-			query?:any;
-		};
 		tourn?: Selectable<Tourn>;
 	}
 }

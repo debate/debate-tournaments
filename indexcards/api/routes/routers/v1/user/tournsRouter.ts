@@ -31,7 +31,7 @@ router.route('/').get(ValidateRequest,controller.getPersonTourns).openapi = {
 	},
 };
 // User tourn presence
-router.route('/:tournId').get(controller.getPersonTournPresence).openapi = {
+router.route('/:tournId').get(ValidateRequest, controller.getPersonTournPresence).openapi = {
 	summary: 'Get Tournament Presence',
 	operationId: 'UserTourn',
 	path : '/user/tourns/{tournId}',
@@ -39,7 +39,7 @@ router.route('/:tournId').get(controller.getPersonTournPresence).openapi = {
 	description: 'Get a user connections to a tournament, if any',
 	requestParams: {
 		path: z.object({
-			tournId: z.number().int().positive().meta({ description: 'ID of the tournament' }),
+			tournId: z.coerce.number().int().positive().meta({ description: 'ID of the tournament' }),
 		}),
 	},
 	responses: {
@@ -106,7 +106,7 @@ router.route('/:tournId/ballots').get(ValidateRequest,controller.getTournBallots
 	requestParams: {
 		path: z.object({ tournId: z.coerce.number().int().positive() }),
 		query: z.object({
-			audited: z.boolean().default(false),
+			audited: z.stringbool().default(false),
 		})
 	},
 	responses: {

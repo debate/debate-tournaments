@@ -232,14 +232,14 @@ export async function getFutureTourns(req,res){
 		thisWeekDT = 1;
 	}
 
-	if (typeof req.query.state === 'string' && req.query.state.length === 2) {
-		limit = ` and tourn.state = '${req.query.state.toUpperCase()}'`;
+	const { state, limit: queryLimit } = req.query;
+
+	if (state) {
+		limit = ` and tourn.state = :state `;
 	}
 
-	const queryLimit = parseInt(req.query.limit);
-
-	if (!isNaN(queryLimit)) {
-		endLimit = ` limit ${req.query.limit} `;
+	if (queryLimit) {
+		endLimit = ` limit :queryLimit `;
 	}
 
 	const futureTourns = await db.sequelize.query(`
@@ -383,7 +383,8 @@ export async function getFutureTourns(req,res){
 			order by special DESC, week, tourn.end, schoolCount DESC
 			${ endLimit }
 	`, {
-		type : db.sequelize.QueryTypes.SELECT,
+		replacements : { state: state?.toUpperCase(), queryLimit },
+		type         : db.sequelize.QueryTypes.SELECT,
 	});
 
 	const futureDistricts = await db.sequelize.query(`
@@ -528,7 +529,8 @@ export async function getFutureTourns(req,res){
 		order by week, weekend.end
 		${ endLimit }
 	`, {
-		type : db.sequelize.QueryTypes.SELECT,
+		replacements : { queryLimit },
+		type         : db.sequelize.QueryTypes.SELECT,
 	});
 
 	futureTourns.push(...futureDistricts);

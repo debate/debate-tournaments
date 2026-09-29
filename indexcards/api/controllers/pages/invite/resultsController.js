@@ -7,7 +7,7 @@ export const getRoundResults = async (req,res) => {
 	// Be agnostic about accepting round ID or the human interface stuff.
 	let finderQuery = ` and round.id = :roundId `;
 
-	if (!req.valid.params.roundId) {
+	if (!req.params.roundId) {
 		finderQuery =` and event.tourn = :tournId
 			and event.abbr   = :eventAbbr
 			and round.name   = :roundName `;
@@ -70,7 +70,7 @@ export const getRoundResults = async (req,res) => {
 			and round.event     = event.id
 		order by section.bye, ballot.forfeit, ballot.bye, section.flight, judge.last
 	`, {
-		replacements: { ...req.valid.params },
+		replacements: { ...req.params },
 		type: db.Sequelize.QueryTypes.SELECT,
 	});
 

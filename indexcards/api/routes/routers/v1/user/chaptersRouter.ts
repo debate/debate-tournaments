@@ -3,6 +3,7 @@ import controller from '../../../../controllers/user/chapter/index.js';
 import { MySchoolSchema, NonTournChapterSchema, UserChapterSchema } from '@tabroom/types';
 import z from 'zod';
 import config from '../../../../config.js';
+import { ValidateRequest } from '../../../../middleware/validation.js';
 
 const router = Router();
 
@@ -27,18 +28,22 @@ router.route('/')
 
 if(!config.features.HIDE_DEV_ENDPOINTS) {
 router.route('/byTourn/:tournId')
-	.get(controller.userChaptersByTourn).openapi = {
+	.get(ValidateRequest, controller.userChaptersByTourn).openapi = {
 	path: '/user/chapters/byTourn/{tournId}',
 	tags: ['legacy', 'User: Chapter'],
-	parameters: [{ in: 'path', name: 'tournId', required: true, schema: { type: 'integer' } }],
+	requestParams: {
+		path: z.object({ tournId: z.coerce.number().int().positive() }),
+	},
 	responses: { 200: { description: 'Chapters by tournament' }, default: { $ref: '#/components/responses/ErrorResponse' } },
 };
 }
 router.route('/byTourn/:tournId/mySchools')
-	.get(controller.getMySchoolsByTourn).openapi = {
+	.get(ValidateRequest, controller.getMySchoolsByTourn).openapi = {
 	path: '/user/chapters/byTourn/{tournId}/mySchools',
 	tags: ['legacy', 'User: Chapter'],
-	parameters: [{ in: 'path', name: 'tournId', required: true, schema: { type: 'integer' } }],
+	requestParams: {
+		path: z.object({ tournId: z.coerce.number().int().positive() }),
+	},
 	responses: {
 		200: {
 			description: 'My schools by tournament',
@@ -48,10 +53,12 @@ router.route('/byTourn/:tournId/mySchools')
 	},
 };
 router.route('/byTourn/:tournId/nonSchools')
-	.get(controller.getMyChaptersNonTourn).openapi = {
+	.get(ValidateRequest, controller.getMyChaptersNonTourn).openapi = {
 	path: '/user/chapters/byTourn/{tournId}/nonSchools',
 	tags: ['legacy', 'User: Chapter'],
-	parameters: [{ in: 'path', name: 'tournId', required: true, schema: { type: 'integer' } }],
+	requestParams: {
+		path: z.object({ tournId: z.coerce.number().int().positive() }),
+	},
 	responses: {
 		200: {
 			description: 'Non-school chapters by tournament',

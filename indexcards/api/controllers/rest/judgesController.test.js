@@ -25,7 +25,7 @@ describe('judgesController.unlinkedSearch', () => {
 		]);
 
 		const req = createReq({
-			valid: { query: { first: 'Alex', last: 'Smith' } },
+			query: { first: 'Alex', last: 'Smith' },
 			actor: { id: 99, Person: { first: 'Alex', last: 'Smith' } },
 		});
 		const res = createRes();
@@ -48,7 +48,7 @@ describe('judgesController.unlinkedSearch', () => {
 		vi.mocked(chapterJudgeRepo.unlinkedSearch).mockResolvedValue([]);
 
 		const req = createReq({
-			valid: { query: {} },
+			query: {},
 			actor: { id: 5, Person: { first: 'Jordan', last: 'Lee' } },
 		});
 		const res = createRes();

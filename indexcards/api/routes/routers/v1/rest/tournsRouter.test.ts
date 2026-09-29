@@ -80,7 +80,8 @@ describe('GET /rest/tourns/:tournId/invite', () => {
 });
 describe('GET /rest/tourns/:tournId/schedule', () => {
 	it('Returns the rounds in the tournament schedule', async () => {
-		const { Tourn, Round } = await factories.tourn.createFull();
+		// The schedule leaves out attendee events, so the event type is fixed
+		const { Tourn, Round } = await factories.tourn.createFull({ Event: { type: 'debate' } });
 
 		const res = await request(server)
             .get(`/v1/rest/tourns/${Tourn.id}/schedule`)
