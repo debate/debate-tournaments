@@ -104,8 +104,8 @@ router.route('/invite/:tournId/').get(inviteController.getTournIdByWebname).open
 		},
 	},
 };
-
-router.route('/invite/:tournId/:eventAbbr/:roundName').get(schematController.getSchematic).openapi = {
+if(!config.features.HIDE_DEV_ENDPOINTS) {
+	router.route('/invite/:tournId/:eventAbbr/:roundName').get(schematController.getSchematic).openapi = {
 	path: '/pages/invite/{tournId}/{eventAbbr}/{roundName}',
 	summary: 'Round Schematic',
 	description: 'Gives data for the display of a public round schematic',
@@ -115,7 +115,8 @@ router.route('/invite/:tournId/:eventAbbr/:roundName').get(schematController.get
 			description: 'Round Information',
 		},
 	},
-};
+	};
+}
 
 router.route('/invite/:tournId/:eventAbbr/:roundName/results').get(ValidateRequest, pageResultController.getRoundResults).openapi = {
 	path        : '/pages/invite/{tournId}/{eventAbbr}/{roundName}',
