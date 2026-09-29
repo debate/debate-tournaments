@@ -32,6 +32,7 @@ export async function getTournIdByWebname(req,res) {
 	}
 
 	const tourn = results?.shift();
+	tourn.hidden = Boolean(tourn.hidden);
 	tourn.settings = {
 		multiYear: false,
 	};
@@ -80,7 +81,10 @@ export async function getNSDACategories(req, res) {
 	`, {
 		type : db.sequelize.QueryTypes.SELECT,
 	});
-	return res.status(200).json(eventCodes);
+	return res.status(200).json(eventCodes.map((category) => ({
+		...category,
+		national: Boolean(category.national),
+	})));
 };
 
 export async function getEventIdByWebname(req,res) {
@@ -226,15 +230,6 @@ export async function getFutureTourns(req,res){
 		// excludes the Nationals test but not the other eight others.
 		timeScope = `'2023-08-01 00:00:00'`;
 		thisWeekDT = 1;
-	}
-
-	if (typeof req.params.circuit === 'number') {
-		limit = ` and exists (
-					select tourn_circuit.id from tourn_circuit
-					where tourn_circuit.tourn = tourn.id
-					and tourn_circuit.approved = 1
-					and tourn_circuit.circuit = ${req.params.circuit}
-				) `;
 	}
 
 	if (typeof req.query.state === 'string' && req.query.state.length === 2) {

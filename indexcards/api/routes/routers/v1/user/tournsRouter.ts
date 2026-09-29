@@ -2,8 +2,9 @@ import { Router } from 'express';
 import * as controller from '../../../../controllers/user/tourn/index.js';
 import * as ballots from '../../../../controllers/user/tourn/ballotsController.js';
 import { ValidateRequest } from '../../../../middleware/validation.js';
+import config from '../../../../config.js';
 import z from 'zod';
-import { FineSchema, CurrentBallotSchema, PersonTournSummarySchema, TournSchema } from '@tabroom/types';
+import { FineSchema, CurrentBallotSchema, PersonTournPresenceSchema, PersonTournSummarySchema, TournSchema } from '@tabroom/types';
 
 const router = Router();
 
@@ -42,7 +43,14 @@ router.route('/:tournId').get(controller.getPersonTournPresence).openapi = {
 		}),
 	},
 	responses: {
-		200     : { description: 'Person tournament presence' },
+		200     : {
+			description: 'Person tournament presence',
+			content: {
+				'application/json': {
+					schema: PersonTournPresenceSchema,
+				},
+			},
+		},
 	},
 };
 
@@ -88,6 +96,7 @@ router.route('/:tournId/fines').get(ValidateRequest,controller.getTournFines).op
 	},
 };
 
+if(!config.features.HIDE_DEV_ENDPOINTS) {
 router.route('/:tournId/ballots').get(ValidateRequest,controller.getTournBallots).openapi = {
 	summary: 'Get Ballots',
 	operationId: 'UserTournsBallots',
@@ -111,6 +120,7 @@ router.route('/:tournId/ballots').get(ValidateRequest,controller.getTournBallots
 		},
 	},
 };
+}
 
 router.route('/:tournId/ballots/current')
 	.get(ValidateRequest,ballots.getCurrent).openapi = {

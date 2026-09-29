@@ -1,5 +1,7 @@
 import request from 'supertest';
 import server from '../../../../../app.js';
+import { PublishedRoundSchema, type PublishedRound } from '@tabroom/types';
+import z from 'zod';
 
 describe('GET /rounds', () => {
 	it('Returns published rounds for a tourn when given valid id', async () => {
@@ -9,18 +11,12 @@ describe('GET /rounds', () => {
             .expect('Content-Type', /json/)
             .expect(200);
 
-		const body = res.body;
-
-		expect(Array.isArray(body)).toBe(true);
-		expect(typeof body[0]).toBe('object');
+		const body: PublishedRound[] = res.body;
+		expect(body).toMatchSchema(z.array(PublishedRoundSchema));
 
 		// Property test: every round must be published
-		body.forEach((round: { published: number; id: number; eventId: number; Event: { name: string; abbr: string } }) => {
+		body.forEach((round) => {
 			expect(round.published).toBe(1);
-			expect(typeof round.id).toBe('number');
-			expect(typeof round.eventId).toBe('number');
-			expect(typeof round.Event.name).toBe('string');
-			expect(typeof round.Event.abbr).toBe('string');
 		});
 
 		expect(body).toHaveLength(11);

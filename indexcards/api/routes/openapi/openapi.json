@@ -56,7 +56,6 @@
         "Ads",
         "Auth",
         "Circuits",
-        "Entries",
         "Events",
         "Invite",
         "Judges",
@@ -64,7 +63,6 @@
         "Pairings",
         "Paradigms",
         "Quizzes",
-        "Records",
         "Results",
         "Rounds",
         "Students",
@@ -86,7 +84,17 @@
         "parameters": [],
         "responses": {
           "200": {
-            "description": "List of NSDA event categories"
+            "description": "List of NSDA event categories",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/NSDACategory"
+                  }
+                }
+              }
+            }
           },
           "401": {
             "$ref": "#/components/responses/Unauthorized"
@@ -148,7 +156,14 @@
         ],
         "responses": {
           "200": {
-            "description": "Tournament information"
+            "description": "Tournament information",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TournByWebname"
+                }
+              }
+            }
           },
           "401": {
             "$ref": "#/components/responses/Unauthorized"
@@ -159,7 +174,7 @@
         }
       }
     },
-    "/pages/invite/{tournId}/{eventAbbr}/{roundName}": {
+    "/pages/invite/{tournId}/{eventAbbr}/{roundName}/results": {
       "get": {
         "summary": "Round published results",
         "description": "Returns results display information for a given round",
@@ -228,7 +243,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object"
+                  "$ref": "#/components/schemas/RoundResults"
                 }
               }
             }
@@ -538,7 +553,10 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/WebpageSchemaOutput"
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/WebpageSchemaOutput"
+                  }
                 }
               }
             }
@@ -722,7 +740,17 @@
         ],
         "responses": {
           "200": {
-            "description": "List of published rounds"
+            "description": "List of published rounds",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PublishedRound"
+                  }
+                }
+              }
+            }
           },
           "401": {
             "$ref": "#/components/responses/Unauthorized"
@@ -871,45 +899,6 @@
         }
       }
     },
-    "/rest/tourns/{tournId}/events/{eventId}/results": {
-      "get": {
-        "summary": "Get Published Results by Event",
-        "description": "Given an Event ID, get published result records of the entries therein",
-        "tags": [
-          "Events",
-          "Results",
-          "Records",
-          "Entries"
-        ],
-        "parameters": [
-          {
-            "$ref": "#/components/parameters/tournId"
-          },
-          {
-            "name": "eventId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "integer"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Entries with Win Loss data attached"
-          },
-          "401": {
-            "$ref": "#/components/responses/Unauthorized"
-          },
-          "404": {
-            "$ref": "#/components/responses/NotFound"
-          },
-          "500": {
-            "$ref": "#/components/responses/ErrorResponse"
-          }
-        }
-      }
-    },
     "/rest/tourns/{tournId}/events/{eventAbbr}/field": {
       "get": {
         "summary": "Get Entry Field by Event",
@@ -948,7 +937,14 @@
         ],
         "responses": {
           "200": {
-            "description": "List of entries"
+            "description": "List of entries",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventField"
+                }
+              }
+            }
           },
           "401": {
             "$ref": "#/components/responses/Unauthorized"
@@ -1075,7 +1071,10 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object"
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ScheduleRound"
+                  }
                 }
               }
             }
@@ -1143,52 +1142,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "type": "object",
-                    "properties": {
-                      "id": {
-                        "type": "integer",
-                        "exclusiveMinimum": 0,
-                        "maximum": 9007199254740991
-                      },
-                      "name": {
-                        "type": "string",
-                        "description": "Full name"
-                      },
-                      "tournJudged": {
-                        "type": "integer",
-                        "exclusiveMinimum": 0,
-                        "maximum": 9007199254740991,
-                        "description": "Number of tournaments judged"
-                      },
-                      "schools": {
-                        "type": "array",
-                        "items": {
-                          "type": "object",
-                          "properties": {
-                            "id": {
-                              "type": "integer",
-                              "exclusiveMinimum": 0,
-                              "maximum": 9007199254740991
-                            },
-                            "name": {
-                              "type": "string"
-                            }
-                          },
-                          "required": [
-                            "id",
-                            "name"
-                          ],
-                          "additionalProperties": false
-                        }
-                      }
-                    },
-                    "required": [
-                      "id",
-                      "name",
-                      "tournJudged",
-                      "schools"
-                    ],
-                    "additionalProperties": false
+                    "$ref": "#/components/schemas/ParadigmSearchResult"
                   }
                 }
               }
@@ -1672,7 +1626,14 @@
         ],
         "responses": {
           "200": {
-            "description": "Person tournament presence"
+            "description": "Person tournament presence",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PersonTournPresence"
+                }
+              }
+            }
           },
           "401": {
             "$ref": "#/components/responses/Unauthorized"
@@ -1760,61 +1721,6 @@
                   "type": "array",
                   "items": {
                     "$ref": "#/components/schemas/Fine"
-                  }
-                }
-              }
-            }
-          },
-          "401": {
-            "$ref": "#/components/responses/Unauthorized"
-          },
-          "500": {
-            "$ref": "#/components/responses/ErrorResponse"
-          }
-        }
-      }
-    },
-    "/user/tourns/{tournId}/ballots": {
-      "get": {
-        "summary": "Get Ballots",
-        "operationId": "UserTournsBallots",
-        "tags": [
-          "User: Tournament",
-          "Orval"
-        ],
-        "description": "Returns an array of Fines for the tourn.",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "tournId",
-            "schema": {
-              "type": "integer",
-              "exclusiveMinimum": 0,
-              "maximum": 9007199254740991
-            },
-            "required": true
-          },
-          {
-            "in": "query",
-            "name": "audited",
-            "schema": {
-              "default": false,
-              "type": "boolean"
-            }
-          },
-          {
-            "$ref": "#/components/parameters/tournId"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Ballots",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/CurrentBallot"
                   }
                 }
               }
@@ -1940,12 +1846,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "count": {
-                      "type": "integer"
-                    }
-                  }
+                  "$ref": "#/components/schemas/InboxUnreadCount"
                 }
               }
             }
@@ -2309,22 +2210,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "message": {
-                      "type": "string",
-                      "description": "A message indicating the claim request was submitted"
-                    },
-                    "detail": {
-                      "type": "string",
-                      "description": "Additional details about the claim request submission"
-                    }
-                  },
-                  "required": [
-                    "message",
-                    "detail"
-                  ],
-                  "additionalProperties": false
+                  "$ref": "#/components/schemas/ClaimResponse"
                 }
               }
             }
@@ -2376,7 +2262,10 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/JudgeHistory"
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/JudgeHistory"
+                  }
                 }
               }
             }
@@ -2406,17 +2295,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "paradigm": {
-                      "type": "string",
-                      "description": "The current paradigm for the user"
-                    }
-                  },
-                  "required": [
-                    "paradigm"
-                  ],
-                  "additionalProperties": false
+                  "$ref": "#/components/schemas/UserParadigmOutput"
                 }
               }
             }
@@ -2442,17 +2321,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "type": "object",
-                "properties": {
-                  "paradigm": {
-                    "type": "string",
-                    "maxLength": 65535,
-                    "description": "The new paradigm for the user"
-                  }
-                },
-                "required": [
-                  "paradigm"
-                ]
+                "$ref": "#/components/schemas/UserParadigm"
               }
             }
           }
@@ -2494,47 +2363,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "type": "object",
-                    "properties": {
-                      "judgeId": {
-                        "type": "integer",
-                        "minimum": -9007199254740991,
-                        "maximum": 9007199254740991
-                      },
-                      "categoryAbbr": {
-                        "type": "string"
-                      },
-                      "tournName": {
-                        "type": "string"
-                      },
-                      "tournEnd": {
-                        "type": "string",
-                        "format": "date-time",
-                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
-                      },
-                      "tournTz": {
-                        "type": "string"
-                      },
-                      "url": {
-                        "type": "string"
-                      },
-                      "caption": {
-                        "type": [
-                          "string",
-                          "null"
-                        ]
-                      }
-                    },
-                    "required": [
-                      "judgeId",
-                      "categoryAbbr",
-                      "tournName",
-                      "tournEnd",
-                      "tournTz",
-                      "url",
-                      "caption"
-                    ],
-                    "additionalProperties": false
+                    "$ref": "#/components/schemas/JudgeLiveDoc"
                   }
                 }
               }
@@ -2609,22 +2438,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "message": {
-                      "type": "string",
-                      "description": "A message indicating the claim request was submitted"
-                    },
-                    "detail": {
-                      "type": "string",
-                      "description": "Additional details about the claim request submission"
-                    }
-                  },
-                  "required": [
-                    "message",
-                    "detail"
-                  ],
-                  "additionalProperties": false
+                  "$ref": "#/components/schemas/ClaimResponse"
                 }
               }
             }
@@ -2694,7 +2508,17 @@
         ],
         "responses": {
           "200": {
-            "description": "My schools by tournament"
+            "description": "My schools by tournament",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MySchool"
+                  }
+                }
+              }
+            }
           },
           "401": {
             "$ref": "#/components/responses/Unauthorized"
@@ -2731,7 +2555,17 @@
         ],
         "responses": {
           "200": {
-            "description": "Non-school chapters by tournament"
+            "description": "Non-school chapters by tournament",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/NonTournChapter"
+                  }
+                }
+              }
+            }
           },
           "401": {
             "$ref": "#/components/responses/Unauthorized"
@@ -3675,6 +3509,20 @@
         ],
         "additionalProperties": false
       },
+      "UserParadigm": {
+        "type": "object",
+        "properties": {
+          "paradigm": {
+            "type": "string",
+            "maxLength": 65535,
+            "description": "The paradigm for the logged in user"
+          }
+        },
+        "required": [
+          "paradigm"
+        ],
+        "description": "The paradigm of the logged in user"
+      },
       "WebpageSchema": {
         "type": "object",
         "properties": {
@@ -3728,7 +3576,7 @@
               }
             ]
           },
-          "pageOrder": {
+          "page_order": {
             "anyOf": [
               {
                 "type": "integer",
@@ -3740,7 +3588,7 @@
               }
             ]
           },
-          "parentId": {
+          "parent": {
             "anyOf": [
               {
                 "type": "integer",
@@ -3752,7 +3600,7 @@
               }
             ]
           },
-          "updatedAt": {
+          "timestamp": {
             "type": "string",
             "format": "date-time",
             "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
@@ -3766,9 +3614,9 @@
           "sitewide",
           "special",
           "slug",
-          "pageOrder",
-          "parentId",
-          "updatedAt"
+          "page_order",
+          "parent",
+          "timestamp"
         ]
       },
       "ActiveCircuitsResponseSchema": {
@@ -3833,6 +3681,25 @@
           ],
           "additionalProperties": false
         }
+      },
+      "ClaimResponse": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "description": "A message indicating the claim request was submitted"
+          },
+          "detail": {
+            "type": "string",
+            "description": "Additional details about the claim request submission"
+          }
+        },
+        "required": [
+          "message",
+          "detail"
+        ],
+        "additionalProperties": false,
+        "description": "The result of a person claiming a judge or student record"
       },
       "CurrentBallot": {
         "type": "object",
@@ -4112,6 +3979,229 @@
         ],
         "additionalProperties": false
       },
+      "EventField": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "maximum": 9007199254740991
+          },
+          "name": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "abbr": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "debate",
+              "speech",
+              "mock_trial",
+              "congress",
+              "wsdc",
+              "wudc",
+              "attendee",
+              "academic"
+            ]
+          },
+          "category": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 9007199254740991
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "tourn": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 9007199254740991
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "settings": {
+            "type": "object",
+            "properties": {
+              "fieldWaitlist": {
+                "description": "Whether waitlisted entries are shown",
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "fieldReport": {
+                "type": "string",
+                "description": "Whether the field report is published"
+              }
+            },
+            "required": [
+              "fieldWaitlist",
+              "fieldReport"
+            ],
+            "additionalProperties": false
+          },
+          "Entries": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "integer",
+                  "exclusiveMinimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "name": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "code": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "active": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "waitlist": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "School": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "anyOf": [
+                        {
+                          "type": "integer",
+                          "exclusiveMinimum": 0,
+                          "maximum": 9007199254740991
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "name": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "code": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "name",
+                    "code"
+                  ],
+                  "additionalProperties": false
+                },
+                "Students": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "integer",
+                        "exclusiveMinimum": 0,
+                        "maximum": 9007199254740991
+                      },
+                      "first": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "middle": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "last": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "chapter": {
+                        "anyOf": [
+                          {
+                            "type": "integer",
+                            "exclusiveMinimum": 0,
+                            "maximum": 9007199254740991
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "first",
+                      "middle",
+                      "last",
+                      "chapter"
+                    ],
+                    "additionalProperties": false
+                  }
+                }
+              },
+              "required": [
+                "id",
+                "name",
+                "code",
+                "active",
+                "waitlist",
+                "School",
+                "Students"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "abbr",
+          "type",
+          "category",
+          "tourn",
+          "settings",
+          "Entries"
+        ],
+        "additionalProperties": false,
+        "description": "The published field of entries for an event"
+      },
       "EventResultSetsSchema": {
         "type": "object",
         "properties": {
@@ -4185,6 +4275,12 @@
             "exclusiveMinimum": 0,
             "maximum": 9007199254740991
           },
+          "schoolName": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
           "leviedAt": {
             "type": "string",
             "format": "date-time",
@@ -4196,6 +4292,7 @@
           "reason",
           "amount",
           "school",
+          "schoolName",
           "leviedAt"
         ],
         "additionalProperties": false
@@ -4409,6 +4506,22 @@
         ],
         "additionalProperties": false
       },
+      "InboxUnreadCount": {
+        "type": "object",
+        "properties": {
+          "count": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991,
+            "description": "The number of unread messages"
+          }
+        },
+        "required": [
+          "count"
+        ],
+        "additionalProperties": false,
+        "description": "The count of unread messages for the logged in user"
+      },
       "JudgeHistory": {
         "type": "object",
         "properties": {
@@ -4472,6 +4585,50 @@
         ],
         "additionalProperties": false,
         "description": "A person's history of judging"
+      },
+      "JudgeLiveDoc": {
+        "type": "object",
+        "properties": {
+          "judgeId": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "categoryAbbr": {
+            "type": "string"
+          },
+          "tournName": {
+            "type": "string"
+          },
+          "tournEnd": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+          },
+          "tournTz": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          },
+          "caption": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "judgeId",
+          "categoryAbbr",
+          "tournName",
+          "tournEnd",
+          "tournTz",
+          "url",
+          "caption"
+        ],
+        "additionalProperties": false,
+        "description": "A live doc link for a category the logged in user is judging in"
       },
       "JudgeRecord": {
         "type": "object",
@@ -4587,6 +4744,328 @@
         "additionalProperties": false,
         "description": "A response for a login request"
       },
+      "MySchool": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "maximum": 9007199254740991
+          },
+          "name": {
+            "type": "string"
+          },
+          "code": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "onsite": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "chapter": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 9007199254740991
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "students": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "integer",
+                  "exclusiveMinimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "first": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "middle": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "last": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "code": {
+                  "description": "Code of the entry the student is in",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "chapter": {
+                  "type": "integer",
+                  "exclusiveMinimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "event": {
+                  "type": "integer",
+                  "exclusiveMinimum": 0,
+                  "maximum": 9007199254740991,
+                  "description": "Event of the entry the student is in"
+                }
+              },
+              "required": [
+                "id",
+                "first",
+                "middle",
+                "last",
+                "code",
+                "chapter",
+                "event"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "entries": {
+            "type": "object",
+            "propertyNames": {
+              "type": "string",
+              "pattern": "^-?\\d+$"
+            },
+            "additionalProperties": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "name": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "event": {
+                  "type": "integer",
+                  "exclusiveMinimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "eventAbbr": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "code",
+                "name",
+                "event",
+                "eventAbbr"
+              ],
+              "additionalProperties": false
+            },
+            "description": "Active entries keyed by entry id"
+          },
+          "events": {
+            "type": "object",
+            "propertyNames": {
+              "type": "string",
+              "pattern": "^-?\\d+$"
+            },
+            "additionalProperties": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "abbr": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "name",
+                "abbr"
+              ],
+              "additionalProperties": false
+            },
+            "description": "Events the school has entries in, keyed by event id"
+          },
+          "judges": {
+            "type": "object",
+            "propertyNames": {
+              "type": "string",
+              "pattern": "^-?\\d+$"
+            },
+            "additionalProperties": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "integer",
+                  "exclusiveMinimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "first": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "last": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "category": {
+                  "type": "integer",
+                  "exclusiveMinimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "categoryAbbr": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "categoryName": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "id",
+                "first",
+                "last",
+                "category",
+                "categoryAbbr",
+                "categoryName"
+              ],
+              "additionalProperties": false
+            },
+            "description": "Judges keyed by judge id"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "code",
+          "onsite",
+          "chapter",
+          "students",
+          "entries",
+          "events",
+          "judges"
+        ],
+        "additionalProperties": false,
+        "description": "A school the logged in user can manage at a tournament, with its roster"
+      },
+      "NSDACategory": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 63
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "type": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "c",
+                  "d",
+                  "s"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Congress, debate or speech"
+          },
+          "code": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "national": {
+            "type": "boolean"
+          },
+          "timestamp": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "type",
+          "code",
+          "national",
+          "timestamp"
+        ],
+        "additionalProperties": false
+      },
+      "NonTournChapter": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "maximum": 9007199254740991,
+            "description": "Unique identifier for the chapter"
+          },
+          "name": {
+            "type": "string",
+            "description": "Name of the chapter"
+          }
+        },
+        "required": [
+          "id",
+          "name"
+        ],
+        "additionalProperties": false,
+        "description": "A chapter the user administers that has no school in a tournament"
+      },
       "ParadigmDetailsSchema": {
         "type": "object",
         "properties": {
@@ -4639,7 +5118,7 @@
         ],
         "additionalProperties": false
       },
-      "PersonTournSummary": {
+      "ParadigmSearchResult": {
         "type": "object",
         "properties": {
           "id": {
@@ -4649,20 +5128,162 @@
           },
           "name": {
             "type": "string",
-            "maxLength": 63
+            "description": "Full name"
           },
-          "webname": {
-            "type": "string"
+          "tournJudged": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991,
+            "description": "Number of tournaments judged"
           },
-          "start": {
-            "type": "string"
+          "schools": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "integer",
+                  "exclusiveMinimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "name": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "name"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "tournJudged",
+          "schools"
+        ],
+        "additionalProperties": false,
+        "description": "A judge matching a paradigm search"
+      },
+      "PersonTournPresence": {
+        "type": "object",
+        "properties": {
+          "me": {
+            "type": "object",
+            "properties": {
+              "entries": {
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "exclusiveMinimum": 0,
+                  "maximum": 9007199254740991
+                }
+              },
+              "events": {
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "exclusiveMinimum": 0,
+                  "maximum": 9007199254740991
+                }
+              },
+              "judges": {
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "exclusiveMinimum": 0,
+                  "maximum": 9007199254740991
+                }
+              },
+              "categories": {
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "exclusiveMinimum": 0,
+                  "maximum": 9007199254740991
+                }
+              },
+              "rounds": {
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "exclusiveMinimum": 0,
+                  "maximum": 9007199254740991
+                }
+              }
+            },
+            "required": [
+              "entries",
+              "events",
+              "judges",
+              "categories",
+              "rounds"
+            ],
+            "additionalProperties": false,
+            "description": "Ids the person is directly involved in as a competitor or judge"
           },
-          "end": {
-            "type": "string"
-          },
-          "tz": {
-            "type": "string",
-            "maxLength": 31
+          "mine": {
+            "type": "object",
+            "properties": {
+              "entries": {
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "exclusiveMinimum": 0,
+                  "maximum": 9007199254740991
+                }
+              },
+              "events": {
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "exclusiveMinimum": 0,
+                  "maximum": 9007199254740991
+                }
+              },
+              "judges": {
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "exclusiveMinimum": 0,
+                  "maximum": 9007199254740991
+                }
+              },
+              "categories": {
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "exclusiveMinimum": 0,
+                  "maximum": 9007199254740991
+                }
+              }
+            },
+            "required": [
+              "entries",
+              "events",
+              "judges",
+              "categories"
+            ],
+            "additionalProperties": false,
+            "description": "Ids at schools the person coaches or is a contact for, excluding those in me"
+          }
+        },
+        "required": [
+          "me",
+          "mine"
+        ],
+        "additionalProperties": false,
+        "description": "The entities a person is connected to at a tournament"
+      },
+      "PersonTournSummary": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "maximum": 9007199254740991
           },
           "roles": {
             "type": "array",
@@ -4680,6 +5301,17 @@
             "items": {
               "type": "object",
               "properties": {
+                "categoryId": {
+                  "type": "integer",
+                  "exclusiveMinimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "categoryName": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
                 "url": {
                   "type": "string"
                 },
@@ -4691,49 +5323,19 @@
                 }
               },
               "required": [
+                "categoryId",
+                "categoryName",
                 "url",
                 "caption"
               ],
               "additionalProperties": false
             }
-          },
-          "Judge": {
-            "anyOf": [
-              {
-                "type": "object",
-                "properties": {
-                  "categoryName": {
-                    "type": "string"
-                  },
-                  "schoolName": {
-                    "type": [
-                      "string",
-                      "null"
-                    ]
-                  }
-                },
-                "required": [
-                  "categoryName",
-                  "schoolName"
-                ],
-                "additionalProperties": false
-              },
-              {
-                "type": "null"
-              }
-            ]
           }
         },
         "required": [
           "id",
-          "name",
-          "webname",
-          "start",
-          "end",
-          "tz",
           "roles",
-          "livedocs",
-          "Judge"
+          "livedocs"
         ],
         "additionalProperties": false,
         "description": "A summary of a tourn and a persons role in it for the user homepage"
@@ -4772,6 +5374,227 @@
           "status"
         ],
         "additionalProperties": false
+      },
+      "PublishedRound": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "maximum": 9007199254740991
+          },
+          "type": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 15
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "label": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 31
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "flighted": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "post_primary": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "post_secondary": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "post_feedback": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "published": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "event": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "maximum": 9007199254740991
+          },
+          "protocol": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 9007199254740991
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "Event": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 9007199254740991
+              },
+              "name": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "abbr": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "type": {
+                "type": "string",
+                "enum": [
+                  "debate",
+                  "speech",
+                  "mock_trial",
+                  "congress",
+                  "wsdc",
+                  "wudc",
+                  "attendee",
+                  "academic"
+                ]
+              },
+              "level": {
+                "type": "string",
+                "enum": [
+                  "champ",
+                  "es-novice",
+                  "es-open",
+                  "jv",
+                  "middle",
+                  "novice",
+                  "open"
+                ]
+              },
+              "nsda_category": {
+                "anyOf": [
+                  {
+                    "type": "integer",
+                    "minimum": -9007199254740991,
+                    "maximum": 9007199254740991
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "Settings": {
+                "type": "object",
+                "properties": {
+                  "publishResults": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  }
+                },
+                "required": [
+                  "publishResults"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "id",
+              "name",
+              "abbr",
+              "type",
+              "level",
+              "nsda_category",
+              "Settings"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "id",
+          "type",
+          "name",
+          "label",
+          "flighted",
+          "post_primary",
+          "post_secondary",
+          "post_feedback",
+          "published",
+          "event",
+          "protocol",
+          "Event"
+        ],
+        "additionalProperties": false,
+        "description": "A published round with its event, for the public rounds listing"
       },
       "RestCircuit": {
         "type": "object",
@@ -4993,6 +5816,505 @@
           "results"
         ],
         "additionalProperties": false
+      },
+      "RoundResults": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "maximum": 9007199254740991
+          },
+          "name": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "label": {
+            "type": "string"
+          },
+          "flighted": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "postPrimary": {
+            "description": "Present when primary results are public",
+            "type": "boolean",
+            "const": true
+          },
+          "postSecondary": {
+            "description": "Present when secondary results are public",
+            "type": "boolean",
+            "const": true
+          },
+          "Event": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 9007199254740991
+              },
+              "abbr": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "type": {
+                "type": "string",
+                "enum": [
+                  "debate",
+                  "speech",
+                  "mock_trial",
+                  "congress",
+                  "wsdc",
+                  "wudc",
+                  "attendee",
+                  "academic"
+                ]
+              },
+              "Settings": {
+                "type": "object",
+                "properties": {
+                  "affLabel": {
+                    "type": "string"
+                  },
+                  "negLabel": {
+                    "type": "string"
+                  },
+                  "publishResults": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "maxEntrySize": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "primaryScore": {
+                    "type": "string",
+                    "enum": [
+                      "winloss",
+                      "rank"
+                    ]
+                  }
+                },
+                "required": [
+                  "affLabel",
+                  "negLabel"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "id",
+              "type",
+              "Settings"
+            ],
+            "additionalProperties": false
+          },
+          "Sections": {
+            "type": "object",
+            "propertyNames": {
+              "type": "string",
+              "pattern": "^-?\\d+$"
+            },
+            "additionalProperties": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "integer",
+                  "exclusiveMinimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "letter": {
+                  "type": "string"
+                },
+                "bye": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "published": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "Judges": {
+                  "type": "object",
+                  "propertyNames": {
+                    "type": "string",
+                    "pattern": "^-?\\d+$"
+                  },
+                  "additionalProperties": {
+                    "type": "object",
+                    "properties": {
+                      "first": {
+                        "type": "string"
+                      },
+                      "last": {
+                        "type": "string"
+                      },
+                      "chair": {
+                        "type": "integer",
+                        "minimum": -9007199254740991,
+                        "maximum": 9007199254740991
+                      }
+                    },
+                    "additionalProperties": false
+                  },
+                  "description": "Judges keyed by judge id"
+                },
+                "Entries": {
+                  "type": "object",
+                  "propertyNames": {
+                    "type": "string",
+                    "pattern": "^-?\\d+$"
+                  },
+                  "additionalProperties": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "integer",
+                        "exclusiveMinimum": 0,
+                        "maximum": 9007199254740991
+                      },
+                      "code": {
+                        "type": "string"
+                      },
+                      "name": {
+                        "type": "string"
+                      },
+                      "school": {
+                        "type": "integer",
+                        "exclusiveMinimum": 0,
+                        "maximum": 9007199254740991
+                      },
+                      "schoolName": {
+                        "type": "string"
+                      },
+                      "side": {
+                        "description": "The side label, e.g. Aff or Neg",
+                        "type": "string"
+                      },
+                      "speakerorder": {
+                        "type": "integer",
+                        "minimum": -9007199254740991,
+                        "maximum": 9007199254740991
+                      },
+                      "Speakers": {
+                        "description": "Students keyed by id, for events with more than one student per entry",
+                        "type": "object",
+                        "propertyNames": {
+                          "type": "string",
+                          "pattern": "^-?\\d+$"
+                        },
+                        "additionalProperties": {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "integer",
+                              "exclusiveMinimum": 0,
+                              "maximum": 9007199254740991
+                            },
+                            "first": {
+                              "type": "string"
+                            },
+                            "last": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "id"
+                          ],
+                          "additionalProperties": false
+                        }
+                      },
+                      "Ballots": {
+                        "type": "object",
+                        "propertyNames": {
+                          "type": "string",
+                          "pattern": "^-?\\d+$"
+                        },
+                        "additionalProperties": {
+                          "type": "object",
+                          "properties": {
+                            "winloss": {
+                              "type": "string",
+                              "enum": [
+                                "W",
+                                "L",
+                                "Bye",
+                                "Fft"
+                              ]
+                            },
+                            "rank": {
+                              "type": "number"
+                            },
+                            "point": {
+                              "description": "Points, including refutation points",
+                              "type": "number"
+                            },
+                            "po": {
+                              "type": "number"
+                            },
+                            "speech": {
+                              "description": "Comma separated speech scores",
+                              "type": "string"
+                            },
+                            "Speakers": {
+                              "description": "Secondary scores keyed by student id",
+                              "type": "object",
+                              "propertyNames": {
+                                "type": "string",
+                                "pattern": "^-?\\d+$"
+                              },
+                              "additionalProperties": {
+                                "type": "object",
+                                "propertyNames": {
+                                  "type": "string",
+                                  "enum": [
+                                    "winloss",
+                                    "rank",
+                                    "point",
+                                    "refute",
+                                    "po",
+                                    "speech"
+                                  ]
+                                },
+                                "additionalProperties": {
+                                  "type": "number"
+                                }
+                              }
+                            }
+                          },
+                          "additionalProperties": false
+                        },
+                        "description": "Ballot scores keyed by judge id"
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "Ballots"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "description": "Entries keyed by side, speaker order or entry id"
+                }
+              },
+              "required": [
+                "id",
+                "Judges",
+                "Entries"
+              ],
+              "additionalProperties": false
+            },
+            "description": "Sections keyed by section id"
+          },
+          "scoreTypes": {
+            "type": "object",
+            "propertyNames": {
+              "type": "string",
+              "enum": [
+                "winloss",
+                "rank",
+                "point",
+                "refute",
+                "po",
+                "speech"
+              ]
+            },
+            "additionalProperties": {
+              "type": "boolean",
+              "const": true
+            }
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "label",
+          "Event",
+          "Sections",
+          "scoreTypes"
+        ],
+        "additionalProperties": false,
+        "description": "Public results for a round, grouped by section"
+      },
+      "ScheduleRound": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "maximum": 9007199254740991
+          },
+          "type": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 15
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "label": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 31
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "published": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "post_primary": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "start_time": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "Event": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 9007199254740991
+              },
+              "name": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "abbr": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "type": {
+                "type": "string",
+                "enum": [
+                  "debate",
+                  "speech",
+                  "mock_trial",
+                  "congress",
+                  "wsdc",
+                  "wudc",
+                  "attendee",
+                  "academic"
+                ]
+              },
+              "nsda_category": {
+                "anyOf": [
+                  {
+                    "type": "integer",
+                    "minimum": -9007199254740991,
+                    "maximum": 9007199254740991
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "id",
+              "name",
+              "abbr",
+              "type",
+              "nsda_category"
+            ],
+            "additionalProperties": false
+          },
+          "Timeslot": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 9007199254740991
+              },
+              "start": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "end": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "id",
+              "start",
+              "end"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "id",
+          "type",
+          "name",
+          "label",
+          "published",
+          "post_primary",
+          "start_time",
+          "Event",
+          "Timeslot"
+        ],
+        "additionalProperties": false,
+        "description": "A round in the tournament schedule with its event and timeslot"
       },
       "Session": {
         "type": "object",
@@ -5356,6 +6678,123 @@
           "database"
         ],
         "additionalProperties": false
+      },
+      "TournByWebname": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "maximum": 9007199254740991
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 63
+          },
+          "city": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 31
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "state": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 6
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "country": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 4
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "tz": {
+            "type": "string",
+            "maxLength": 31
+          },
+          "webname": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 9007199254740991
+              }
+            ],
+            "description": "The tournament webname, or the tournament id when a newer tournament shares the webname"
+          },
+          "hidden": {
+            "type": "boolean"
+          },
+          "start": {
+            "type": "string"
+          },
+          "end": {
+            "type": "string"
+          },
+          "reg_start": {
+            "type": "string"
+          },
+          "reg_end": {
+            "type": "string"
+          },
+          "timestamp": {
+            "type": "string"
+          },
+          "settings": {
+            "type": "object",
+            "properties": {
+              "multiYear": {
+                "type": "boolean",
+                "description": "Whether other tournaments share this webname"
+              },
+              "notCurrent": {
+                "description": "Present when a newer tournament shares this webname",
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "multiYear"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "city",
+          "state",
+          "country",
+          "tz",
+          "webname",
+          "hidden",
+          "start",
+          "end",
+          "reg_start",
+          "reg_end",
+          "timestamp",
+          "settings"
+        ],
+        "additionalProperties": false,
+        "description": "A tournament looked up by webname or id for the public invite pages"
       },
       "TournInviteSchema": {
         "type": "object",
@@ -6784,6 +8223,21 @@
         ],
         "additionalProperties": false
       },
+      "UserParadigmOutput": {
+        "type": "object",
+        "properties": {
+          "paradigm": {
+            "type": "string",
+            "maxLength": 65535,
+            "description": "The paradigm for the logged in user"
+          }
+        },
+        "required": [
+          "paradigm"
+        ],
+        "additionalProperties": false,
+        "description": "The paradigm of the logged in user"
+      },
       "WebpageSchemaOutput": {
         "type": "object",
         "properties": {
@@ -6837,7 +8291,7 @@
               }
             ]
           },
-          "pageOrder": {
+          "page_order": {
             "anyOf": [
               {
                 "type": "integer",
@@ -6849,7 +8303,7 @@
               }
             ]
           },
-          "parentId": {
+          "parent": {
             "anyOf": [
               {
                 "type": "integer",
@@ -6861,7 +8315,7 @@
               }
             ]
           },
-          "updatedAt": {
+          "timestamp": {
             "type": "string"
           }
         },
@@ -6873,9 +8327,9 @@
           "sitewide",
           "special",
           "slug",
-          "pageOrder",
-          "parentId",
-          "updatedAt"
+          "page_order",
+          "parent",
+          "timestamp"
         ],
         "additionalProperties": false
       },
@@ -7328,39 +8782,6 @@
           "middle",
           "last",
           "obligation"
-        ],
-        "additionalProperties": false
-      },
-      "NSDACategorySchema": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "integer",
-            "minimum": -9007199254740991,
-            "maximum": 9007199254740991
-          },
-          "name": {
-            "type": "string",
-            "maxLength": 63
-          },
-          "type": {
-            "type": "string",
-            "maxLength": 15
-          },
-          "code": {
-            "type": "integer",
-            "minimum": -9007199254740991,
-            "maximum": 9007199254740991
-          },
-          "nationals": {
-            "type": "boolean"
-          }
-        },
-        "required": [
-          "id",
-          "name",
-          "type",
-          "code"
         ],
         "additionalProperties": false
       },

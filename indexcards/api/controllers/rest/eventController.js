@@ -57,10 +57,10 @@ export async function getField(req,res) {
 	const event = {
 		name       : events[0].name,
 		id         : events[0].id,
-		abbr       : events[0].name,
+		abbr       : events[0].abbr,
 		type       : events[0].type,
-		categoryId : events[0].category,
-		tournId    : events[0].tourn,
+		category   : events[0].category,
+		tourn      : events[0].tourn,
 		settings   : {
 			fieldWaitlist: events[0].fieldWaitlist,
 			fieldReport: events[0].fieldReport,
@@ -107,7 +107,7 @@ export async function getField(req,res) {
 	const entryById = {};
 
 	entries.forEach( (entry) => {
-		if (!event.fieldWaitlist && entry.waitlist) return;
+		if (!event.settings.fieldWaitlist && entry.waitlist) return;
 		if (!entryById[entry.id]) {
 			entryById[entry.id] = {
 				id       : entry.id,
@@ -124,12 +124,14 @@ export async function getField(req,res) {
 			};
 		}
 
+		if (!entry.studentId) return;
+
 		entryById[entry.id].Students.push({
-			id         : entry.studentId,
-			firstName  : entry.studentFirst,
-			middleName : entry.studentMiddle,
-			lastName   : entry.studentLast,
-			chapterId  : entry.chapterId,
+			id      : entry.studentId,
+			first   : entry.studentFirst,
+			middle  : entry.studentMiddle,
+			last    : entry.studentLast,
+			chapter : entry.chapterId,
 		});
 	});
 
@@ -138,38 +140,6 @@ export async function getField(req,res) {
 	});
 
 	return res.status(200).json(event);
-};
-
-export async function getSchedule(req,res) {
-	const rounds = await db.sequelize.query(`
-        select
-            round.id, round.name, round.label, round.type,
-            round.start_time,
-            site.name,
-            timeslot.start, timeslot.end
-        from (round, timeslot, event)
-            left join site on site.id = round.site
-        where 1=1
-            and event.tourn = :tournId
-            and event.abbr = :eventAbbr
-            and event.id = round.event
-            and round.timeslot = timeslot.id
-            and NOT EXISTS (
-                select rs.id
-                from round_setting rs
-                where rs.event = event.id
-                and rs.tag = 'suppress_schedule'
-            )
-        order by round.name
-    `, {
-		replacements  : {
-			tournId   : req.params.tournId,
-			eventAbbr : req.params.eventAbbr,
-		},
-		type: req.db.Sequelize.QueryTypes.SELECT,
-	});
-
-	return res.status(200).json(rounds);
 };
 
 export async function getEventByAbbr(req, res) {

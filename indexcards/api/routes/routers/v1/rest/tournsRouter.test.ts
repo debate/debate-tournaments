@@ -2,7 +2,7 @@ import request from 'supertest';
 import server from '../../../../../app.js';
 import factories from '../../../../../tests/factories/index.js';
 import { faker } from '@faker-js/faker';
-import { FileSchema, TournSchema } from '@tabroom/types';
+import { FileSchema, ScheduleRoundSchema, TournInviteSchema, TournSchema } from '@tabroom/types';
 import z from 'zod';
 
 let testTourn: Awaited<ReturnType<typeof factories.tourn.create>>;
@@ -49,6 +49,47 @@ describe('GET /rest/tourns', () => {
 		expect(body).toBeDefined();
 		expect(body).toMatchSchema(z.array(TournSchema));
 		expect(body.length).toBeGreaterThan(0);
+	});
+});
+describe('GET /rest/tourns/:tournId', () => {
+	it('Returns a public tournament', async () => {
+		const res = await request(server)
+            .get(`/v1/rest/tourns/${testTourn.id}`)
+            .set('Accept', 'application/json')
+            .expect('Content-Type', /json/)
+            .expect(200);
+
+		expect(res.body).toMatchSchema(TournSchema);
+		expect(res.body.id).toBe(testTourn.id);
+	});
+});
+describe('GET /rest/tourns/:tournId/invite', () => {
+	it('Returns the invite for a public tournament', async () => {
+		const { webpageId } = await factories.webpage.create({ tourn: testTourn.id });
+
+		const res = await request(server)
+            .get(`/v1/rest/tourns/${testTourn.id}/invite`)
+            .set('Accept', 'application/json')
+            .expect('Content-Type', /json/)
+            .expect(200);
+
+		expect(res.body).toMatchSchema(TournInviteSchema);
+		expect(res.body.id).toBe(testTourn.id);
+		expect(res.body.Webpages.some((page: { id: number }) => page.id === webpageId)).toBe(true);
+	});
+});
+describe('GET /rest/tourns/:tournId/schedule', () => {
+	it('Returns the rounds in the tournament schedule', async () => {
+		const { Tourn, Round } = await factories.tourn.createFull();
+
+		const res = await request(server)
+            .get(`/v1/rest/tourns/${Tourn.id}/schedule`)
+            .set('Accept', 'application/json')
+            .expect('Content-Type', /json/)
+            .expect(200);
+
+		expect(res.body).toMatchSchema(z.array(ScheduleRoundSchema));
+		expect(res.body.map((round: { id: number }) => round.id)).toContain(Round.id);
 	});
 });
 describe('GET /rest/tourns/:id/files', () => {

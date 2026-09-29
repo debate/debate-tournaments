@@ -12,7 +12,7 @@ describe('GET /results', () => {
             .expect(200);
 
 		const body = res.body;
-		expect(body).toMatchSchema(z.record(z.int(), EventResultSetsSchema));
+		expect(body).toMatchSchema(z.record(z.coerce.number().int(), EventResultSetsSchema));
 	});
 
 	it('Returns a particular result set for a valid tournID and rsID', async () => {

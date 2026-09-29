@@ -4,7 +4,7 @@ import * as schematController from '../../../../controllers/pages/invite/schemat
 import * as pageResultController from '../../../../controllers/pages/invite/resultsController.js';
 import * as resultSetController from '../../../../controllers/rest/resultSetController.js';
 import z from 'zod';
-import { UpcomingSchema } from '@tabroom/types';
+import { NSDACategorySchema, RoundResultsSchema, TournByWebnameSchema, UpcomingSchema } from '@tabroom/types';
 import config from '../../../../config.js';
 
 import { ValidateRequest } from '../../../../middleware/validation.js';
@@ -20,6 +20,7 @@ router.route('/invite/nsdaCategories').get(inviteController.getNSDACategories).o
 	responses: {
 		200: {
 			description: 'List of NSDA event categories',
+			content: { 'application/json': { schema: z.array(NSDACategorySchema) } },
 		},
 	},
 };
@@ -42,22 +43,11 @@ router.route('/invite/webname/:webname').get(inviteController.getTournIdByWebnam
 	responses: {
 		200: {
 			description: 'Tournament information',
+			content: { 'application/json': { schema: TournByWebnameSchema } },
 		},
 	},
 };
 if(!config.features.HIDE_DEV_ENDPOINTS) {
-router.route('/invite/:circuit').get(inviteController.getFutureTourns).openapi = {
-	path: '/pages/invite/{circuit}',
-	summary     : 'Returns the public listing of upcoming tournaments',
-	responses   : {
-		200: {
-			description: 'List of public upcoming tournaments',
-			content: { 'application/json': { schema: z.array(UpcomingSchema) } },
-		},
-	},
-	tags: ['futureTourns', 'Invite'],
-};
-
 router.route('/invite/nextweek').get(inviteController.getThisWeekTourns).openapi = {
 	path: '/pages/invite/nextweek',
 	summary	 : 'Returns the public listing of upcoming tournaments in this week',
@@ -93,20 +83,8 @@ router.route('/protocol/round/:roundId').get(resultSetController.getTiebreaks).o
 		},
 	},
 };
-}
-router.route('/invite/:tournId/').get(inviteController.getTournIdByWebname).openapi = {
-	path: '/pages/invite/webname/{webname}',
-	summary: 'Get Tournament ID by Webname',
-	description: 'Retrieve the tournament ID and details by webname.',
-	tags: ['Invite'],
-	responses: {
-		200: {
-			description: 'Tournament information',
-		},
-	},
-};
-if(!config.features.HIDE_DEV_ENDPOINTS) {
-	router.route('/invite/:tournId/:eventAbbr/:roundName').get(schematController.getSchematic).openapi = {
+
+router.route('/invite/:tournId/:eventAbbr/:roundName').get(schematController.getSchematic).openapi = {
 	path: '/pages/invite/{tournId}/{eventAbbr}/{roundName}',
 	summary: 'Round Schematic',
 	description: 'Gives data for the display of a public round schematic',
@@ -116,11 +94,11 @@ if(!config.features.HIDE_DEV_ENDPOINTS) {
 			description: 'Round Information',
 		},
 	},
-	};
+};
 }
 
 router.route('/invite/:tournId/:eventAbbr/:roundName/results').get(ValidateRequest, pageResultController.getRoundResults).openapi = {
-	path        : '/pages/invite/{tournId}/{eventAbbr}/{roundName}',
+	path        : '/pages/invite/{tournId}/{eventAbbr}/{roundName}/results',
 	summary     : 'Round published results',
 	description : 'Returns results display information for a given round',
 	operationId : 'getRoundPublicResults',
@@ -136,9 +114,7 @@ router.route('/invite/:tournId/:eventAbbr/:roundName/results').get(ValidateReque
 			description: 'Aggregated section data with results if they are public',
 			content: {
 				'application/json': {
-					schema: {
-						type: 'object',
-					},
+					schema: RoundResultsSchema,
 				},
 			},
 		},

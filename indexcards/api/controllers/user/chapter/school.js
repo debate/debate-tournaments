@@ -87,7 +87,7 @@ export async function getMySchoolsByTourn(req, res) {
 		const tournStudents = await req.db.sequelize.query(`
 			select
 				student.id, student.first, student.middle, student.last,
-				entry.code, student.chapter, entry.event eventId
+				entry.code, student.chapter, entry.event
 			from (student, entry_student es, entry, school)
 			where 1=1
 				and school.tourn = :tournId
@@ -109,7 +109,7 @@ export async function getMySchoolsByTourn(req, res) {
 		const tournJudges = await req.db.sequelize.query(`
 			select
 				judge.id, judge.first, judge.last, judge.school,
-				category.id categoryId, category.abbr categoryAbbr, category.name categoryName
+				judge.category, category.abbr categoryAbbr, category.name categoryName
 			from (judge, category)
 			where 1=1
 				and judge.school IN (:schoolIds)
@@ -124,7 +124,7 @@ export async function getMySchoolsByTourn(req, res) {
 		const tournEntries = await req.db.sequelize.query(`
 			select
 				entry.school, entry.id, entry.name, entry.code,
-				event.id eventId, event.name eventName, event.abbr eventAbbr
+				entry.event, event.name eventName, event.abbr eventAbbr
 				from (entry, event)
 			where 1=1
 				and entry.school IN (:schoolIds)
@@ -155,8 +155,8 @@ export async function getMySchoolsByTourn(req, res) {
 			}
 
 			for (const entry of entries) {
-				if (!school.events[entry.eventId]) {
-					school.events[entry.eventId] = {
+				if (!school.events[entry.event]) {
+					school.events[entry.event] = {
 						name: entry.eventName,
 						abbr: entry.eventAbbr,
 					};
@@ -164,7 +164,7 @@ export async function getMySchoolsByTourn(req, res) {
 				school.entries[entry.id] = {
 					code      : entry.code,
 					name      : entry.name,
-					eventId   : entry.eventId,
+					event     : entry.event,
 					eventAbbr : entry.eventAbbr,
 				};
 			}

@@ -132,7 +132,7 @@ export const getRoundResults = async (req,res) => {
 			}
 
 			if (ballot.schoolId) {
-				entry.schoolId = ballot.schoolId;
+				entry.school = ballot.schoolId;
 				entry.schoolName = ballot.schoolName;
 			}
 

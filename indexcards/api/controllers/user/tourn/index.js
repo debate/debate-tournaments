@@ -13,8 +13,6 @@ import { sql } from 'kysely';
 
 export async function getPersonTournPresence(req, res) {
 
-	console.log('HEYO');
-
 	if (!req.session) {
 		return res.status(200).json({ message: 'You are not logged in'});
 	};
@@ -216,8 +214,9 @@ export async function getPersonTourns(req, res){
 		hidden: row.hidden,
 		start: row.start,
 		end: row.end,
-		regStart: row.reg_start,
-		regEnd: row.reg_end,
+		reg_start: row.reg_start,
+		reg_end: row.reg_end,
+		timestamp: row.timestamp,
 	}));
 
 	return res.json(tourns);
@@ -256,7 +255,12 @@ export async function getTournFines(req,res){
 	const data = await fineRepo.getFines(db,req.actor.id,tournId);
 
 	return res.json(data.map((row) => ({
-		...row,
+		id: row.id,
+		reason: row.reason,
+		amount: row.amount === null ? null : Number(row.amount),
+		school: row.school,
+		schoolName: row.schoolName,
+		leviedAt: row.leviedAt,
 	})));
 };
 

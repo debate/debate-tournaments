@@ -7,6 +7,7 @@ export const FineSchema = z.object({
 	reason: z.string().max(255).nullable(),
 	amount: z.number().nullable(),
 	school: utils.id,
+	schoolName: z.string().nullable(),
 	leviedAt: z.iso.datetime(),
 }).strict().meta({
 	id: 'Fine',

@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import * as controller from '../../../../controllers/user/inbox.js';
 import { requireLogin } from '../../../../middleware/authorization/authorization.js';
-import { InboxMessageSchema } from '@tabroom/types';
+import { InboxMessageSchema, InboxUnreadCountSchema } from '@tabroom/types';
 import z from 'zod';
 import { ValidateRequest } from '../../../../middleware/validation.js';
 import { requireAuth } from '../../../openapi/security.js';
@@ -41,12 +41,7 @@ router.route('/unread').get(controller.getUnreadCount).openapi = {
 			description: 'Unread count',
 			content: {
 				'application/json': {
-					schema: {
-						type: 'object',
-						properties: {
-							count: { type: 'integer' },
-						},
-					},
+					schema: InboxUnreadCountSchema,
 				},
 			},
 		},

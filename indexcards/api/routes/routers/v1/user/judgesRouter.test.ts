@@ -2,7 +2,7 @@ import factories from '../../../../../tests/factories/index.js';
 import request from 'supertest';
 import server from '../../../../../app.js';
 import z from 'zod';
-import { JudgeHistorySchema, UnlinkedJudgeSchema } from '@tabroom/types';
+import { ClaimResponseSchema, JudgeHistorySchema, UnlinkedJudgeSchema, UserParadigmSchema, JudgeLiveDocSchema } from '@tabroom/types';
 import personRepo from '../../../../repos/personRepo.js';
 import { db } from '../../../../../api/data/database.js';
 import chapterJudgeRepo from '../../../../repos/chapterJudgeRepo.js';
@@ -61,12 +61,13 @@ describe('judgesRouter', () => {
 				chapter: Chapter.id,
 			});
 			//make the request to claim the chapter judge
-			await request(server)
+			const res = await request(server)
 				.post('/v1/user/judges/claim')
 				.query({ chapterJudgeId: ChapterJudge.id })
 				.set('Accept', 'application/json')
 				.set('Authorization', `Bearer ${userkey}`)
 				.expect(200);
+			expect(res.body).toMatchSchema(ClaimResponseSchema);
 			//assert that the chapter judge's person_request is updated and that an email was sent to the chapter email with the correct content
 			const updatedChapterJudge = await chapterJudgeRepo.getChapterJudge(db,ChapterJudge.id);
 			expect(updatedChapterJudge?.person_request).toBe(personId);
@@ -80,12 +81,13 @@ describe('judgesRouter', () => {
 			});
 			await factories.permission.create({ person: personId, chapter: Chapter.id, tag: 'chapter' }); //give the user admin permissions for the chapter so they can receive the notification email
 			//make the request to claim the chapter judge
-			await request(server)
+			const res = await request(server)
 				.post('/v1/user/judges/claim')
 				.query({ chapterJudgeId: ChapterJudge.id })
 				.set('Accept', 'application/json')
 				.set('Authorization', `Bearer ${userkey}`)
 				.expect(200);
+			expect(res.body).toMatchSchema(ClaimResponseSchema);
 			//assert that the chapter judge's person_request is updated and that an email was sent to the chapter email with the correct content
 			const updatedChapterJudge = await chapterJudgeRepo.getChapterJudge(db,ChapterJudge.id);
 			expect(updatedChapterJudge?.person).toBe(personId);
@@ -94,12 +96,13 @@ describe('judgesRouter', () => {
 			const Cat = await factories.category.create();
 			const Judge = await factories.judge.create({ category: Cat.id });
 
-			await request(server)
+			const res = await request(server)
 				.post('/v1/user/judges/claim')
 				.query({ judgeId: Judge.id })
 				.set('Accept', 'application/json')
 				.set('Authorization', `Bearer ${userkey}`)
 				.expect(200);
+			expect(res.body).toMatchSchema(ClaimResponseSchema);
 
 			const updatedJudge = await judgeRepo.getJudge(db, Judge.id);
 			expect(updatedJudge?.person_request).toBe(personId);
@@ -137,7 +140,7 @@ describe('judgesRouter', () => {
 				.set('Accept', 'application/json')
 				.set('Authorization', `Bearer ${userkey}`)
 				.expect(200);
-			expect(res.body).toHaveProperty('paradigm');
+			expect(res.body).toMatchSchema(UserParadigmSchema);
 			expect(res.body.paradigm).toBe('Initial paradigm');
 		});
 		it("returns 404 when the person has no paradigm", async () => {
@@ -154,11 +157,12 @@ describe('judgesRouter', () => {
 		it('should update the users paradigm', async () => {
 			const Person = await factories.person.create();
 			const { userkey } = await factories.session.create({ person: Person.id });
+			const body: z.input<typeof UserParadigmSchema> = { paradigm: 'word '.repeat(50) };
 			const res = await request(server)
 				.post('/v1/user/judges/paradigm')
 				.set('Accept', 'application/json')
 				.set('Authorization', `Bearer ${userkey}`)
-				.send({ paradigm: 'word '.repeat(50) })
+				.send(body)
 				.expect(204);
 			expect(res).not.toBeProblemResponse();
 
@@ -190,7 +194,7 @@ describe('judgesRouter', () => {
 				.set('Accept', 'application/json')
 				.set('Authorization', `Bearer ${userkey}`)
 				.expect(200);
-			expect(res.body).toBeInstanceOf(Array);
+			expect(res.body).toMatchSchema(z.array(JudgeLiveDocSchema));
 			expect(res.body[0].url).toBe('example.com');
 			expect(res.body[0].caption).toBe('example');
 		});

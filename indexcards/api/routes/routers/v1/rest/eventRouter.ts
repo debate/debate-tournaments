@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import * as controller from '../../../../controllers/rest/eventController.js';
 import config from '../../../../config.js';
+import { EventFieldSchema } from '@tabroom/types';
 
 const router = Router({ mergeParams: true });
 // Bolted onto /tourns/:tournId/events
@@ -29,6 +30,7 @@ router.route('/').get(controller.getEvents).openapi = {
 };
 }
 
+if(!config.features.HIDE_DEV_ENDPOINTS) {
 router.route('/:eventId/results').get(controller.getResults).openapi = {
 	path        : '/rest/tourns/{tournId}/events/{eventId}/results',
 	summary     : 'Get Published Results by Event',
@@ -43,6 +45,7 @@ router.route('/:eventId/results').get(controller.getResults).openapi = {
 		},
 	},
 };
+}
 
 router.route('/:eventAbbr/field').get(controller.getField).openapi = {
 	path: '/rest/tourns/{tournId}/events/{eventAbbr}/field',
@@ -65,6 +68,11 @@ router.route('/:eventAbbr/field').get(controller.getField).openapi = {
 	responses: {
 		200: {
 			description: 'List of entries',
+			content: {
+				'application/json': {
+					schema: EventFieldSchema,
+				},
+			},
 		},
 		404: {
 			$ref: '#/components/responses/NotFound',

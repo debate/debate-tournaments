@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { ValidateRequest } from '../../../../middleware/validation.js';
 import judgesController from '../../../../controllers/user/judgesController.js';
-import { UnlinkedJudgeSchema, JudgeHistorySchema } from '@tabroom/types';
+import { UnlinkedJudgeSchema, JudgeHistorySchema, ClaimResponseSchema, UserParadigmSchema, JudgeLiveDocSchema } from '@tabroom/types';
 import z from 'zod';
 
 const router = Router();
@@ -49,14 +49,7 @@ router.route('/claim')
 				description: 'Successful response',
 				content: {
 					'application/json': {
-						schema: z.object({
-							message: z.string().meta({
-								description: 'A message indicating the claim request was submitted',
-							}),
-							detail: z.string().meta({
-								description: 'Additional details about the claim request submission',
-							}),
-						}),
+						schema: ClaimResponseSchema,
 					},
 				},
 			},
@@ -81,7 +74,7 @@ router.route('/history')
 				description: 'Successful response',
 				content: {
 					'application/json': {
-						schema: JudgeHistorySchema,
+						schema: z.array(JudgeHistorySchema),
 					},
 				},
 			},
@@ -101,11 +94,7 @@ router.route('/paradigm')
 					description: 'Successful response',
 					content: {
 						'application/json': {
-							schema: z.object({
-								paradigm: z.string().meta({
-									description: 'The current paradigm for the user',
-								}),
-							}),
+							schema: UserParadigmSchema,
 						},
 					},
 				},
@@ -117,11 +106,7 @@ router.route('/paradigm')
 			requestBody: {
 				content: {
 					'application/json': {
-						schema: z.object({
-							paradigm: z.string().max(65535).meta({
-								description: 'The new paradigm for the user',
-							}),
-						}),
+						schema: UserParadigmSchema,
 					},
 				},
 			},
@@ -147,15 +132,7 @@ router.route('/livedocs')
 				description: 'Successful response',
 				content: {
 					'application/json': {
-						schema: z.array(z.object({
-							judgeId: z.coerce.number().int(),
-							categoryAbbr: z.string(),
-							tournName: z.string(),
-							tournEnd: z.iso.datetime(),
-							tournTz: z.string(),
-							url: z.string(),
-							caption: z.string().nullable(),
-						})),
+						schema: z.array(JudgeLiveDocSchema),
 					},
 				},
 			},

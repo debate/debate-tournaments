@@ -2,7 +2,7 @@ import z from 'zod';
 import controller from '../../../../controllers/rest/paradigmsController.js';
 import { requireLogin } from '../../../../middleware/authorization/authorization.js';
 import { ValidateRequest } from '../../../../middleware/validation.js';
-import { JudgeRecordSchema, ParadigmDetailsSchema } from '@tabroom/types';
+import { JudgeRecordSchema, ParadigmDetailsSchema, ParadigmSearchResultSchema } from '@tabroom/types';
 import { Router } from 'express';
 
 const router = Router();
@@ -33,19 +33,7 @@ router.route('/').get(ValidateRequest, controller.getParadigms).openapi = {
 			description: 'List of paradigms matching the search query',
 			content: {
 				'application/json': {
-					schema: z.array(
-						z.object({
-							id: z.coerce.number().int().positive(),
-							name: z.string().meta({ description: 'Full name' }),
-							tournJudged: z.coerce.number().int().positive().meta({ description: 'Number of tournaments judged' }),
-							schools: z.array(
-								z.object({
-									id: z.coerce.number().int().positive(),
-									name: z.string(),
-								})
-							),
-						})
-					),
+					schema: z.array(ParadigmSearchResultSchema),
 				},
 			},
 		},

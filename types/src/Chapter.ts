@@ -43,3 +43,14 @@ export const UserChapterSchema = z.object({
 
 export type UserChapter = z.infer<typeof UserChapterSchema>;
 
+// A chapter the user administers that is not yet registered in a tournament
+export const NonTournChapterSchema = ChapterSchema.pick({
+	id: true,
+	name: true,
+}).meta({
+	id: 'NonTournChapter',
+	description: 'A chapter the user administers that has no school in a tournament',
+}) satisfies ZodOpenApiSchemaObject;
+
+export type NonTournChapter = z.infer<typeof NonTournChapterSchema>;
+

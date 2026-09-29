@@ -1,6 +1,8 @@
 import { Router } from 'express';
 import * as controller from '../../../../controllers/rest/roundController.js';
 import config from '../../../../config.js';
+import { PublishedRoundSchema } from '@tabroom/types';
+import z from 'zod';
 
 const router = Router({ mergeParams: true });
 
@@ -20,6 +22,11 @@ router.route('/').get(controller.getPublishedRounds).openapi = {
 	responses: {
 		200: {
 			description: 'List of published rounds',
+			content: {
+				'application/json': {
+					schema: z.array(PublishedRoundSchema),
+				},
+			},
 		},
 		404: {
 			$ref: '#/components/responses/NotFound',

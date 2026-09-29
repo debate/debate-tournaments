@@ -1,7 +1,7 @@
 import request from 'supertest';
 import server from '../../../../../app.js';
 import factories from '../../../../../tests/factories/index.js';
-import { CurrentBallotSchema } from '@tabroom/types';
+import { CurrentBallotSchema, FineSchema, PersonTournPresenceSchema, PersonTournSummarySchema, TournSchema } from '@tabroom/types';
 import z from 'zod';
 
 let personId : number;
@@ -9,6 +9,74 @@ let userkey: string;
 beforeEach(async () => {
 	({ id: personId } = await factories.person.create());
 	({ userkey } = await factories.session.create({ person: personId }));
+});
+
+describe('GET /user/tourns', () => {
+	it('Returns the tournaments the user is involved in', async () => {
+		const { Tourn } = await factories.person.createBallot({ person: personId });
+
+		const res = await request(server)
+			.get(`/v1/user/tourns`)
+			.set('Accept', 'application/json')
+			.set('Authorization', `Bearer ${userkey}`)
+			.expect('Content-Type', /json/)
+			.expect(200);
+
+		expect(res.body).toMatchSchema(z.array(TournSchema));
+		expect(res.body.some((tourn: { id: number }) => tourn.id === Tourn.id)).toBe(true);
+	});
+});
+
+describe('GET /user/tourns/{tournId}', () => {
+	it('Returns the entities the user is connected to at a tournament', async () => {
+		const { Tourn, Judge } = await factories.person.createBallot({ person: personId });
+
+		const res = await request(server)
+			.get(`/v1/user/tourns/${Tourn.id}`)
+			.set('Accept', 'application/json')
+			.set('Authorization', `Bearer ${userkey}`)
+			.expect('Content-Type', /json/)
+			.expect(200);
+
+		expect(res.body).toMatchSchema(PersonTournPresenceSchema);
+		expect(res.body.me.judges).toContain(Judge.id);
+		expect(res.body.me.categories).toContain(Judge.category);
+		expect(res.body.me.rounds.length).toBeGreaterThan(0);
+	});
+});
+
+describe('GET /user/tourns/{tournId}/summary', () => {
+	it('Returns a summary of the users roles in a tournament', async () => {
+		const { Tourn } = await factories.person.createBallot({ person: personId });
+
+		const res = await request(server)
+			.get(`/v1/user/tourns/${Tourn.id}/summary`)
+			.set('Accept', 'application/json')
+			.set('Authorization', `Bearer ${userkey}`)
+			.expect('Content-Type', /json/)
+			.expect(200);
+
+		expect(res.body).toMatchSchema(PersonTournSummarySchema);
+		expect(res.body.roles).toContain('judge');
+	});
+});
+
+describe('GET /user/tourns/{tournId}/fines', () => {
+	it('Returns the users fines for a tournament', async () => {
+		const Tourn = await factories.tourn.create();
+		const School = await factories.school.create({ tourn: Tourn.id });
+		const Fine = await factories.fine.create({ person: personId, tourn: Tourn.id, school: School.id });
+
+		const res = await request(server)
+			.get(`/v1/user/tourns/${Tourn.id}/fines`)
+			.set('Accept', 'application/json')
+			.set('Authorization', `Bearer ${userkey}`)
+			.expect('Content-Type', /json/)
+			.expect(200);
+
+		expect(res.body).toMatchSchema(z.array(FineSchema));
+		expect(res.body.some((fine: { id: number }) => fine.id === Fine.id)).toBe(true);
+	});
 });
 
 describe('GET /user/tourns/{tournId}/ballots/current', () => {

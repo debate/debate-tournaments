@@ -10,7 +10,7 @@ export const WebpageSchema = z.object({
 	sitewide: z.boolean(),
 	special: z.string().max(15).nullable(),
 	slug: z.string().max(63).nullable(),
-	pageOrder: z.number().int().nullable(),
-	parentId: z.number().int().nullable(),
-	updatedAt: datetime(),
+	page_order: z.number().int().nullable(),
+	parent: z.number().int().nullable(),
+	timestamp: datetime(),
 }) satisfies ZodOpenApiSchemaObject;

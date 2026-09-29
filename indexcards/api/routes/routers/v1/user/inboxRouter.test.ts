@@ -3,7 +3,7 @@ import request from 'supertest';
 import server from '../../../../../app.js';
 import factories from '../../../../../tests/factories/index.js';
 import z from 'zod';
-import { InboxMessageSchema } from '@tabroom/types';
+import { InboxMessageSchema, InboxUnreadCountSchema } from '@tabroom/types';
 import messageRepo from '../../../../repos/messageRepo.js';
 import { db } from '../../../../data/database.js';
 import { faker } from '@faker-js/faker';
@@ -71,8 +71,7 @@ describe('Inbox Router', () => {
 				.set('Authorization', `Bearer ${key1}`)
 				.expect('Content-Type', /json/)
 				.expect(200);
-			expect(res.body).toBeTypeOf('object');
-			expect(res.body).toHaveProperty('count');
+			expect(res.body).toMatchSchema(InboxUnreadCountSchema);
 			expect(res.body.count).toBe(1);
 		});
 	});
@@ -82,7 +81,8 @@ describe('Inbox Router', () => {
 			const res = await request(server)
 				.post('/v1/user/inbox/markAllRead')
 				.set('Accept', 'application/json')
-				.set('Authorization', `Bearer ${userkey}`);
+				.set('Authorization', `Bearer ${userkey}`)
+				.expect(204);
 			expect(res).not.toBeProblemResponse();
 			const message = await messageRepo.getMessage(db,Message.id);
 			expect(message?.read_at).not.toBeNull();
@@ -96,7 +96,8 @@ describe('Inbox Router', () => {
 			const res = await request(server)
 				.post(`/v1/user/inbox/${Message.id}/markRead`)
 				.set('Accept', 'application/json')
-				.set('Authorization', `Bearer ${userkey}`);
+				.set('Authorization', `Bearer ${userkey}`)
+				.expect(204);
 
 			expect(res).not.toBeProblemResponse();
 			const message = await messageRepo.getMessage(db,Message.id,personId);
@@ -123,7 +124,8 @@ describe('Inbox Router', () => {
 			const res = await request(server)
 				.post(`/v1/user/inbox/${Message.id}/markUnread`)
 				.set('Accept', 'application/json')
-				.set('Authorization', `Bearer ${userkey}`);
+				.set('Authorization', `Bearer ${userkey}`)
+				.expect(204);
 
 			expect(res).not.toBeProblemResponse();
 			const message = await messageRepo.getMessage(db,Message.id,personId);
@@ -165,7 +167,8 @@ describe('Inbox Router', () => {
 			const res = await request(server)
 				.delete(`/v1/user/inbox/${Message.id}`)
 				.set('Accept', 'application/json')
-				.set('Authorization', `Bearer ${userkey}`);
+				.set('Authorization', `Bearer ${userkey}`)
+				.expect(204);
 
 			expect(res).not.toBeProblemResponse();
 			const message = await messageRepo.getMessage(db,Message.id,personId);

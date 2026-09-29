@@ -24,20 +24,13 @@ export const TournSchema = z.object({
 
 export const PersonTournSummarySchema = z.object({
 	id: TournSchema.shape.id,
-	name: TournSchema.shape.name,
-	webname: TournSchema.shape.webname,
-	start: TournSchema.shape.start,
-	end: TournSchema.shape.end,
-	tz: TournSchema.shape.tz,
 	roles: z.array(z.enum(['student','coach','judge'])),
 	livedocs: z.array(z.object({
+		categoryId: utils.id,
+		categoryName: z.string().nullable(),
 		url: z.string(),
 		caption: z.string().nullable(),
 	})),
-	Judge: z.object({
-		categoryName: z.string(),
-		schoolName: z.string().nullable(),
-	}).nullable(),
 }).meta({
 	id: 'PersonTournSummary',
 	description: 'A summary of a tourn and a persons role in it for the user homepage'
@@ -45,7 +38,47 @@ export const PersonTournSummarySchema = z.object({
 
 export type PersonTournSummary = z.infer<typeof PersonTournSummarySchema>;
 
+const idList = z.array(utils.id);
+
+export const PersonTournPresenceSchema = z.object({
+	me: z.object({
+		entries: idList,
+		events: idList,
+		judges: idList,
+		categories: idList,
+		rounds: idList,
+	}).strict().meta({ description: 'Ids the person is directly involved in as a competitor or judge' }),
+	mine: z.object({
+		entries: idList,
+		events: idList,
+		judges: idList,
+		categories: idList,
+	}).strict().meta({ description: 'Ids at schools the person coaches or is a contact for, excluding those in me' }),
+}).strict().meta({
+	id: 'PersonTournPresence',
+	description: 'The entities a person is connected to at a tournament',
+}) satisfies ZodOpenApiSchemaObject;
+
+export type PersonTournPresence = z.infer<typeof PersonTournPresenceSchema>;
+
 export type Tourn = z.infer<typeof TournSchema>;
+
+export const TournByWebnameSchema = TournSchema.omit({
+	settingsTimestamps: true,
+}).extend({
+	webname: z.union([TournSchema.shape.webname, TournSchema.shape.id]).meta({
+		description: 'The tournament webname, or the tournament id when a newer tournament shares the webname',
+	}),
+	settings: z.object({
+		multiYear: z.boolean().meta({ description: 'Whether other tournaments share this webname' }),
+		notCurrent: z.boolean().optional().meta({ description: 'Present when a newer tournament shares this webname' }),
+	}),
+}).meta({
+	id: 'TournByWebname',
+	description: 'A tournament looked up by webname or id for the public invite pages',
+}) satisfies ZodOpenApiSchemaObject;
+
+export type TournByWebname = z.infer<typeof TournByWebnameSchema>;
 
 export const UpcomingSchema = z.object({
 	id: z.string().meta({ description: 'Composite key of tournId-weekendId. weekendId is 0 for non-district tournaments' }),

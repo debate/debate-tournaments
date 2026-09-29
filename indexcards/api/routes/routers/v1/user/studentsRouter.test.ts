@@ -2,7 +2,7 @@ import factories from '../../../../../tests/factories/index.js';
 import request from 'supertest';
 import server from '../../../../../app.js';
 import z from 'zod';
-import { StudentSchema } from '@tabroom/types';
+import { ClaimResponseSchema, StudentSchema } from '@tabroom/types';
 import studentRepo from '../../../../repos/studentRepo.js';
 import { db } from '../../../../data/database.js';
 
@@ -29,6 +29,7 @@ describe('studentsRouter', () => {
 				.set('Authorization', `Bearer ${userkey}`)
 				.expect(200);
 			//assert that the student's person_request is updated
+			expect(res.body).toMatchSchema(ClaimResponseSchema);
 			expect(res.body).toEqual({
 				   message: 'Competitor claim request submitted',
 				   detail: expect.any(String)

@@ -9,7 +9,7 @@ import resultSetRouter from './resultSetRouter.js';
 import eventRouter from './eventRouter.js';
 import entryRouter from './entryRouter.js';
 
-import { FileSchema, TournInviteSchema, TournSchema } from '@tabroom/types';
+import { FileSchema, ScheduleRoundSchema, TournInviteSchema, TournSchema } from '@tabroom/types';
 const router = Router({ mergeParams: true });
 
 router.route('/').get(ValidateRequest,controller.getTourns).openapi = {
@@ -139,7 +139,7 @@ router.route('/:tournId/schedule').get(controller.getSchedule).openapi = {
 			description: 'Tournament schedule',
 			content: {
 				'application/json': {
-					schema: { type: 'object' },
+					schema: z.array(ScheduleRoundSchema),
 				},
 			},
 		},

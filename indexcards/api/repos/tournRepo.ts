@@ -180,19 +180,19 @@ export async function getSchedule(db: Database, id: number){
 
 	return schedule.map( (round) => {
 		return {
-			id          : round.id,
-			type        : round.type,
-			name        : round.name,
-			label       : round.label,
-			published   : round.published,
-			postPrimary : round.post_primary,
-			startTime   : round.start_time,
+			id           : round.id,
+			type         : round.type,
+			name         : round.name,
+			label        : round.label,
+			published    : round.published,
+			post_primary : round.post_primary,
+			start_time   : round.start_time,
 			Event: {
-				id           : round.eventId,
-				name         : round.eventName,
-				abbr         : round.eventAbbr,
-				type         : round.eventType,
-				nsdaCategory : round.nsda_category,
+				id            : round.eventId,
+				name          : round.eventName,
+				abbr          : round.eventAbbr,
+				type          : round.eventType,
+				nsda_category : round.nsda_category,
 			},
 			Timeslot  : {
 				id    : round.timeslotId,

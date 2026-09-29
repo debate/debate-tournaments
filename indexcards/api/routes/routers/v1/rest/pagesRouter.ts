@@ -37,7 +37,7 @@ router.route('/:slug').get(controller.getPublicPages).openapi = {
 			description: 'A public webpages',
 			content: {
 				'application/json': {
-					schema: WebpageSchema,
+					schema: z.array(WebpageSchema),
 				},
 			},
 		},

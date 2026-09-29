@@ -1,6 +1,6 @@
 import type { ZodOpenApiSchemaObject } from 'zod-openapi';
 import { z } from 'zod';
-import { datetime, settings, settingsTimestamps } from './utils.js';
+import { datetime, id, settings, settingsTimestamps } from './utils.js';
 
 export const SchoolSchema = z.object({
 	id: z.number().int(),
@@ -37,3 +37,44 @@ export const UpdateSchoolSchema = z.object({
 	regionId: z.number().int(),
 	settings: z.record(z.string(), z.string()),
 }) satisfies ZodOpenApiSchemaObject;
+
+/** A school the logged in user can manage at a tournament, with its roster for registration */
+export const MySchoolSchema = z.object({
+	id: id,
+	name: z.string(),
+	code: z.string().nullable(),
+	onsite: z.int(),
+	chapter: id.nullable(),
+	students: z.array(z.object({
+		id: id,
+		first: z.string().nullable(),
+		middle: z.string().nullable(),
+		last: z.string().nullable(),
+		code: z.string().nullable().meta({ description: 'Code of the entry the student is in' }),
+		chapter: id,
+		event: id.meta({ description: 'Event of the entry the student is in' }),
+	}).strict()),
+	entries: z.record(z.coerce.number().int(), z.object({
+		code: z.string().nullable(),
+		name: z.string().nullable(),
+		event: id,
+		eventAbbr: z.string().nullable(),
+	}).strict()).meta({ description: 'Active entries keyed by entry id' }),
+	events: z.record(z.coerce.number().int(), z.object({
+		name: z.string().nullable(),
+		abbr: z.string().nullable(),
+	}).strict()).meta({ description: 'Events the school has entries in, keyed by event id' }),
+	judges: z.record(z.coerce.number().int(), z.object({
+		id: id,
+		first: z.string().nullable(),
+		last: z.string().nullable(),
+		category: id,
+		categoryAbbr: z.string().nullable(),
+		categoryName: z.string().nullable(),
+	}).strict()).meta({ description: 'Judges keyed by judge id' }),
+}).strict().meta({
+	id: 'MySchool',
+	description: 'A school the logged in user can manage at a tournament, with its roster',
+}) satisfies ZodOpenApiSchemaObject;
+
+export type MySchool = z.infer<typeof MySchoolSchema>;
