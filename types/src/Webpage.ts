@@ -1,6 +1,5 @@
 import type { ZodOpenApiSchemaObject } from 'zod-openapi';
 import { z } from 'zod';
-import { datetime } from './utils.js';
 
 export const WebpageSchema = z.object({
 	id: z.number().int(),
@@ -12,5 +11,7 @@ export const WebpageSchema = z.object({
 	slug: z.string().max(63).nullable(),
 	page_order: z.number().int().nullable(),
 	parent: z.number().int().nullable(),
-	timestamp: datetime(),
+	timestamp: z.iso.datetime(),
 }) satisfies ZodOpenApiSchemaObject;
+
+export type Webpage = z.infer<typeof WebpageSchema>;

@@ -3,6 +3,7 @@
 	import { page } from '$app/state';
 	import { getContext } from 'svelte';
 	import { indexFetch } from '$lib/indexfetch';
+	import type { PersonTournPresence } from '@tabroom/types';
 
 	import Debate from './Debate.svelte';
 	import Speech from './Speech.svelte';
@@ -17,7 +18,7 @@
 	const tourn:Tourn = getContext('webnameTourn');
 
 	let myTourn = $derived.by( () => {
-		return indexFetch(`/user/tourns/${tourn.id}`);
+		return indexFetch<PersonTournPresence>(`/user/tourns/${tourn.id}`);
 	});
 
 	let roundNumber = $derived(page.params.roundNumber);

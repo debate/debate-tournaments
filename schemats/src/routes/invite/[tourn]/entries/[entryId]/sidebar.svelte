@@ -5,20 +5,23 @@
 	import { goto } from '$app/navigation';
 
 	import indexFetch from '$lib/indexfetch';
+	import type { EventField } from '@tabroom/types';
 	import Sidebar from '$lib/layouts/Sidebar.svelte';
     import Select from '$lib/layouts/Select.svelte';
-	import type { Entry, Tourn } from '$indexcards/schemas';
+	import type { Tourn } from '$indexcards/schemas';
+
+	type FieldEntry = EventField['Entries'][number];
 
 	let { event } = $props();
-	let selectedEntryId = $derived(parseInt(page.params.entryId));
+	let selectedEntryId = $derived(parseInt(page.params.entryId ?? ''));
 	let tourn:Tourn = getContext('webnameTourn');
 
-	let field = $derived(indexFetch(`/rest/tourns/${tourn.id}/events/${event.abbr}/field`));
+	let field = $derived(indexFetch<EventField>(`/rest/tourns/${tourn.id}/events/${event.abbr}/field`));
 
 	let selections = $derived.by( () => {
-		return field.data?.Entries.sort( (a:Entry, b:Entry) => {
-			return a.code.localeCompare(b.code);
-		}).map( (entry:Entry) => {
+		return field.data?.Entries.sort( (a:FieldEntry, b:FieldEntry) => {
+			return (a.code ?? '').localeCompare(b.code ?? '');
+		}).map( (entry:FieldEntry) => {
 			return {
 				value: entry.id,
 				label: `${entry.code}: ${entry.name}`,

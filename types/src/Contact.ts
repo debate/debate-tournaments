@@ -1,6 +1,5 @@
 import type { ZodOpenApiSchemaObject } from 'zod-openapi';
 import { z } from 'zod';
-import { datetime } from './utils.js';
 import { PersonSchema } from './Person.js';
 
 export const ContactSchema = z.object({
@@ -18,7 +17,7 @@ export const ContactSchema = z.object({
 	state: z.string(),
 	country: z.string(),
 	tz: z.string(),
-	createdAt: datetime(),
+	createdAt: z.iso.datetime(),
 	settings: z.record(z.string(),z.string()),
 	metadata: z.record(z.string(),z.string()),
 	Person: PersonSchema,

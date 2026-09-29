@@ -4,21 +4,22 @@
 	import { getContext, untrack } from 'svelte';
 
 	import { indexFetch } from '$lib/indexfetch';
+	import type { EventResultSets, PersonTournPresence } from '@tabroom/types';
 	import Sidebar from '$lib/layouts/Sidebar.svelte';
 	import Loading from '$lib/layouts/Loading.svelte';
 
-	import type { Tourn, Event } from '$indexcards/schemas';
+	import type { Tourn } from '$indexcards/schemas';
 
 	let {selectedResultSetId = 0, selectedEventId = 0} = $props();
 
 	const tourn:Tourn = getContext('webnameTourn');
-	const resultSets  = $derived(indexFetch(`/rest/tourns/${tourn.id}/results`));
-	const myTourn     = $derived(indexFetch(`/user/tourns/${tourn.id}`));
+	const resultSets  = $derived(indexFetch<Record<number, EventResultSets>>(`/rest/tourns/${tourn.id}/results`));
+	const myTourn     = $derived(indexFetch<PersonTournPresence>(`/user/tourns/${tourn.id}`));
 
 	let selectedEvent = $state(untrack(() => selectedEventId));
 
 	interface Bucket {
-		[key: string]: Array<Event>;
+		[key: string]: Array<EventResultSets>;
 	}
 
 	const buckets:Bucket = $derived.by( () => {
@@ -30,9 +31,7 @@
 
 		if (resultSets.data && resultSets.isFetched) {
 
-			const events = Object.keys(resultSets.data).map( (eventId) => {
-				return resultSets.data[eventId];
-			}).sort( (a, b) => {
+			const events = Object.values(resultSets.data).sort( (a, b) => {
 
 				if (myEvents.includes(b.id) && !myEvents.includes(a.id)) return 1;
 				if (myEvents.includes(a.id) && !myEvents.includes(b.id)) return -1;
@@ -40,7 +39,7 @@
 				if (mineEvents.includes(b.id) && !mineEvents.includes(a.id)) return 1;
 				if (mineEvents.includes(a.id) && !mineEvents.includes(b.id)) return -1;
 
-				if (a.nsdaCategory !== b.nsdaCategory) return a.nsdaCategory - b.nsdaCategory;
+				if (a.nsdacategory !== b.nsdacategory) return (a.nsdacategory ?? 0) - (b.nsdacategory ?? 0);
 				if (a.level !== b.level) return b.level.localeCompare(a.level);
 				if (a.type !== b.type) return a.type.localeCompare(b.type);
 				if (a.abbr !== b.abbr) return a.abbr.localeCompare(b.abbr);
@@ -69,7 +68,7 @@
 
 			{#each Object.keys(buckets) as eventType (eventType) }
 				{#each buckets[eventType] as event (event.id) }
-					{#if resultSets.data[event.id].ResultSets.length > 0}
+					{#if event.ResultSets.length > 0}
 
 						<div class='flex flex-wrap'>
 							<button
@@ -111,7 +110,10 @@
 											hover:bg-secondary-200
 											{selectedResultSetId === resultSet.id ? 'selected bg-secondary-200 ' : '' }
 										'
-										href = {resolve(`/invite/${tourn.webname}/results/${resultSet.id}`, {} )}
+										href = {resolve('/invite/[tourn]/results/[resultSetId]', {
+											tourn       : tourn.webname,
+											resultSetId : String(resultSet.id),
+										})}
 									>{ resultSet.label  }</a>
 								{/each}
 							</div>

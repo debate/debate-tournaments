@@ -3,6 +3,7 @@
 	// This pattern leads to reactive data display in Svelte 5 & TanStack,
 	// which is otherwise tricky.
 	import { indexFetch } from '$lib/indexfetch';
+	import type { TournInvite } from '@tabroom/types';
 	import { getContext } from 'svelte';
 
 	import {eventType} from '$lib/helpers/text';
@@ -11,13 +12,13 @@
 	import Loading from '$lib/layouts/Loading.svelte';
 	import { resolve } from '$app/paths';
 
-	import type { Webpage, Tourn } from '$indexcards/schemas';
+	import type { Tourn } from '$indexcards/schemas';
 	const tourn:Tourn = getContext('webnameTourn');
-	const pageContent = $derived(indexFetch(`/rest/tourns/${tourn.id}/invite`));
+	const pageContent = $derived(indexFetch<TournInvite>(`/rest/tourns/${tourn.id}/invite`));
 
 	const eventPage = $derived.by( () => {
-		const pages = pageContent.data?.webpages?.filter(
-			(webpage:Webpage) => webpage.slug === 'events'
+		const pages = pageContent.data?.Webpages?.filter(
+			(webpage) => webpage.slug === 'events'
 		);
 
 		if (pages && pages.length > 0) {
@@ -67,7 +68,10 @@
 									text-primary-800
 									hover:text-primary-500
 								'
-								href  = {resolve(`/invite/${tourn.webname}/events/${event.abbr}/field`, {})}
+								href  = {resolve('/invite/[tourn]/events/[eventAbbr]/field', {
+									tourn     : tourn.webname,
+									eventAbbr : event.abbr ?? '',
+								})}
 							>
 								{event.metadata.entryCount || 0 } Registered Entries
 							</a>
@@ -93,7 +97,7 @@
 									Entry Fee
 								</span>
 								<span class="w-2/3 ps-2 pe-4">
-									{pageContent.data.currency || '$'}{event.fee}
+									{event.settings.currency || '$'}{event.fee}
 								</span>
 							</div>
 						{/if}

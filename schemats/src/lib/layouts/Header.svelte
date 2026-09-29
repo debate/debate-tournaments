@@ -22,9 +22,8 @@
 	import {
 		HomeSolid,
 		EnvelopeSolid,
-		UserSolid,
 		ArrowRightToBracketOutline,
-		ChalkboardSolid, FileCheckSolid,
+		ChalkboardSolid,
 	}  from 'flowbite-svelte-icons';
 
 	import { isAuthenticated, isSuSession, getSessionOwner, getPerson } from '$lib/helpers/SessionContext.svelte';
@@ -38,7 +37,7 @@
 	const loginRedirect = $derived(
 		encodeURIComponent(`${page.url.pathname}${page.url.search}`)
 	);
-	const loginHref = $derived(`/user/login?redirect=${loginRedirect}`);
+	const loginHref = $derived(`${resolve('/user/login')}?redirect=${loginRedirect}`);
 	const hideAuthControls = $derived(page.url.pathname === '/user/login');
 
 	let loggingOut = $state(false);
@@ -79,7 +78,7 @@
 	>
 		<NavBrand
 			class = 'flex-wrap mt-2 mb'
-			href  = {resolve('/', {})}
+			href  = {resolve('/')}
 		>
 			<div class="flex nowrap
 				p-0 m-0
@@ -226,8 +225,8 @@
 			{:else if isAuthenticated()}
 			<div class="flex flex-col items-end gap-2">
 				<div id="auth-user-buttons" class="flex gap-2">
-					{#snippet authButton({link,linkLabel,tooltip, type}:
-						{link: string, linkLabel: string, tooltip: string, type: 'home' | 'User: Inbox' | 'profile'})}
+					{#snippet authButton({href,linkLabel,tooltip, type}:
+						{href?: string, linkLabel: string, tooltip: string, type: 'home' | 'User: Inbox' | 'profile'})}
 						<Button
 							id="{type}-button"
 							class="
@@ -243,8 +242,8 @@
 								border-2
 								border-primary-300
 							"
-							{...(type !== 'profile' ? { href: resolve(link, {}) } : {})}
 							aria-label={linkLabel}
+							{href}
 							pill={true}
 						>
 						{#if type === 'home'}<HomeSolid class="h-6 w-6" />{/if}
@@ -262,9 +261,9 @@
 						</Button>
 						<Tooltip placement="bottom">{tooltip}</Tooltip>
 					{/snippet}
-					{@render authButton({link: '/user/home', linkLabel: 'go to user Home', tooltip: 'Home', type: 'home'})}
-					{@render authButton({link: '/user/inbox', linkLabel: 'go to user Inbox', tooltip: 'User: Inbox', type: 'User: Inbox'})}
-					{@render authButton({link: '/user/profile', linkLabel: 'open user dropdown', tooltip: 'Profile', type: 'profile'})}
+					{@render authButton({href: resolve('/user/home'), linkLabel: 'go to user Home', tooltip: 'Home', type: 'home'})}
+					{@render authButton({href: resolve('/user/inbox'), linkLabel: 'go to user Inbox', tooltip: 'User: Inbox', type: 'User: Inbox'})}
+					{@render authButton({linkLabel: 'open user dropdown', tooltip: 'Profile', type: 'profile'})}
 				</div>
 				<div id="auth-user-details"
 					class="flex flex-col leading-tight pe-1 ps-1 text-right w-full">
@@ -274,7 +273,7 @@
 					</span>
 					{/if}
 					<a class="text-xs italic text-secondary-200 whitespace-nowrap hover:underline"
-					href="{resolve('/user/home', {})}">
+					href="{resolve('/user/home')}">
 						{isSuSession() ? 'as ' : ''}{activePerson?.email}
 					</a>
 				</div>
@@ -302,11 +301,11 @@
 				<DropdownGroup>
 					<DropdownItem
 					class={dropdownItemClasses}
-					href={resolve('/user/home', {})}
+					href={resolve('/user/home')}
 					><HomeSolid class="w-4 h-4" />Home</DropdownItem>
 				<DropdownItem
 						class={dropdownItemClasses}
-						href={resolve('/user/inbox', {})}
+						href={resolve('/user/inbox')}
 						>
 						<span class="relative inline-flex items-center">
 							<EnvelopeSolid class="w-4 h-4" />
@@ -317,17 +316,9 @@
 						Inbox
 				</DropdownItem>
 				<DropdownItem
-					class={dropdownItemClasses}
-					href={resolve('/user/judge/ballots', {})}
-					><FileCheckSolid class="w-4 h-4" />Ballots</DropdownItem>
-				<DropdownItem
-					class={dropdownItemClasses}
-					href={resolve('/user/dashboard', {})}
+					class="{dropdownItemClasses} opacity-50 cursor-not-allowed"
+					disabled={true}
 					><ChalkboardSolid class="w-4 h-4" />Dashboard</DropdownItem>
-				<DropdownItem
-					class={dropdownItemClasses}
-					href={resolve('/user/profile', {})}
-					><UserSolid class="w-4 h-4" />Profile</DropdownItem>
 				</DropdownGroup>
 				<DropdownGroup>
 				{#if isSuSession()}
@@ -375,7 +366,7 @@
 						border border-primary-900
 						hover:border-primary-300
 					'
-					href={resolve(loginHref, {})}
+					href={loginHref}
 				>
 					LOGIN
 				</a>

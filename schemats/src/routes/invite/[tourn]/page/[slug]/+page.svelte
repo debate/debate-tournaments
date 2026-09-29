@@ -8,17 +8,17 @@
 	// which is otherwise tricky.
 	import { getContext } from 'svelte';
 	import { indexFetch } from '$lib/indexfetch';
+	import type { TournInvite } from '@tabroom/types';
 
 	import type { Tourn } from '$indexcards/schemas';
 	const tourn:Tourn = getContext('webnameTourn');
-	const pageContent = $derived(indexFetch(`/rest/tourns/${tourn.id}/invite`));
+	const pageContent = $derived(indexFetch<TournInvite>(`/rest/tourns/${tourn.id}/invite`));
 
 	let webPage = $derived.by( () => {
 		const myPages = pageContent.data?.Webpages?.filter(
-			// oxlint-disable-next-line @typescript-eslint/no-explicit-any
-			(webpage:any) => webpage?.id === parseInt(page.params?.slug ?? '')
+			(webpage) => webpage?.id === parseInt(page.params?.slug ?? '')
 		);
-		if (myPages?.length > 0) {
+		if (myPages && myPages.length > 0) {
 			return myPages[0];
 		}
 	});

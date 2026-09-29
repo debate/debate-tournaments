@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import type { Problem } from '$indexcards/schemas/problem';
 	import { createAuthLogin } from '$indexcards';
@@ -54,7 +53,8 @@
 			});
 
 			if (success) {
-				await goto(resolve(target, {}), { replaceState: true, invalidateAll: true });
+				// target is already a full in-app path from the redirect param
+				await goto(target, { replaceState: true, invalidateAll: true });
 				return;
 			}
 		} catch (err) {

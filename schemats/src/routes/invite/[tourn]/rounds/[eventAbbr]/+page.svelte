@@ -7,21 +7,21 @@
 	import { resolve } from '$app/paths';
 
 	import { indexFetch } from '$lib/indexfetch';
+	import type { ScheduleRound } from '@tabroom/types';
 	import { getContext } from 'svelte';
 	import Sidebar from '../sidebar.svelte';
 
-	import type { RoundData } from '../../inviteTypes';
     import ShowDate from '$lib/layouts/ShowDate.svelte';
 
 	import type { Tourn } from '$indexcards/schemas';
 	const tourn:Tourn = getContext('webnameTourn');
 
-	let schedule = indexFetch(`/rest/tourns/${tourn.id}/schedule`);
+	let schedule = indexFetch<ScheduleRound[]>(`/rest/tourns/${tourn.id}/schedule`);
 	let eventAbbr = $derived(page.params.eventAbbr);
 
-	const rounds = $derived(schedule.data.filter(
-		(round:RoundData) => round.Event?.abbr === eventAbbr
-	));
+	const rounds = $derived(schedule.data?.filter(
+		(round:ScheduleRound) => round.Event?.abbr === eventAbbr
+	) ?? []);
 
 </script>
 
@@ -55,14 +55,14 @@
 
 						<span class="w-1/10">
 							<ShowDate
-								dtISO  = {round.startTime || round.timeslotStart}
+								dtISO  = {round.start_time || round.Timeslot.start}
 								format = 'dayOnly'
 								mode   = 'date'
 							/>
 						</span>
 						<span class="w-1/6">
 							<ShowDate
-								dtISO  = {round.startTime || round.timeslotStart}
+								dtISO  = {round.start_time || round.Timeslot.start}
 								format = 'short'
 								mode   = 'time'
 							/>
@@ -70,14 +70,22 @@
 
 						<span class="w-1/6 grow text-xs text-right pe-2">
 							<a class='flexrow'
-								href= { resolve(`/invite/${ tourn.webname }/rounds/${ round.Event.abbr}/${round.name}`, {} ) }
+								href= { resolve('/invite/[tourn]/rounds/[eventAbbr]/[roundNumber]', {
+									tourn       : tourn.webname,
+									eventAbbr   : round.Event.abbr,
+									roundNumber : String(round.name),
+								}) }
 							>
 								{ round.published == 1 ? 'Published' : '' }
 							</a>
 							<a class='flexrow'
-								href= { resolve(`/invite/${ tourn.webname }/rounds/${ round.Event.abbr}/${round.name}/results`, {} ) }
+								href= { resolve('/invite/[tourn]/rounds/[eventAbbr]/[roundNumber]/results', {
+									tourn       : tourn.webname,
+									eventAbbr   : round.Event.abbr,
+									roundNumber : String(round.name),
+								}) }
 							>
-								{ round.postPrimary ? 'Results Posted' : '' }
+								{ round.post_primary ? 'Results Posted' : '' }
 							</a>
 						</span>
 					</div>

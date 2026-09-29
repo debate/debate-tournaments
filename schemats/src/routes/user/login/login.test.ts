@@ -26,6 +26,7 @@ vi.mock('$indexcards', () => ({
 describe('Login page redirect', () => {
 	beforeEach(() => {
 		mockSearchParams.delete('redirect');
+		mockGoto.mockClear();
 	});
 
 	it('redirects to / when no redirect param is set', async () => {

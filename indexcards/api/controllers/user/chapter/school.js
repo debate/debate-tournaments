@@ -108,7 +108,7 @@ export async function getMySchoolsByTourn(req, res) {
 
 		const tournJudges = await req.db.sequelize.query(`
 			select
-				judge.id, judge.first, judge.last, judge.school,
+				judge.id, judge.first, judge.last, judge.code, judge.school,
 				judge.category, category.abbr categoryAbbr, category.name categoryName
 			from (judge, category)
 			where 1=1

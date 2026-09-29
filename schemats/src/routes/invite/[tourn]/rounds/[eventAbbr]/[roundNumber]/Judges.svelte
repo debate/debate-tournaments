@@ -15,7 +15,7 @@
 					{#if  row.Judges[judgeId].paradigm}
 						<a
 							class  = '{ column.cellClass?.[column.id]?.[judgeId] || 'p-0 py-0.5 m-0 w-full font-normal text-black' }'
-							href   = { resolve(`/paradigms/${row.Judges[judgeId].paradigm}`, {}) }
+							href   = { resolve('/paradigms/[id]', { id: String(row.Judges[judgeId].paradigm) }) }
 							target = '_blank'
 							title  = 'Judge Paradigm'
 						>

@@ -4,6 +4,7 @@
 	// which is otherwise tricky.
 
 	import { indexFetch } from '$lib/indexfetch';
+	import type { EventField, InviteEvent, TournInvite } from '@tabroom/types';
 	import { getContext } from 'svelte';
 
 	import Loading from '$lib/layouts/Loading.svelte';
@@ -17,13 +18,13 @@
 
 	import { page } from '$app/state';
 
-	import type { Event, Tourn } from '$indexcards/schemas';
+	import type { Tourn } from '$indexcards/schemas';
     import type { IRow } from '@svar-ui/svelte-grid';
 	const tourn:Tourn = getContext('webnameTourn');
-	const pageContent = $derived(indexFetch(`/rest/tourns/${tourn.id}/invite`));
+	const pageContent = $derived(indexFetch<TournInvite>(`/rest/tourns/${tourn.id}/invite`));
 
 	const eventAbbr = $derived(page.params.eventAbbr);
-	let fieldReports = $derived(indexFetch(`/rest/tourns/${tourn.id}/events/${eventAbbr}/field`));
+	let fieldReports = $derived(indexFetch<EventField>(`/rest/tourns/${tourn.id}/events/${eventAbbr}/field`));
 
 	const columns: SchematColumn[] = $derived.by( () => {
 		return [
@@ -77,20 +78,20 @@
 
 	let events = $derived.by( () => {
 
-		const rawEvents = pageContent.data?.Events.sort( (a:Event, b:Event) => {
+		const rawEvents = (pageContent.data?.Events ?? []).sort( (a:InviteEvent, b:InviteEvent) => {
 			if (a.type !== b.type) return a.type.localeCompare(b.type);
-			if (a.nsdaCategoryId
-					&& b.nsdaCategoryId
-					&& a.nsdaCategoryId !== b.nsdaCategoryId
-			) return a.nsdaCategoryId - b.nsdaCategoryId;
-			if (a.abbr !== b.abbr) return a.abbr.localeCompare(b.abbr);
-			if (a.name !== b.name) return a.name.localeCompare(b.name);
+			if (a.NSDACategory.id
+					&& b.NSDACategory.id
+					&& a.NSDACategory.id !== b.NSDACategory.id
+			) return a.NSDACategory.id - b.NSDACategory.id;
+			if (a.abbr !== b.abbr) return (a.abbr ?? '').localeCompare(b.abbr ?? '');
+			if (a.name !== b.name) return (a.name ?? '').localeCompare(b.name ?? '');
 			return a.id - b.id;
-		}).filter( (e:Event) => e.settings?.fieldReport );
+		}).filter( (e:InviteEvent) => e.settings.fieldReport );
 
-		const eventsByType = {};
+		const eventsByType: Record<string, InviteEvent[]> = {};
 
-		rawEvents.forEach( (event:Event) => {
+		rawEvents.forEach( (event:InviteEvent) => {
 			if (!eventsByType[event.type]) eventsByType[event.type] = [];
 			eventsByType[event.type].push(event);
 		});
@@ -133,7 +134,7 @@
 						hover:bg-secondary-100
 						mb-4
 					'
-					href  = {resolve(`/invite/${tourn.webname}/events`, {})}
+					href  = {resolve('/invite/[tourn]/events', { tourn: tourn.webname })}
 				>Return to Events</a>
 
 				{#each Object.keys(events).sort() as eventType (eventType) }
@@ -151,7 +152,10 @@
 									? 'bg-primary-700 text-secondary-200 hover:text-black hover:bg-secondary-300'
 									: 'bg-back-100 text-black'
 								}'
-							href  = {resolve(`/invite/${tourn.webname}/events/${otherEvent.abbr}/field`, {})}
+							href  = {resolve('/invite/[tourn]/events/[eventAbbr]/field', {
+								tourn     : tourn.webname,
+								eventAbbr : otherEvent.abbr,
+							})}
 						>{otherEvent.abbr} Entries</a>
 					{/each}
 				{/each}

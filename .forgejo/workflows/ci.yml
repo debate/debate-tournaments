@@ -53,7 +53,7 @@ jobs:
 
       - name: Typecheck
         run: |
-            npm run typecheck --workspace=indexcards
+            npm run typecheck
       
       - name: Seed database
         run: |
@@ -64,6 +64,10 @@ jobs:
             --password=tabroom \
             tabroom < ./indexcards/tests/test.sql
           
-      - name: Test
+      - name: Test Indexcards
         run: |
             npm run test:ci --workspace=indexcards
+
+      - name: Test Schemats (unit)
+        run: |
+            npm run test:ci:unit --workspace=schemats

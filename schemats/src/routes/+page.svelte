@@ -12,6 +12,7 @@
 
 	// not svelte
 	import { indexFetch } from '$lib/indexfetch';
+	import type { NSDACategory, Upcoming } from '@tabroom/types';
 	import { showDateRange } from '$lib/helpers/dt';
 	import { shortZone } from '$lib/helpers/dt';
 
@@ -28,17 +29,14 @@
 	// pre-emptively make it state
 	let limit = $state(512);
 
-	let tournData = $derived(indexFetch('/pages/invite/upcoming', { queries: {limit}}));
-
-	interface NSDACategory {
-		code: string,
-		name: string,
-	};
+	let tournData = $derived(indexFetch<Upcoming[]>('/pages/invite/upcoming', { queries: {limit}}));
 
 	let NSDACategories = $derived.by( () => {
-		const catData = indexFetch('/pages/invite/nsdaCategories', { refetchInterval: 2500000, staleTime: 150000000 });
+		const catData = indexFetch<NSDACategory[]>('/pages/invite/nsdaCategories', { refetchInterval: 2500000, staleTime: 150000000 });
 		if (catData.status === 'success') {
-			return catData.data.map((cat:NSDACategory) => cat.name);
+			return catData.data
+				.map((cat:NSDACategory) => cat.name)
+				.filter((name): name is string => !!name);
 		}
 	});
 

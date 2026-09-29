@@ -3,6 +3,7 @@
 	// eslint-disable-file max-len
 
 	import { indexFetch } from '$lib/indexfetch';
+	import type { MySchool, NonTournChapter, TournInvite } from '@tabroom/types';
 	import { getContext } from 'svelte';
 	import ShowDate from '$lib/layouts/ShowDate.svelte';
 	import {
@@ -12,17 +13,17 @@
 	import type { Tourn } from '$indexcards/schemas';
 
 	const tourn:Tourn = getContext('webnameTourn');
-	const pageData = $derived(indexFetch(`/rest/tourns/${tourn.id}/invite`));
+	const pageData = $derived(indexFetch<TournInvite>(`/rest/tourns/${tourn.id}/invite`));
 
-	const mySchools = indexFetch(`/user/chapters/byTourn/${tourn.id}/mySchools`);
-	const myChapters = indexFetch(`/user/chapters/byTourn/${tourn.id}/nonSchools`);
+	const mySchools = indexFetch<MySchool[]>(`/user/chapters/byTourn/${tourn.id}/mySchools`);
+	const myChapters = indexFetch<NonTournChapter[]>(`/user/chapters/byTourn/${tourn.id}/nonSchools`);
 
 	const makeLink = (tournId:number, chapterId:number ) => {
 		const params = `?tourn_id=${tournId}&chapter_id=${chapterId}`;
 		return `${CLASSIC_URL}/user/enter/create.mhtml${params}`;
 	};
 
-	const regEnd:Date = $derived(new Date(pageData.data.regEnd) );
+	const regEnd:Date = $derived(new Date(pageData.data?.reg_end ?? '') );
 	const now = new Date();
 
 </script>
@@ -50,7 +51,7 @@
 
 					{#each mySchools.data as school (school.id) }
 						<h4	class="border-b-2 border-primary-800">
-							{school.name} at the {pageData.data.name}
+							{school.name} at the {pageData.data?.name}
 						</h4>
 
 						<div class='w-full flex border-b border-back-400 pt-2'>
@@ -80,7 +81,7 @@
 									{ student.last }
 								</span>
 								<span class="w-1/10">
-									{ school.events[student.eventId]?.abbr }
+									{ school.events[student.event]?.abbr }
 								</span>
 								<span class="w-1/4 grow">
 									{ student.code }
@@ -100,8 +101,7 @@
 							</span>
 						</div>
 
-						{#each Object.keys(school.judges) as judgeId (judgeId) }
-							{@const judge = school.judges[judgeId]}
+						{#each Object.values(school.judges) as judge (judge.id) }
 							<div class='w-full flex ps-4 py-1 border-b border-back-200'>
 								<span class="w-1/5">
 									{ judge.first }
@@ -136,7 +136,7 @@
 								{#if regEnd > now }
 									<span class="w-1/3 text-right pe-4">
 										Deadline: <ShowDate
-												dtString = { pageData.data.regEnd }
+												dtString = { pageData.data?.reg_end }
 												format   = 'medium'
 												joinWord = 'at'
 											/>
@@ -152,7 +152,7 @@
 									<span class="w-2/3 text-right pe-4 italic">
 										Registration Deadline was
 										<ShowDate
-											dtISO    = { pageData.data.regEnd }
+											dtISO    = { pageData.data?.reg_end }
 											format   = 'full'
 											joinWord = 'at'
 										/>

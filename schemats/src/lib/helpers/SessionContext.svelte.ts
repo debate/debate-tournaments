@@ -1,5 +1,6 @@
 import { createContext } from 'svelte';
-import type { Session, Person } from '$indexcards/schemas';
+import type { Session } from '$indexcards/schemas';
+import type { Person } from '@tabroom/types';
 
 type SessionState = {
 	Person: Person | null;

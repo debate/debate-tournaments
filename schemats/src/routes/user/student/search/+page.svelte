@@ -4,8 +4,10 @@
 		createUserStudentsLinkRequests,
 		createUserStudentsClaim,
 	} from '$indexcards';
+	// The orval type matches what QueryTable infers from the query; the table
+	// column helper does not infer rows from the zod inferred @tabroom/types type
 	import type {
-		UnlinkedStudentSearchSchema,
+		UnlinkedStudentSearchSchema as UnlinkedStudentSearch,
 		RestStudentsUnlinkedSearchParams,
 	} from '$indexcards/schemas';
 	import { Button } from 'flowbite-svelte';

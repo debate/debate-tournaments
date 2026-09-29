@@ -1,12 +1,13 @@
 <script lang="ts">
 
 	import { indexFetch } from '$lib/indexfetch';
+	import type { Webpage } from '@tabroom/types';
 	import Page from '$lib/layouts/Page.svelte';
 	import Loading from '$lib/layouts/Loading.svelte';
 	import { page } from '$app/state';
 
 	// Page paramters need to be wrapped in derived blocks still.
-	let pageContent = $derived( indexFetch(`/rest/pages/${page.params.slug}`) );
+	let pageContent = $derived( indexFetch<Webpage[]>(`/rest/pages/${page.params.slug}`) );
 
 </script>
 

@@ -90,7 +90,10 @@
 							>
 								<a
 									class="w-full text-black font-normal flex pt-0.5"
-									href= { resolve(`/invite/${tourn.webname}/entries/${ section.Entries[speaker]?.id }`, {}) }
+									href= { resolve('/invite/[tourn]/entries/[entryId]', {
+										tourn   : tourn.webname,
+										entryId : String(section.Entries[speaker]?.id),
+									}) }
 								>
 									<span class="w-1/6 ps-0.5 leading-3">
 										{ speaker }

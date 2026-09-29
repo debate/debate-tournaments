@@ -19,7 +19,7 @@
 	{@const senderEmail = message.Sender?.email?.trim() || 'No email available'}
 	{@const subject = message.subject?.trim() || 'No subject'}
 	{@const tournName = message.Tourn?.name?.trim() || 'None'}
-	{@const sentAt = showDateTime({dtISO: message.visibleAt ?? undefined})}
+	{@const sentAt = showDateTime({dtISO: message.visible_at ?? undefined})}
 	{@const content = message.Email?.content?.trim() || message.body?.trim() || ''}
 	<div class="flex items-start justify-between gap-3 border-b border-slate-200 px-4 py-3">
 		<dl

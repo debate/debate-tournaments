@@ -1,6 +1,5 @@
 import type { ZodOpenApiSchemaObject } from 'zod-openapi';
 import { z } from 'zod';
-import { datetime } from './utils.js';
 
 export const NSDACategorySchema = z.object({
 	id: z.number().int(),
@@ -8,7 +7,7 @@ export const NSDACategorySchema = z.object({
 	type: z.enum(['c', 'd', 's']).nullable().meta({ description: 'Congress, debate or speech' }),
 	code: z.number().int().nullable(),
 	national: z.boolean(),
-	timestamp: datetime(),
+	timestamp: z.iso.datetime(),
 }).strict().meta({
 	id: 'NSDACategory',
 }) satisfies ZodOpenApiSchemaObject;

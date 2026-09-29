@@ -3,6 +3,7 @@
 	import { page } from '$app/state';
 	import { getContext } from 'svelte';
 	import { indexFetch } from '$lib/indexfetch';
+	import type { PersonTournPresence, RoundResults } from '@tabroom/types';
 
 	import Ranked from './Ranked.svelte';
 	import Winloss from './Winloss.svelte';
@@ -14,14 +15,14 @@
 	const tourn:Tourn = getContext('webnameTourn');
 
 	let myTourn = $derived.by( () => {
-		return indexFetch(`/user/tourns/${tourn.id}`);
+		return indexFetch<PersonTournPresence>(`/user/tourns/${tourn.id}`);
 	});
 
 	let roundNumber = $derived(page.params.roundNumber);
 	let eventAbbr   = $derived(page.params.eventAbbr);
 
 	// Page params calls must be in a derived for reactivity.
-	let results = $derived(indexFetch(`/pages/invite/${tourn.id}/${eventAbbr}/${roundNumber}/results`));
+	let results = $derived(indexFetch<RoundResults>(`/pages/invite/${tourn.id}/${eventAbbr}/${roundNumber}/results`));
 
 </script>
 

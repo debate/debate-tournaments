@@ -218,6 +218,41 @@ export async function getContacts(db: Database, tournId: number) {
 		.execute();
 };
 
+/**
+ * Counts of in person and hybrid events, matching the upcoming tournaments query.
+ * A tournament with neither is fully online.
+ */
+export async function getEventModeCounts(db: Database, tournId: number) {
+	const [inPerson, hybrid] = await Promise.all([
+		db.selectFrom('event')
+			.where('event.tourn', '=', tournId)
+			.where('event.type', '!=', 'attendee')
+			.where(({ not, exists, selectFrom }) => not(exists(
+				selectFrom('event_setting')
+					.select('event_setting.id')
+					.whereRef('event_setting.event', '=', 'event.id')
+					.where('event_setting.tag', '=', 'online_mode')
+			)))
+			.select(({ fn }) => fn.countAll<number>().as('count'))
+			.executeTakeFirstOrThrow(),
+		db.selectFrom('event')
+			.where('event.tourn', '=', tournId)
+			.where(({ exists, selectFrom }) => exists(
+				selectFrom('event_setting')
+					.select('event_setting.id')
+					.whereRef('event_setting.event', '=', 'event.id')
+					.where('event_setting.tag', '=', 'online_hybrid')
+			))
+			.select(({ fn }) => fn.countAll<number>().as('count'))
+			.executeTakeFirstOrThrow(),
+	]);
+
+	return {
+		inPerson: Number(inPerson.count),
+		hybrid: Number(hybrid.count),
+	};
+};
+
 async function getPersonTourns(db: Database, personId: number, opts: queryOpts = {}) {
 	const query = buildTournQuery(db, opts);
 
@@ -345,6 +380,7 @@ export default {
 	addSite,
 	getSchedule,
 	getContacts,
+	getEventModeCounts,
 	getPersonTourns,
 	getPersonTournSummary,
 };

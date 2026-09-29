@@ -13,7 +13,6 @@
 	import { initSessionContext } from '$lib/helpers/SessionContext.svelte';
 	import { createAuthLogout, createAuthSuEnd, createUserInboxUnread } from '$indexcards';
 	import { goto, invalidateAll } from '$app/navigation';
-	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import { handleOrval } from '$lib/helpers/query';
 
@@ -31,7 +30,7 @@
 	const logout = async () => {
 		await logoutMutation.mutateAsync();
 		data.queryClient.invalidateQueries();
-		goto(resolve(`${page.url.pathname}${page.url.search}`, {}), {
+		goto(page.url, {
 			replaceState: true,
 			invalidateAll: true,
 		});
@@ -42,7 +41,7 @@
 	const suEnd = async () => {
 		await suEndMutation.mutateAsync();
 		data.queryClient.invalidateQueries();
-		goto(resolve(`${page.url.pathname}${page.url.search}`, {}), {
+		goto(page.url, {
 			replaceState: true,
 			invalidateAll: true,
 		});

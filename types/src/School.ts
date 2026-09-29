@@ -1,6 +1,6 @@
 import type { ZodOpenApiSchemaObject } from 'zod-openapi';
 import { z } from 'zod';
-import { datetime, id, settings, settingsTimestamps } from './utils.js';
+import { id, settings, settingsTimestamps } from './utils.js';
 
 export const SchoolSchema = z.object({
 	id: z.number().int(),
@@ -12,8 +12,8 @@ export const SchoolSchema = z.object({
 	state: z.string(),
 	regionId: z.number().int(),
 	districtId: z.number().int(),
-	updatedAt: datetime(),
-	createdAt: datetime(),
+	updatedAt: z.iso.datetime(),
+	createdAt: z.iso.datetime(),
 	settings,
 	settingsTimestamps,
 	metadata: z.record(z.string(), z.string()),
@@ -68,6 +68,7 @@ export const MySchoolSchema = z.object({
 		id: id,
 		first: z.string().nullable(),
 		last: z.string().nullable(),
+		code: z.string().nullable(),
 		category: id,
 		categoryAbbr: z.string().nullable(),
 		categoryName: z.string().nullable(),

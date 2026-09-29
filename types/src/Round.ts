@@ -52,7 +52,7 @@ export const ScheduleRoundSchema = z.object({
 	label: RoundSchema.shape.label,
 	published: z.int().nullable(),
 	post_primary: z.int().nullable(),
-	start_time: utils.datetime().nullable(),
+	start_time: z.iso.datetime().nullable(),
 	Event: z.object({
 		id: utils.id,
 		name: z.string().nullable(),
@@ -62,8 +62,8 @@ export const ScheduleRoundSchema = z.object({
 	}).strict(),
 	Timeslot: z.object({
 		id: utils.id,
-		start: utils.datetime().nullable(),
-		end: utils.datetime().nullable(),
+		start: z.iso.datetime().nullable(),
+		end: z.iso.datetime().nullable(),
 	}).strict(),
 }).strict().meta({
 	id: 'ScheduleRound',

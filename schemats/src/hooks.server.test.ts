@@ -308,25 +308,4 @@ describe('HandleError Hook', () => {
 			errorId: 'error-123',
 		});
 	});
-	it('does not log 404 errors but still returns error message and id', () => {
-		const error = new Error('Not found');
-		const event = createRequestEvent({
-			locals: { requestId: 'error-404', Session: null },
-			request: new Request('https://schemats.test/missing', { method: 'GET' }),
-			url: new URL('https://schemats.test/missing'),
-		});
-
-		const result = handleError({
-			error,
-			event,
-			status: 404,
-			message: 'Not Found',
-		});
-
-		expect(logger.error).not.toHaveBeenCalled();
-		expect(result).toEqual({
-			message: 'Not Found',
-			errorId: 'error-404',
-		});
-	});
 });

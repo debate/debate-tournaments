@@ -12,6 +12,8 @@ import csrfMiddleware from './api/middleware/csrfMiddleware.js';
 import v1Router from './api/routes/routers/v1/indexRouter.js';
 import { rateLimiterMiddleware } from './api/middleware/rateLimiter.js';
 import db from './api/data/db.js';
+import { db as kdb } from './api/data/database.js';
+import { sql } from 'kysely';
 import { localAuth } from './api/helpers/auth.js';
 import logger, { setupRequest } from './api/helpers/logger.js';
 import { Forbidden, Unauthorized } from './api/helpers/problem.js';
@@ -24,7 +26,9 @@ logger.info('Initializing API...');
 logger.info(`Loading environment ${process.env?.NODE_ENV}`);
 
 try {
+	// Sequelize and Kysely use separate connection pools, so check both
 	await db.sequelize.authenticate();
+	await sql`SELECT 1`.execute(kdb);
 	logger.info(`Successfully connected to database ${config.db.database} at ${config.db.host}:${config.db.port}`);
 } catch (error) {
 	logger.error(`Failed to connect to database ${config.db.database} at ${config.db.host}:${config.db.port}`, error );

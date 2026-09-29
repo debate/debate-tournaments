@@ -1,11 +1,12 @@
 <script lang="ts">
 	import { indexFetch } from '$lib/indexfetch';
+	import type { EventResultSets } from '@tabroom/types';
 	import { getContext } from 'svelte';
 	import type { Tourn } from '$indexcards/schemas';
 
 	import Sidebar from './sidebar.svelte';
 	const tourn:Tourn = getContext('webnameTourn');
-	const resultSets = $derived(indexFetch(`/rest/tourns/${tourn.id}/results`));
+	const resultSets = $derived(indexFetch<Record<number, EventResultSets>>(`/rest/tourns/${tourn.id}/results`));
 </script>
 
 	<div class="main">

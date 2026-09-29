@@ -1,5 +1,8 @@
 <script lang="ts">
-import type { ActiveCircuitsResponse, ActiveCircuitsResponseItem } from '$indexcards/schemas';
+import type { ActiveCircuitResponse } from '@tabroom/types';
+
+type ActiveCircuitsResponse = ActiveCircuitResponse;
+type ActiveCircuitsResponseItem = ActiveCircuitResponse[number];
 import type { GridOptions } from '$lib/layouts/grid/svgrid.js';
 import SVGrid from '$lib/layouts/grid/SVGrid.svelte';
 import CalendarCell from './cells/circuitsCalendarCell.svelte';

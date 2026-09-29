@@ -61,7 +61,7 @@ export const init: ClientInit = async () => {
 			method = (options.method || input.method || 'GET').toUpperCase();
 		}
 
-		if (url.startsWith(INDEXCARDS_HOST)) {
+		if (url.startsWith(INDEXCARDS_HOST ?? 'https://api.tabroom.com')) {
 			const headers = new Headers((options && options.headers) || (input instanceof Request ? input.headers : {}));
 			attachCSRFToken(headers, method, () => getCookieValue(CSRF_COOKIE_NAME), CSRF_HEADER_NAME);
 			options.headers = headers;

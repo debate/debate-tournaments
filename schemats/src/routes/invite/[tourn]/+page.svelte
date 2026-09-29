@@ -4,15 +4,16 @@
 	// which is otherwise tricky.
 
 	import { indexFetch } from '$lib/indexfetch';
+	import type { TournInvite, Webpage } from '@tabroom/types';
 	import { getContext } from 'svelte';
 
 	import { ucfirst } from '$lib/helpers/text';
 	import Sidebar from './page/[slug]/sidebar.svelte';
 	import Loading from '$lib/layouts/Loading.svelte';
 
-	import type { Webpage, Tourn } from '$indexcards/schemas';
+	import type { Tourn } from '$indexcards/schemas';
 	const tourn:Tourn = getContext('webnameTourn');
-	const pageContent = $derived(indexFetch(`/rest/tourns/${tourn.id}/invite`));
+	const pageContent = $derived(indexFetch<TournInvite>(`/rest/tourns/${tourn.id}/invite`));
 
 	const mainPages = $derived(pageContent.data?.Webpages?.filter(
 		(webpage:Webpage) => webpage.slug === 'main'
@@ -39,6 +40,8 @@
 		{/if}
 	</div>
 
-	<Sidebar
-		tourn = {pageContent.data}
-	/>
+	{#if pageContent.data}
+		<Sidebar
+			tourn = {pageContent.data}
+		/>
+	{/if}

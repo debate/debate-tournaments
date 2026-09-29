@@ -6,11 +6,11 @@
 	import { ucfirst } from '$lib/helpers/text';
     import SideLink from '$lib/layouts/SideLink.svelte';
 
-	import type { Tourn } from '$indexcards/schemas';
-	let {tourn}:{tourn: Tourn} = $props();
+	import type { TournInvite } from '@tabroom/types';
+	let {tourn}:{tourn: TournInvite} = $props();
 
 	let locationState = $derived.by( () => {
-		if (tourn?.metadata?.inPerson && tourn?.state || tourn?.country) {
+		if (tourn?.inPerson && tourn?.state || tourn?.country) {
 			return tourn?.state || tourn?.country;
 		}
 		if (tourn?.tz) {

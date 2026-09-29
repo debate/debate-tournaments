@@ -77,6 +77,75 @@ describe('GET /rest/tourns/:tournId/invite', () => {
 		expect(res.body.id).toBe(testTourn.id);
 		expect(res.body.Webpages.some((page: { id: number }) => page.id === webpageId)).toBe(true);
 	});
+
+	it('Returns invite events with their public settings', async () => {
+		// Long enough that saveSettings stores it in value_text like legacy descriptions
+		const description = faker.lorem.paragraph({ min: 5, max: 6 });
+		const tourn = await factories.tourn.create();
+		const category = await factories.category.create({ tourn: tourn.id });
+		const event = await factories.event.create({
+			tourn: tourn.id,
+			category: category.id,
+			type: 'mock_trial',
+			fee: '25.00',
+			settings: {
+				cap: '40',
+				school_cap: '4',
+				field_report: '1',
+				description,
+			},
+		});
+		await factories.entry.create({ event: event.id });
+
+		const res = await request(server)
+            .get(`/v1/rest/tourns/${tourn.id}/invite`)
+            .set('Accept', 'application/json')
+            .expect('Content-Type', /json/)
+            .expect(200);
+
+		expect(res.body).toMatchSchema(TournInviteSchema);
+		const inviteEvent = res.body.Events.find((e: { id: number }) => e.id === event.id);
+		expect(inviteEvent).toMatchObject({
+			type: 'mockTrial',
+			Category: { id: category.id },
+			settings: {
+				cap: '40',
+				schoolCap: '4',
+				fieldReport: '1',
+				description,
+			},
+			metadata: { entryCount: 1 },
+		});
+		expect(res.body.inPerson).toBe(1);
+		expect(res.body.hybrid).toBe(0);
+	});
+
+	it('Counts online and hybrid events', async () => {
+		const tourn = await factories.tourn.create();
+		const category = await factories.category.create({ tourn: tourn.id });
+		await factories.event.create({
+			tourn: tourn.id,
+			category: category.id,
+			type: 'debate',
+			settings: { online_mode: 'nsda_campus' },
+		});
+		await factories.event.create({
+			tourn: tourn.id,
+			category: category.id,
+			type: 'speech',
+			settings: { online_mode: 'nsda_campus', online_hybrid: true },
+		});
+
+		const res = await request(server)
+            .get(`/v1/rest/tourns/${tourn.id}/invite`)
+            .set('Accept', 'application/json')
+            .expect('Content-Type', /json/)
+            .expect(200);
+
+		expect(res.body).toMatchSchema(TournInviteSchema);
+		expect(res.body.inPerson).toBe(0);
+		expect(res.body.hybrid).toBe(1);
+	});
 });
 describe('GET /rest/tourns/:tournId/schedule', () => {
 	it('Returns the rounds in the tournament schedule', async () => {

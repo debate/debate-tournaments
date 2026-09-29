@@ -38,15 +38,17 @@ export async function getTournInvite(req: ValidatedRequest, res: Response) {
 		return NotFound(req, res, 'No such tournament found');
 	}
 
-	const [Files, Webpages, Events, Contacts] = await Promise.all([
+	const [Files, Webpages, Events, Contacts, eventModes] = await Promise.all([
 		fileRepo.getFiles(db, { tourn: invite.id }),
 		webpageRepo.getWebpages(db, { tourn: invite.id }),
 		eventRepo.getEventsForInvite(db,invite.id),
 		tournRepo.getContacts(db, invite.id),
+		tournRepo.getEventModeCounts(db, invite.id),
 	]);
-	
+
 	const response = {
 		...invite,
+		...eventModes,
 		Files,
 		Webpages,
 		Events,

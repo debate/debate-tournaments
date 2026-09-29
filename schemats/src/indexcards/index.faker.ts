@@ -179,11 +179,11 @@ export const getRestTournsResponseMock = (): Tourn[] =>
 		tz: faker.string.alpha({ length: { min: 10, max: 31 } }),
 		webname: faker.string.alpha({ length: { min: 10, max: 20 } }),
 		hidden: faker.datatype.boolean(),
-		start: faker.string.alpha({ length: { min: 10, max: 20 } }),
-		end: faker.string.alpha({ length: { min: 10, max: 20 } }),
-		reg_start: faker.string.alpha({ length: { min: 10, max: 20 } }),
-		reg_end: faker.string.alpha({ length: { min: 10, max: 20 } }),
-		timestamp: faker.string.alpha({ length: { min: 10, max: 20 } }),
+		start: faker.date.past().toISOString().slice(0, 19) + 'Z',
+		end: faker.date.past().toISOString().slice(0, 19) + 'Z',
+		reg_start: faker.date.past().toISOString().slice(0, 19) + 'Z',
+		reg_end: faker.date.past().toISOString().slice(0, 19) + 'Z',
+		timestamp: faker.date.past().toISOString().slice(0, 19) + 'Z',
 		settings: faker.helpers.arrayElement([
 			faker.helpers.arrayElement([
 				{
@@ -238,7 +238,10 @@ export const getRestTournsResponseMock = (): Tourn[] =>
 export const getGetTournResultSetsResponseMock = (): GetTournResultSets200 => ({
 	[faker.string.alphanumeric(5)]: {
 		id: faker.number.int({ min: 0, max: 9007199254740991 }),
-		nsdacategory: faker.number.int({ min: 0, max: 9007199254740991 }),
+		nsdacategory: faker.helpers.arrayElement([
+			faker.number.int({ min: 0, max: 9007199254740991 }),
+			undefined,
+		]),
 		name: faker.string.alpha({ length: { min: 10, max: 20 } }),
 		abbr: faker.string.alpha({ length: { min: 10, max: 20 } }),
 		level: faker.string.alpha({ length: { min: 10, max: 20 } }),
@@ -294,7 +297,10 @@ export const getGetResultSetResponseMock = (): ResultSetSchema[] =>
 			abbr: faker.string.alpha({ length: { min: 10, max: 20 } }),
 			level: faker.string.alpha({ length: { min: 10, max: 20 } }),
 			name: faker.string.alpha({ length: { min: 10, max: 20 } }),
-			nsdacategory: faker.number.int({ min: 0, max: 9007199254740991 }),
+			nsdacategory: faker.helpers.arrayElement([
+				faker.number.int({ min: 0, max: 9007199254740991 }),
+				undefined,
+			]),
 			type: faker.string.alpha({ length: { min: 10, max: 20 } }),
 		},
 		results: Array.from(
@@ -554,11 +560,11 @@ export const getUserTournsResponseMock = (): Tourn[] =>
 		tz: faker.string.alpha({ length: { min: 10, max: 31 } }),
 		webname: faker.string.alpha({ length: { min: 10, max: 20 } }),
 		hidden: faker.datatype.boolean(),
-		start: faker.string.alpha({ length: { min: 10, max: 20 } }),
-		end: faker.string.alpha({ length: { min: 10, max: 20 } }),
-		reg_start: faker.string.alpha({ length: { min: 10, max: 20 } }),
-		reg_end: faker.string.alpha({ length: { min: 10, max: 20 } }),
-		timestamp: faker.string.alpha({ length: { min: 10, max: 20 } }),
+		start: faker.date.past().toISOString().slice(0, 19) + 'Z',
+		end: faker.date.past().toISOString().slice(0, 19) + 'Z',
+		reg_start: faker.date.past().toISOString().slice(0, 19) + 'Z',
+		reg_end: faker.date.past().toISOString().slice(0, 19) + 'Z',
+		timestamp: faker.date.past().toISOString().slice(0, 19) + 'Z',
 		settings: faker.helpers.arrayElement([
 			faker.helpers.arrayElement([
 				{
@@ -689,8 +695,8 @@ export const getUserTournsBallotsCurrentResponseMock = (): CurrentBallot[] =>
 		show_async: faker.datatype.boolean(),
 		onlineBallots: faker.datatype.boolean(),
 		legion: faker.datatype.boolean(),
-		start: faker.string.alpha({ length: { min: 10, max: 20 } }),
-		deadline: faker.string.alpha({ length: { min: 10, max: 20 } }),
+		start: faker.date.past().toISOString().slice(0, 19) + 'Z',
+		deadline: faker.date.past().toISOString().slice(0, 19) + 'Z',
 		roomId: faker.helpers.arrayElement([
 			faker.number.int({ min: 0, max: 9007199254740991 }),
 			null,

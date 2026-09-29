@@ -20,6 +20,51 @@ export const EventSchema = z.object({
 
 export type Event = z.infer<typeof EventSchema>;
 
+export const InviteEventSchema = z.object({
+	id: utils.id,
+	abbr: z.string().nullable(),
+	name: z.string().nullable(),
+	fee: z.string().nullable(),
+	type: z.string().meta({ description: 'Event type in camelCase, e.g. mockTrial' }),
+	NSDACategory: z.object({
+		id: utils.id.nullable(),
+		name: z.string().nullable(),
+		code: utils.id.nullable(),
+	}).strict(),
+	Category: z.object({
+		id: utils.id,
+		abbr: z.string().nullable(),
+		name: z.string().nullable(),
+		settings: z.object({
+			judgeFieldReport: z.string().nullable(),
+		}).strict(),
+	}).strict(),
+	Topic: z.object({
+		id: utils.id.nullable(),
+		source: z.string().nullable(),
+		eventType: z.string().nullable(),
+		tag: z.string().nullable(),
+		text: z.string().nullable(),
+	}).strict(),
+	settings: z.object({
+		cap: z.string().nullable(),
+		schoolCap: z.string().nullable(),
+		fieldReport: z.string().nullable(),
+		anonymousPublic: z.string().nullable(),
+		live_updates: z.string().nullable(),
+		description: z.string().nullable(),
+		currency: z.string().nullable(),
+	}).strict(),
+	metadata: z.object({
+		entryCount: z.int(),
+	}).strict(),
+}).strict().meta({
+	id: 'InviteEvent',
+	description: 'An event with the settings shown on the public invite',
+}) satisfies ZodOpenApiSchemaObject;
+
+export type InviteEvent = z.infer<typeof InviteEventSchema>;
+
 export const EventFieldSchema = z.object({
 	id: utils.id,
 	name: z.string().nullable(),

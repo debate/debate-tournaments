@@ -13,7 +13,6 @@
 </script>
 <script lang='ts'>
 
-	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 
 	let { tabs }: {tabs: TabLink[]} = $props();
@@ -81,7 +80,7 @@
 					hover:bg-secondary-100
 				'
 				aria-selected = '{ page.url.pathname.includes(tab.route) || tab.defaultSelected }'
-				href          = {resolve(tab.route, {})}
+				href          = {tab.route}
 				role          = 'tab'
 				title         = '{ tab.route } {page.url.pathname}'
 				type          = 'button'

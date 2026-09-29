@@ -3,7 +3,9 @@
 	// Tournament Invitation layout shell.
 	// WIP: Figuring out how to get a sidebar to work with uplift
 
+	import { resolve } from '$app/paths';
 	import { indexFetch } from '$lib/indexfetch';
+	import type { TournInvite } from '@tabroom/types';
 	import { setContext } from 'svelte';
 
 	import Loading from '$lib/layouts/Loading.svelte';
@@ -32,15 +34,22 @@
 
 	// svelte-ignore state_referenced_locally
 	setContext('webnameTourn', tourn);
-	const pageContent = $derived(indexFetch(`/rest/tourns/${tourn.id}/invite`));
+	const pageContent = $derived(indexFetch<TournInvite>(`/rest/tourns/${tourn.id}/invite`));
 	let sort = 0;
 
 	const tabs:TabLink[] = $derived.by( () => {
-		return [
-			'main', 'events', 'register', 'rounds', 'results',
-		].map( (pageKey) => {
+		const params = { tourn: tourn.webname };
+		const routes = {
+			main     : resolve('/invite/[tourn]', params),
+			events   : resolve('/invite/[tourn]/events', params),
+			register : resolve('/invite/[tourn]/register', params),
+			rounds   : resolve('/invite/[tourn]/rounds', params),
+			results  : resolve('/invite/[tourn]/results', params),
+		};
 
-			const route = `/invite/${tourn.webname}${pageKey === 'main' ? '' : `/${pageKey}` }`;
+		return (Object.keys(routes) as Array<keyof typeof routes>).map( (pageKey) => {
+
+			const route = routes[pageKey];
 			const matchPatterns = [];
 
 			if (pageKey === 'main') {
@@ -76,12 +85,14 @@
 	});
 
 	let tournLocation = $derived.by( () => {
-		if (pageContent.data.inPerson == 0 && pageContent.data.hybrid == 0) {
-			let site = `${ pageContent.data.city || 'Online'} `;
-			site += shortZone(pageContent.data.tz);
+		const invite = pageContent.data;
+		if (!invite) return '';
+		if (invite.inPerson == 0 && invite.hybrid == 0) {
+			let site = `${ invite.city || 'Online'} `;
+			site += shortZone(invite.tz);
 			return site;
 		};
-		return `${pageContent.data.city}, ${pageContent.data.state || pageContent.data.country}`;
+		return `${invite.city}, ${invite.state || invite.country}`;
 	});
 
 </script>

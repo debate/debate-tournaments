@@ -3,6 +3,7 @@
 	import { page } from '$app/state';
 	import { getContext } from 'svelte';
 	import { indexFetch } from '$lib/indexfetch';
+	import type { PersonTournPresence, ResultSet as ResultSetData } from '@tabroom/types';
 
 	import Loading from '$lib/layouts/Loading.svelte';
 	import Sidebar from '../sidebar.svelte';
@@ -12,13 +13,13 @@
 	const tourn:Tourn = getContext('webnameTourn');
 
 	let myTourn = $derived.by( () => {
-		return indexFetch(`/user/tourns/${tourn.id}`);
+		return indexFetch<PersonTournPresence>(`/user/tourns/${tourn.id}`);
 	});
 
-	let resultSetId = $derived(parseInt(page.params.resultSetId));
+	let resultSetId = $derived(parseInt(page.params.resultSetId ?? '0'));
 
 	// Page params calls must be in a derived for reactivity.
-	let resultSetFetch = $derived(indexFetch(`/rest/tourns/${tourn.id}/results/${resultSetId}`));
+	let resultSetFetch = $derived(indexFetch<ResultSetData[]>(`/rest/tourns/${tourn.id}/results/${resultSetId}`));
 	let resultSet = $derived(resultSetFetch.data?.[0]);
 
 </script>

@@ -5,7 +5,10 @@
 
 	let linkUrl = $derived.by( () => {
 		if (row.Entry?.id) {
-			return `/invite/${column.key}/entries/${ row.Entry.id }`;
+			return resolve('/invite/[tourn]/entries/[entryId]', {
+				tourn   : String(column.key),
+				entryId : String(row.Entry.id),
+			});
 		}
 		return false;
 	});
@@ -37,7 +40,7 @@
 		<a
 			class = 'hover:text-primary-700 hover:text-decoration-line text-neutral-900
 				break-normal font-normal w-full py-1 ps-2 my-0'
-			href  = {resolve(linkUrl,{})}
+			href  = {linkUrl}
 			title = '{ linkNames?.hover }'
 		>{linkNames?.name}</a>
 	{:else }

@@ -1,6 +1,6 @@
 <script lang='ts'>
 	import type { QueryObserverResult } from '@tanstack/svelte-query';
-	import type { Problem } from '$indexcards/schemas';
+	import type { Problem } from '@tabroom/types';
 
 	/* An attempt to not have to write the same looping loading/etc code every
 	time. I suspect this is not best practice but haven't found a good example

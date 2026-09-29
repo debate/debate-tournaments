@@ -255,8 +255,8 @@
 			<HeaderMenu {api}>
 				<HoverTip {api}>
 					<Grid
-						bind:this = {api}
 						columns   = {optionedColumns}
+						init      = {(gridApi: IApi) => { api = gridApi; }}
 						{sizes}
 						bind:data = {pagedData}
 						{...tableOptions}
