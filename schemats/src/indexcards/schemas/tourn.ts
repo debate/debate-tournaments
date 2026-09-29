@@ -5,6 +5,8 @@
  * Tabroom.com data & operational API
  * OpenAPI spec version: 1.2.0
  */
+import type { TournSettings } from './tournSettings';
+import type { TournSettingsTimestamps } from './tournSettingsTimestamps';
 
 export interface Tourn {
 	/**
@@ -23,6 +25,11 @@ export interface Tourn {
 	hidden: boolean;
 	start: string;
 	end: string;
-	regStart: string;
-	regEnd: string;
+	reg_start: string;
+	reg_end: string;
+	timestamp: string;
+	/** Settings keyed by tag */
+	settings?: TournSettings;
+	/** Setting created_at and timestamp values keyed by tag */
+	settingsTimestamps?: TournSettingsTimestamps;
 }

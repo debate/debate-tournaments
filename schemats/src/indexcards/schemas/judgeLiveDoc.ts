@@ -6,22 +6,21 @@
  * OpenAPI spec version: 1.2.0
  */
 
-export interface Fine {
+/**
+ * A live doc link for a category the logged in user is judging in
+ */
+export interface JudgeLiveDoc {
 	/**
+	 * @minimum -9007199254740991
 	 * @maximum 9007199254740991
-	 * @exclusiveMinimum 0
 	 */
-	id: number;
-	reason: string | null;
-	/** @nullable */
-	amount: number | null;
-	/**
-	 * @maximum 9007199254740991
-	 * @exclusiveMinimum 0
-	 */
-	school: number;
-	/** @nullable */
-	schoolName: string | null;
+	judgeId: number;
+	categoryAbbr: string;
+	tournName: string;
 	/** @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z))$ */
-	leviedAt: string;
+	tournEnd: string;
+	tournTz: string;
+	url: string;
+	/** @nullable */
+	caption: string | null;
 }

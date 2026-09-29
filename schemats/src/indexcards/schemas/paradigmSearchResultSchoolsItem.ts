@@ -6,15 +6,11 @@
  * OpenAPI spec version: 1.2.0
  */
 
-export type PersonTournSummaryLivedocsItem = {
+export type ParadigmSearchResultSchoolsItem = {
 	/**
 	 * @maximum 9007199254740991
 	 * @exclusiveMinimum 0
 	 */
-	categoryId: number;
-	/** @nullable */
-	categoryName: string | null;
-	url: string;
-	/** @nullable */
-	caption: string | null;
+	id: number;
+	name: string;
 };

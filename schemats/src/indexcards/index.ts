@@ -30,6 +30,7 @@ import type {
 import type {
 	ActiveCircuitsResponseSchema,
 	BadRequestResponse,
+	ClaimResponse,
 	CurrentBallot,
 	ErrorResponseResponse,
 	Fine,
@@ -38,19 +39,20 @@ import type {
 	GetTournResultSets200,
 	HomepageAd,
 	InboxMessage,
+	InboxUnreadCount,
 	JudgeHistory,
+	JudgeLiveDoc,
 	JudgeRecord,
 	LoginRequest,
 	LoginResponse,
 	NotFoundResponse,
 	ParadigmDetailsSchema,
+	ParadigmSearchResult,
 	PersonTournSummary,
-	PostUserJudgesParadigmBody,
 	QuizOutput,
 	RestCircuit,
 	RestCircuitsActiveParams,
 	RestJudgesUnlinkedSearchParams,
-	RestParadigms200Item,
 	RestParadigmsParams,
 	RestQuizzesParams,
 	RestStudentsUnlinkedSearchParams,
@@ -63,15 +65,11 @@ import type {
 	UnlinkedJudgeSchema,
 	UnlinkedStudentSearchSchema,
 	UserChapter,
-	UserInboxUnread200,
-	UserJudgesClaim200,
 	UserJudgesClaimParams,
 	UserJudgesHistoryParams,
-	UserJudgesLiveDocs200Item,
-	UserJudgesParadigm200,
-	UserStudentsClaim200,
+	UserParadigm,
+	UserParadigmOutput,
 	UserStudentsClaimParams,
-	UserTournsBallotsParams,
 	UserTournsParams,
 } from './schemas';
 
@@ -1870,7 +1868,7 @@ export const prefetchGetResultSetQuery = async <
 };
 
 export type restParadigmsResponse200 = {
-	data: RestParadigms200Item[];
+	data: ParadigmSearchResult[];
 	status: 200;
 };
 
@@ -4183,227 +4181,6 @@ export const prefetchUserTournsFinesQuery = async <
 	return queryClient;
 };
 
-export type userTournsBallotsResponse200 = {
-	data: CurrentBallot[];
-	status: 200;
-};
-
-export type userTournsBallotsResponse401 = {
-	data: UnauthorizedResponse;
-	status: 401;
-};
-
-export type userTournsBallotsResponse500 = {
-	data: ErrorResponseResponse;
-	status: 500;
-};
-
-export type userTournsBallotsResponseSuccess = userTournsBallotsResponse200 & {
-	headers: Headers;
-};
-export type userTournsBallotsResponseError = (
-	| userTournsBallotsResponse401
-	| userTournsBallotsResponse500
-) & {
-	headers: Headers;
-};
-
-export type userTournsBallotsResponse =
-	| userTournsBallotsResponseSuccess
-	| userTournsBallotsResponseError;
-
-export const getUserTournsBallotsUrl = (
-	tournId: number,
-	params?: UserTournsBallotsParams,
-) => {
-	const normalizedParams = new URLSearchParams();
-
-	Object.entries(params || {}).forEach(([key, value]) => {
-		if (value !== undefined) {
-			normalizedParams.append(
-				key,
-				value === null ? 'null' : String(value),
-			);
-		}
-	});
-
-	const stringifiedParams = normalizedParams.toString();
-
-	return stringifiedParams.length > 0
-		? `${indexcardsApiBaseUrl()}/user/tourns/${tournId}/ballots?${stringifiedParams}`
-		: `${indexcardsApiBaseUrl()}/user/tourns/${tournId}/ballots`;
-};
-
-/**
- * Returns an array of Fines for the tourn.
- * @summary Get Ballots
- */
-export const userTournsBallots = async (
-	tournId: number,
-	params?: UserTournsBallotsParams,
-	options?: RequestInit,
-	fetchFn?: typeof globalThis.fetch,
-): Promise<userTournsBallotsResponse> => {
-	const res = await (fetchFn ?? fetch)(
-		getUserTournsBallotsUrl(tournId, params),
-		{
-			credentials: 'include',
-			...options,
-			method: 'GET',
-		},
-	);
-
-	const body = [204, 205, 304].includes(res.status) ? null : await res.text();
-
-	const data: userTournsBallotsResponse['data'] = body
-		? JSON.parse(body)
-		: {};
-	return {
-		data,
-		status: res.status,
-		headers: res.headers,
-	} as userTournsBallotsResponse;
-};
-
-export const getUserTournsBallotsQueryKey = (
-	tournId: number,
-	params?: UserTournsBallotsParams,
-) => {
-	return [
-		`${indexcardsApiBaseUrl()}/user/tourns/${tournId}/ballots`,
-		...(params ? [params] : []),
-	] as const;
-};
-
-export const getUserTournsBallotsQueryOptions = <
-	TData = Awaited<ReturnType<typeof userTournsBallots>>,
-	TError = UnauthorizedResponse | ErrorResponseResponse,
->(
-	tournId: number,
-	params?: UserTournsBallotsParams,
-	options?: {
-		query?: Partial<
-			CreateQueryOptions<
-				Awaited<ReturnType<typeof userTournsBallots>>,
-				TError,
-				TData
-			>
-		>;
-		fetch?: RequestInit;
-		fetcher?: typeof globalThis.fetch;
-	},
-) => {
-	const {
-		query: queryOptions,
-		fetch: fetchOptions,
-		fetcher: fetcherFn,
-	} = options ?? {};
-
-	const queryKey =
-		queryOptions?.queryKey ?? getUserTournsBallotsQueryKey(tournId, params);
-
-	const queryFn: QueryFunction<
-		Awaited<ReturnType<typeof userTournsBallots>>
-	> = ({ signal }) =>
-		userTournsBallots(
-			tournId,
-			params,
-			{ signal, ...fetchOptions },
-			fetcherFn,
-		);
-
-	return {
-		queryKey,
-		queryFn,
-		enabled: tournId !== null && tournId !== undefined,
-		...queryOptions,
-	} as CreateQueryOptions<
-		Awaited<ReturnType<typeof userTournsBallots>>,
-		TError,
-		TData
-	> & { queryKey: DataTag<QueryKey, TData, TError> };
-};
-
-export type UserTournsBallotsQueryResult = NonNullable<
-	Awaited<ReturnType<typeof userTournsBallots>>
->;
-export type UserTournsBallotsQueryError =
-	| UnauthorizedResponse
-	| ErrorResponseResponse;
-
-/**
- * @summary Get Ballots
- */
-
-export function createUserTournsBallots<
-	TData = Awaited<ReturnType<typeof userTournsBallots>>,
-	TError = UnauthorizedResponse | ErrorResponseResponse,
->(
-	tournId: () => number,
-	params?: () => UserTournsBallotsParams,
-	options?: () => {
-		query?: Partial<
-			CreateQueryOptions<
-				Awaited<ReturnType<typeof userTournsBallots>>,
-				TError,
-				TData
-			>
-		>;
-		fetch?: RequestInit;
-		fetcher?: typeof globalThis.fetch;
-	},
-	queryClient?: () => QueryClient,
-): CreateQueryResult<TData, TError> & {
-	queryKey: DataTag<QueryKey, TData, TError>;
-} {
-	const query = createQuery(
-		() =>
-			getUserTournsBallotsQueryOptions(
-				tournId(),
-				params?.(),
-				options?.(),
-			),
-		queryClient,
-	) as CreateQueryResult<TData, TError> & {
-		queryKey: DataTag<QueryKey, TData, TError>;
-	};
-
-	return query;
-}
-
-/**
- * @summary Get Ballots
- */
-export const prefetchUserTournsBallotsQuery = async <
-	TData = Awaited<ReturnType<typeof userTournsBallots>>,
-	TError = UnauthorizedResponse | ErrorResponseResponse,
->(
-	queryClient: QueryClient,
-	tournId: number,
-	params?: UserTournsBallotsParams,
-	options?: {
-		query?: Partial<
-			CreateQueryOptions<
-				Awaited<ReturnType<typeof userTournsBallots>>,
-				TError,
-				TData
-			>
-		>;
-		fetch?: RequestInit;
-		fetcher?: typeof globalThis.fetch;
-	},
-): Promise<QueryClient> => {
-	const queryOptions = getUserTournsBallotsQueryOptions(
-		tournId,
-		params,
-		options,
-	);
-
-	await queryClient.prefetchQuery(queryOptions);
-
-	return queryClient;
-};
-
 export type userTournsBallotsCurrentResponse200 = {
 	data: CurrentBallot[];
 	status: 200;
@@ -4749,7 +4526,7 @@ export const prefetchUserInboxQuery = async <
 };
 
 export type userInboxUnreadResponse200 = {
-	data: UserInboxUnread200;
+	data: InboxUnreadCount;
 	status: 200;
 };
 
@@ -5988,7 +5765,7 @@ export const prefetchUserJudgesLinkRequestsQuery = async <
 };
 
 export type userJudgesClaimResponse200 = {
-	data: UserJudgesClaim200;
+	data: ClaimResponse;
 	status: 200;
 };
 
@@ -6142,7 +5919,7 @@ export const createUserJudgesClaim = <
 };
 
 export type userJudgesHistoryResponse200 = {
-	data: JudgeHistory;
+	data: JudgeHistory[];
 	status: 200;
 };
 
@@ -6473,7 +6250,7 @@ export const prefetchUserJudgesHistoryQuery = async <
 };
 
 export type userJudgesParadigmResponse200 = {
-	data: UserJudgesParadigm200;
+	data: UserParadigmOutput;
 	status: 200;
 };
 
@@ -6688,7 +6465,7 @@ export const getPostUserJudgesParadigmUrl = () => {
  * @summary update paradigm
  */
 export const postUserJudgesParadigm = async (
-	postUserJudgesParadigmBody?: PostUserJudgesParadigmBody,
+	userParadigm?: UserParadigm,
 	options?: RequestInit,
 	fetchFn?: typeof globalThis.fetch,
 ): Promise<postUserJudgesParadigmResponse> => {
@@ -6697,7 +6474,7 @@ export const postUserJudgesParadigm = async (
 		...options,
 		method: 'POST',
 		headers: { 'Content-Type': 'application/json', ...options?.headers },
-		body: JSON.stringify(postUserJudgesParadigmBody),
+		body: JSON.stringify(userParadigm),
 	});
 
 	const body = [204, 205, 304].includes(res.status) ? null : await res.text();
@@ -6723,7 +6500,7 @@ export const getPostUserJudgesParadigmMutationOptions = <
 	mutation?: CreateMutationOptions<
 		Awaited<ReturnType<typeof postUserJudgesParadigm>>,
 		TError,
-		{ data?: PostUserJudgesParadigmBody },
+		{ data?: UserParadigm },
 		TContext
 	>;
 	fetch?: RequestInit;
@@ -6731,7 +6508,7 @@ export const getPostUserJudgesParadigmMutationOptions = <
 }): CreateMutationOptions<
 	Awaited<ReturnType<typeof postUserJudgesParadigm>>,
 	TError,
-	{ data?: PostUserJudgesParadigmBody },
+	{ data?: UserParadigm },
 	TContext
 > => {
 	const mutationKey = ['postUserJudgesParadigm'];
@@ -6749,7 +6526,7 @@ export const getPostUserJudgesParadigmMutationOptions = <
 
 	const mutationFn: MutationFunction<
 		Awaited<ReturnType<typeof postUserJudgesParadigm>>,
-		{ data?: PostUserJudgesParadigmBody }
+		{ data?: UserParadigm }
 	> = (props) => {
 		const { data } = props ?? {};
 
@@ -6762,9 +6539,7 @@ export const getPostUserJudgesParadigmMutationOptions = <
 export type PostUserJudgesParadigmMutationResult = NonNullable<
 	Awaited<ReturnType<typeof postUserJudgesParadigm>>
 >;
-export type PostUserJudgesParadigmMutationBody =
-	| PostUserJudgesParadigmBody
-	| undefined;
+export type PostUserJudgesParadigmMutationBody = UserParadigm | undefined;
 export type PostUserJudgesParadigmMutationError =
 	| BadRequestResponse
 	| UnauthorizedResponse
@@ -6786,7 +6561,7 @@ export const createPostUserJudgesParadigm = <
 		mutation?: CreateMutationOptions<
 			Awaited<ReturnType<typeof postUserJudgesParadigm>>,
 			TError,
-			{ data?: PostUserJudgesParadigmBody },
+			{ data?: UserParadigm },
 			TContext
 		>;
 		fetch?: RequestInit;
@@ -6796,7 +6571,7 @@ export const createPostUserJudgesParadigm = <
 ): CreateMutationResult<
 	Awaited<ReturnType<typeof postUserJudgesParadigm>>,
 	TError,
-	{ data?: PostUserJudgesParadigmBody },
+	{ data?: UserParadigm },
 	TContext
 > => {
 	return createMutation(
@@ -6806,7 +6581,7 @@ export const createPostUserJudgesParadigm = <
 };
 
 export type userJudgesLiveDocsResponse200 = {
-	data: UserJudgesLiveDocs200Item[];
+	data: JudgeLiveDoc[];
 	status: 200;
 };
 
@@ -7137,7 +6912,7 @@ export const prefetchUserStudentsLinkRequestsQuery = async <
 };
 
 export type userStudentsClaimResponse200 = {
-	data: UserStudentsClaim200;
+	data: ClaimResponse;
 	status: 200;
 };
 
