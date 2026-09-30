@@ -1,5 +1,4 @@
 import request from 'supertest';
-import { assert } from 'chai';
 import config from '../../../config';
 import { db } from '../../../data/database.js';
 import server from '../../../../app';
@@ -59,25 +58,22 @@ describe('Status Board', () => {
 			.expect('Content-Type', /json/)
 			.expect(200);
 
-		assert.isObject(res.body, 'Response is an object');
+		expect(res.body, 'Response is an object').toBeTypeOf('object');
 
-		assert.equal(
+		expect(
 			res.body.person[testTourn.person][testTourn.panel].tag,
-			'present',
 			'Judge Giordano marked present by an admin'
-		);
+		).toBe('present');
 
-		assert.equal(
+		expect(
 			res.body.entry[testTourn.entry][testTourn.panel].tag,
-			'present',
 			'LASA marked present by an admin'
-		);
+		).toBe('present');
 
-		assert.equal(
+		expect(
 			res.body.entry[testTourn.entry][testTourn.panel].markerId,
-			personId,
 			'LASA marked present by the correct admin'
-		);
+		).toBe(personId);
 	});
 
 	it('Reflects absence & presence changes in a new status object', async() => {
@@ -131,26 +127,23 @@ describe('Status Board', () => {
 			.expect('Content-Type', /json/)
 			.expect(200);
 
-		assert.isObject(newResponse.body, 'Response is indeed an object');
+		expect(newResponse.body, 'Response is indeed an object').toBeTypeOf('object');
 		const newBody = newResponse.body;
 
-		assert.equal(
+		expect(
 			newBody.person[testTourn.person][testTourn.panel].tag,
-			'present',
 			'After the change posted, Judge Giordano marked absent by an admin'
-		);
+		).toBe('present');
 
-		assert.equal(
+		expect(
 			newBody.entry[testTourn.entry][testTourn.panel].tag,
-			'present',
 			'LASA marked present by an admin'
-		);
+		).toBe('present');
 
-		assert.equal(
+		expect(
 			newBody.entry[testTourn.entry][testTourn.panel].markerId,
-			personId,
 			'LASA marked present by the correct admin'
-		);
+		).toBe(personId);
 	});
 
 	afterAll(async () => {
@@ -185,19 +178,9 @@ describe.todo('Event Dashboard', () => {
 			.expect('Content-Type', /json/)
 			.expect(200);
 
-		assert.isObject(res.body, 'Response is an object');
-
-		assert.equal(
-			res.body[7].abbr,
-			'LD',
-			'Event 7 is LD');
-		assert.equal(
-			res.body[7].rounds[1][1].unstarted,
-			'25',
-			'15 unstarted in Round 1 flight 1');
-
-		assert.isTrue(
-			res.body[7].rounds[1][2].undone,
-			'Flight 2 is not done');
+		expect(res.body, 'Response is an object').toBeTypeOf('object');
+		expect(res.body[7].abbr, 'Event 7 is LD').toBe('LD');
+		expect(res.body[7].rounds[1][1].unstarted, '25 unstarted in Round 1 flight 1').toBe(25);
+		expect(res.body[7].rounds[1][2].undone, 'Flight 2 is not done').toBe(true);
 	});
 });

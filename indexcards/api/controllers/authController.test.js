@@ -19,8 +19,8 @@ describe('authController',() => {
 
 			await controller.login(req, res);
 
-			assert.equal(res.status.mock.calls[0][0], 401);
-			assert.ok(res.json.mock.calls.length === 1);
+			expect(res.status).toHaveBeenCalledWith(401);
+			expect(res.json).toHaveBeenCalledTimes(1);
 		});
 		it('throws on error other than AUTH_INVALID', async () => {
 			vi.spyOn(authService, 'login').mockRejectedValue(new Error('Some other error'));
@@ -48,19 +48,17 @@ describe('authController',() => {
 			await controller.login(req, res);
 
 			// Auth service called correctly
-			assert.deepEqual(authService.login.mock.calls[0][0], 'bob');
-			assert.deepEqual(authService.login.mock.calls[0][1], 'pw');
+			expect(authService.login.mock.calls[0][0]).toBe('bob');
+			expect(authService.login.mock.calls[0][1]).toBe('pw');
 
 			// Auth cookie
-			assert.ok(
-				res.cookie.mock.calls.some(call => call[0] === config.cookie.name && call[1] === 'jwt123')
-			);
+			expect(res.cookie).toHaveBeenCalledWith(config.cookie.name, 'jwt123', expect.anything());
 
 			// Response body
 			const json = res.json.mock.calls[0][0];
-			assert.equal(json.token, 'jwt123');
-			assert.equal(json.Person.id, 42);
-			assert.equal(json.Person.email, 'test@test.com');
+			expect(json.token).toBe('jwt123');
+			expect(json.Person.id).toBe(42);
+			expect(json.Person.email).toBe('test@test.com');
 		});
 
 	});

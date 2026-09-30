@@ -1,5 +1,4 @@
 import request from 'supertest';
-import { assert } from 'chai';
 import { db } from '../../../data/database.js';
 import config from '../../../config.js';
 import server from '../../../../app';
@@ -35,20 +34,14 @@ describe.todo('Session Last Access Updated', () => {
 				.expect(200);
 		}
 
-		assert.isObject(res.body, 'Response is an object');
-
-		assert.equal(
-			res.body.person,
-			69,
-			'Correct User Session Returned'
-		);
+		expect(res.body, 'Response is an object').toBeTypeOf('object');
+		expect(res.body.person, 'Correct User Session Returned').toBe(69);
 
 		const lastAccess = new Date(res.body.last_access);
 
-		assert.equal(
-			lastAccess.toDateString,
-			new Date().toDateString,
+		expect(
+			lastAccess.toDateString(),
 			'Last Access date is set to present day'
-		);
+		).toBe(new Date().toDateString());
 	});
 });

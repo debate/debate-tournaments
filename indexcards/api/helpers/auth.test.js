@@ -1,4 +1,3 @@
-import { assert } from 'chai';
 import { Authenticate } from '../middleware/authentication.js';
 import config from '../config.js';
 import { tabAuth } from './auth';
@@ -33,10 +32,10 @@ describe.todo('Authorization Functions', () => {
 
 		req.session = await tabAuth(req);
 
-		assert.typeOf(req.session, 'object');
-		assert.typeOf(req.session.perms, 'object');
-		assert.typeOf(req.session.tourn, 'object');
-		assert.equal(req.session.perms.tourn[testTourn], 'tabber');
+		expect(req.session).toBeTypeOf('object');
+		expect(req.session.perms).toBeTypeOf('object');
+		expect(req.session.tourn).toBeTypeOf('object');
+		expect(req.session.perms.tourn[testTourn]).toBe('tabber');
 
 	});
 
@@ -65,8 +64,8 @@ describe.todo('Authorization Functions', () => {
 		});
 		req.session = await tabAuth(req);
 
-		assert.typeOf(req.session, 'object');
-		assert.isEmpty(req.session?.perms?.tourn);
+		expect(req.session).toBeTypeOf('object');
+		expect(req.session?.perms?.tourn).toEqual({});
 	});
 
 	it('Finds a session for an GLP Admin user', async () => {
@@ -90,10 +89,10 @@ describe.todo('Authorization Functions', () => {
 
 		const session = req.session;
 
-		assert.typeOf(session, 'object');
-		assert.equal(session.person, '70');
-		assert.equal(req.person.site_admin, true);
-		assert.equal(req.person.email, 'i.am.god@speechanddebate.org');
+		expect(session).toBeTypeOf('object');
+		expect(session.person).toBe(70);
+		expect(req.person.site_admin).toBe(1);
+		expect(req.person.email).toBe('i.am.god@speechanddebate.org');
 	});
 
 	it('Permits GLP admin access to a tournament it is not admin for', async () => {
@@ -120,8 +119,8 @@ describe.todo('Authorization Functions', () => {
 		});
 		req.session = await tabAuth(req);
 
-		assert.typeOf(req.session, 'object');
-		assert.equal(req.session.perms.tourn[testNotTourn], 'owner');
+		expect(req.session).toBeTypeOf('object');
+		expect(req.session.perms.tourn[testNotTourn]).toBe('owner');
 	});
 
 });
