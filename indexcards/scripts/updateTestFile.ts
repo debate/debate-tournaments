@@ -6,21 +6,19 @@ import readline from 'node:readline';
 import config from '../api/config.js';
 import logger from '../api/helpers/logger.js';
 
-// adjust these to match your config shape
-const DB_USER = config.DB.USER || config.DB_USER;
-const DB_PASS = config.DB.PASS || config.DB_PASS;
-const DB_NAME = config.DB.DATABASE || config.DB_DATABASE;
+const DB_USER = config.db.user;
+const DB_PASS = config.db.pass;
+const DB_NAME = config.db.database;
 
-// optional: host/port if you need them
-const DB_HOST = config.DB.HOST || config.DB_HOST;
-const DB_PORT = config.DB.PORT || config.DB_PORT;
+const DB_HOST = config.db.host;
+const DB_PORT = config.db.port;
 
 if (!DB_USER || !DB_PASS || !DB_NAME) {
 	throw new Error('Missing db.user, db.password, or db.database in config.js');
 }
 
 // 1. Build the test DB
-execSync('NODE_ENV=test node tests/createTestDatabase.js', { stdio: 'inherit' });
+execSync('NODE_ENV=test npx tsx tests/createTestDatabase.js', { stdio: 'inherit' });
 
 logger.info('Dumping test database...');
 // 2. Build dump args

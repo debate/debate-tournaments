@@ -221,13 +221,13 @@ async function loadRuntimeConfig(): Promise<RuntimeConfig> {
   // Load base config
   const baseConfig = loadConfigFile(baseConfigPath);
   if (Object.keys(baseConfig).length > 0) {
-    console.info(`Loaded base configuration from ${baseConfigPath}`);
+    if(process.env.NODE_ENV !== 'test') console.info(`Loaded base configuration from ${baseConfigPath}`);
   }
 
   // Load environment-specific override
   const envConfig = loadConfigFile(envConfigPath);
   if (Object.keys(envConfig).length > 0) {
-    console.info(`Loaded ${nodeEnv}-specific overrides from ${envConfigPath}`);
+    if(process.env.NODE_ENV !== 'test') console.info(`Loaded ${nodeEnv}-specific overrides from ${envConfigPath}`);
   }
 
   // Merge: base → env-specific
@@ -236,7 +236,7 @@ async function loadRuntimeConfig(): Promise<RuntimeConfig> {
   // Validate against schema
   try {
     const validated = ConfigSchema.parse(mergedData);
-    console.info('Configuration validated successfully against schema');
+    if(process.env.NODE_ENV !== 'test') console.info('Configuration validated successfully against schema');
 
     return validated;
   } catch (error) {

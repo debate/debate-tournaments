@@ -21,7 +21,7 @@
 		"format": "prettier --write .",
 		"format-check": "prettier --check .",
 		"models": "NODE_ENV='development' node api/data/auto.js",
-		"updateTestFile": "NODE_ENV=test node scripts/updateTestFile.js"
+		"updateTestFile": "NODE_ENV=test tsx scripts/updateTestFile.js"
 	},
 	"extensionless": {
 		"lookFor": [
