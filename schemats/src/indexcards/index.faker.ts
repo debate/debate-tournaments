@@ -178,7 +178,10 @@ export const getRestTournsResponseMock = (): Tourn[] =>
 		]),
 		tz: faker.string.alpha({ length: { min: 10, max: 31 } }),
 		webname: faker.string.alpha({ length: { min: 10, max: 20 } }),
-		hidden: faker.datatype.boolean(),
+		hidden: faker.number.int({
+			min: -9007199254740991,
+			max: 9007199254740991,
+		}),
 		start: faker.date.past().toISOString().slice(0, 19) + 'Z',
 		end: faker.date.past().toISOString().slice(0, 19) + 'Z',
 		reg_start: faker.date.past().toISOString().slice(0, 19) + 'Z',
@@ -360,11 +363,26 @@ export const getRestParadigmResponseMock = (
 				faker.string.alpha({ length: { min: 10, max: 511 } }),
 				null,
 			]),
-			sitewide: faker.datatype.boolean(),
-			hidden: faker.datatype.boolean(),
-			approval: faker.datatype.boolean(),
-			show_answers: faker.datatype.boolean(),
-			admin_only: faker.datatype.boolean(),
+			sitewide: faker.number.int({
+				min: -9007199254740991,
+				max: 9007199254740991,
+			}),
+			hidden: faker.number.int({
+				min: -9007199254740991,
+				max: 9007199254740991,
+			}),
+			approval: faker.number.int({
+				min: -9007199254740991,
+				max: 9007199254740991,
+			}),
+			show_answers: faker.number.int({
+				min: -9007199254740991,
+				max: 9007199254740991,
+			}),
+			admin_only: faker.number.int({
+				min: -9007199254740991,
+				max: 9007199254740991,
+			}),
 			circuit: faker.helpers.arrayElement([
 				faker.number.int({ min: 0, max: 9007199254740991 }),
 				null,
@@ -392,7 +410,10 @@ export const getRestParadigmResponseMock = (
 						faker.number.int({ min: 0, max: 9007199254740991 }),
 						null,
 					]),
-					pending: faker.datatype.boolean(),
+					pending: faker.number.int({
+						min: -9007199254740991,
+						max: 9007199254740991,
+					}),
 					updatedAt:
 						faker.date.past().toISOString().slice(0, 19) + 'Z',
 				})),
@@ -443,11 +464,26 @@ export const getRestQuizzesResponseMock = (): QuizOutput[] =>
 			faker.string.alpha({ length: { min: 10, max: 511 } }),
 			null,
 		]),
-		sitewide: faker.datatype.boolean(),
-		hidden: faker.datatype.boolean(),
-		approval: faker.datatype.boolean(),
-		show_answers: faker.datatype.boolean(),
-		admin_only: faker.datatype.boolean(),
+		sitewide: faker.number.int({
+			min: -9007199254740991,
+			max: 9007199254740991,
+		}),
+		hidden: faker.number.int({
+			min: -9007199254740991,
+			max: 9007199254740991,
+		}),
+		approval: faker.number.int({
+			min: -9007199254740991,
+			max: 9007199254740991,
+		}),
+		show_answers: faker.number.int({
+			min: -9007199254740991,
+			max: 9007199254740991,
+		}),
+		admin_only: faker.number.int({
+			min: -9007199254740991,
+			max: 9007199254740991,
+		}),
 		circuit: faker.helpers.arrayElement([
 			faker.number.int({ min: 0, max: 9007199254740991 }),
 			null,
@@ -472,7 +508,10 @@ export const getRestQuizzesResponseMock = (): QuizOutput[] =>
 					faker.number.int({ min: 0, max: 9007199254740991 }),
 					null,
 				]),
-				pending: faker.datatype.boolean(),
+				pending: faker.number.int({
+					min: -9007199254740991,
+					max: 9007199254740991,
+				}),
 				updatedAt: faker.date.past().toISOString().slice(0, 19) + 'Z',
 			})),
 			undefined,
@@ -559,7 +598,10 @@ export const getUserTournsResponseMock = (): Tourn[] =>
 		]),
 		tz: faker.string.alpha({ length: { min: 10, max: 31 } }),
 		webname: faker.string.alpha({ length: { min: 10, max: 20 } }),
-		hidden: faker.datatype.boolean(),
+		hidden: faker.number.int({
+			min: -9007199254740991,
+			max: 9007199254740991,
+		}),
 		start: faker.date.past().toISOString().slice(0, 19) + 'Z',
 		end: faker.date.past().toISOString().slice(0, 19) + 'Z',
 		reg_start: faker.date.past().toISOString().slice(0, 19) + 'Z',
@@ -915,7 +957,13 @@ export const getUserSessionResponseMock = (
 			first: faker.string.alpha({ length: { min: 10, max: 20 } }),
 			last: faker.string.alpha({ length: { min: 10, max: 20 } }),
 			site_admin: faker.helpers.arrayElement([
-				faker.datatype.boolean(),
+				faker.helpers.arrayElement([
+					faker.number.int({
+						min: -9007199254740991,
+						max: 9007199254740991,
+					}),
+					null,
+				]),
 				undefined,
 			]),
 		},
@@ -927,7 +975,13 @@ export const getUserSessionResponseMock = (
 		first: faker.string.alpha({ length: { min: 10, max: 20 } }),
 		last: faker.string.alpha({ length: { min: 10, max: 20 } }),
 		site_admin: faker.helpers.arrayElement([
-			faker.datatype.boolean(),
+			faker.helpers.arrayElement([
+				faker.number.int({
+					min: -9007199254740991,
+					max: 9007199254740991,
+				}),
+				null,
+			]),
 			undefined,
 		]),
 	},
@@ -1240,7 +1294,13 @@ export const getUserStudentsLinkRequestsResponseMock = (): StudentSchema[] =>
 					undefined,
 				]),
 				site_admin: faker.helpers.arrayElement([
-					faker.datatype.boolean(),
+					faker.helpers.arrayElement([
+						faker.number.int({
+							min: -9007199254740991,
+							max: 9007199254740991,
+						}),
+						null,
+					]),
 					undefined,
 				]),
 				country: faker.helpers.arrayElement([

@@ -62,7 +62,7 @@ describe('createSchool', () => {
 		expect(fetchedSchool).toBeDefined();
 		expect(fetchedSchool?.name).toBe(schoolData.name);
 		expect(fetchedSchool?.code).toBe(schoolData.code);
-		expect(fetchedSchool?.onsite).toBe(true);
+		expect(fetchedSchool?.onsite).toBe(1);
 		expect(fetchedSchool?.settings?.contact).toEqual('500');
 
 	});
@@ -84,7 +84,7 @@ describe('createSchool', () => {
 		expect(fetchedSchool).toBeDefined();
 		expect(fetchedSchool?.name).toBe(schoolData.name);
 		expect(fetchedSchool?.code).toBe(schoolData.code);
-		expect(fetchedSchool?.onsite).toBe(true);
+		expect(fetchedSchool?.onsite).toBe(1);
 		expect(fetchedSchool?.settings).toEqual(null);
 	});
 });
@@ -122,7 +122,7 @@ describe('updateSchool', () => {
 		const updatedSchool = await schoolRepo.getSchool(db, createdId as number, { settings: true });
 		expect(updatedSchool?.name).toBe(updateData.name);
 		expect(updatedSchool?.code).toBe(updateData.code);
-		expect(updatedSchool?.onsite).toBe(false);
+		expect(updatedSchool?.onsite).toBe(0);
 		expect(updatedSchool?.settings).toEqual({ contact: '600', some_setting: 'new_value' });
 	});
 	it('updates base table without affecting settings', async () => {
@@ -140,7 +140,7 @@ describe('updateSchool', () => {
 		const updatedSchool = await schoolRepo.getSchool(db, createdId as number, { settings: true });
 		expect(updatedSchool?.name).toBe(updateData.name);
 		expect(updatedSchool?.code).toBe(updateData.code);
-		expect(updatedSchool?.onsite).toBe(false);
+		expect(updatedSchool?.onsite).toBe(0);
 		expect(updatedSchool?.settings).toEqual({ contact: '600' }); // settings should remain unchanged
 	});
 	it('can update school settings independently', async () => {

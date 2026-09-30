@@ -8,7 +8,7 @@ export const FileSchema = z.object({
 	type: z.string().nullable(),
 	label: z.string().nullable(),
 	filename: z.string().max(255).nullable(),
-	published: z.boolean(),
+	published: z.int(),
 	page_order: z.number().int().nullable(),
 	uploaded: z.iso.datetime().nullable(),
 	timestamp: z.iso.datetime(),

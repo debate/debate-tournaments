@@ -5,8 +5,6 @@ import { MariadbDialect } from "kysely-mariadb";
 import config from '../config.js'
 import logger from '../helpers/logger.js'
 
-import type { FieldInfo } from 'mariadb'
-
 const dialect = new MariadbDialect({
   mariadb: createPool({
     database: config.db.database,
@@ -17,13 +15,9 @@ const dialect = new MariadbDialect({
 	timezone: 'Z',
     connectionLimit: 5,
 	bigIntAsNumber: true,
-	//Convert all TINYINT(1) to boolean, instead of number
-	typeCast(field: FieldInfo, next: Function) {
-		if (field.type === 'TINY' && field.columnLength === 1) {
-			return field.string() === '1';
-		}
-		return next();
-	},
+	// TINYINT(1) columns come back as numbers. Several of them hold values
+	// other than 0/1 (ballot.side, entry.unconfirmed, panel.publish), so
+	// casting them to booleans loses data.
   })
 })
 

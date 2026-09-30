@@ -10,7 +10,7 @@ export const TournSchema = z.object({
 	country: z.string().max(4).nullable(),
 	tz: z.string().max(31),
 	webname: z.string(),
-	hidden: z.boolean(),
+	hidden: z.int(),
 	start: z.iso.datetime(),
 	end: z.iso.datetime(),
 	reg_start: z.iso.datetime(),

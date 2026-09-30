@@ -10,7 +10,7 @@ export const PersonSchema = z.object({
 	middle: z.string().nullable(),
 	last: z.string(),
 	state: utils.TwoLetterCode.nullish(),
-	site_admin: z.boolean().nullish(),
+	site_admin: z.int().nullish(),
 	country: z.string().nullish(),
 	tz: z.string().nullish(),
 	createdAt: z.iso.datetime(),

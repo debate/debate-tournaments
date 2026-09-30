@@ -32,7 +32,6 @@ export async function getTournIdByWebname(req,res) {
 	}
 
 	const tourn = results?.shift();
-	tourn.hidden = Boolean(tourn.hidden);
 	tourn.settings = {
 		multiYear: false,
 	};
@@ -81,10 +80,7 @@ export async function getNSDACategories(req, res) {
 	`, {
 		type : db.sequelize.QueryTypes.SELECT,
 	});
-	return res.status(200).json(eventCodes.map((category) => ({
-		...category,
-		national: Boolean(category.national),
-	})));
+	return res.status(200).json(eventCodes);
 };
 
 export async function getEventIdByWebname(req,res) {

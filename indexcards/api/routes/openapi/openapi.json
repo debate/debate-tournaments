@@ -3126,7 +3126,9 @@
             ]
           },
           "published": {
-            "type": "boolean"
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
           },
           "page_order": {
             "anyOf": [
@@ -3470,7 +3472,9 @@
             ]
           },
           "pending": {
-            "type": "boolean"
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
           },
           "updatedAt": {
             "type": "string",
@@ -3524,9 +3528,15 @@
             ]
           },
           "site_admin": {
-            "type": [
-              "boolean",
-              "null"
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              {
+                "type": "null"
+              }
             ]
           },
           "country": {
@@ -3727,24 +3737,34 @@
             ]
           },
           "sitewide": {
-            "default": false,
-            "type": "boolean"
+            "default": 0,
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
           },
           "hidden": {
-            "default": false,
-            "type": "boolean"
+            "default": 0,
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
           },
           "approval": {
-            "default": false,
-            "type": "boolean"
+            "default": 0,
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
           },
           "show_answers": {
-            "default": false,
-            "type": "boolean"
+            "default": 0,
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
           },
           "admin_only": {
-            "default": false,
-            "type": "boolean"
+            "default": 0,
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
           },
           "circuit": {
             "anyOf": [
@@ -3883,10 +3903,14 @@
             ]
           },
           "published": {
-            "type": "boolean"
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
           },
           "sitewide": {
-            "type": "boolean"
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
           },
           "special": {
             "anyOf": [
@@ -5382,7 +5406,9 @@
             ]
           },
           "national": {
-            "type": "boolean"
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
           },
           "timestamp": {
             "type": "string",
@@ -6736,9 +6762,15 @@
                     "type": "string"
                   },
                   "site_admin": {
-                    "type": [
-                      "boolean",
-                      "null"
+                    "anyOf": [
+                      {
+                        "type": "integer",
+                        "minimum": -9007199254740991,
+                        "maximum": 9007199254740991
+                      },
+                      {
+                        "type": "null"
+                      }
                     ]
                   }
                 },
@@ -6775,9 +6807,15 @@
                 "type": "string"
               },
               "site_admin": {
-                "type": [
-                  "boolean",
-                  "null"
+                "anyOf": [
+                  {
+                    "type": "integer",
+                    "minimum": -9007199254740991,
+                    "maximum": 9007199254740991
+                  },
+                  {
+                    "type": "null"
+                  }
                 ]
               }
             },
@@ -7115,7 +7153,9 @@
             "description": "The tournament webname, or the tournament id when a newer tournament shares the webname"
           },
           "hidden": {
-            "type": "boolean"
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
           },
           "start": {
             "type": "string",
@@ -7232,7 +7272,9 @@
             "type": "string"
           },
           "hidden": {
-            "type": "boolean"
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
           },
           "start": {
             "type": "string",
@@ -7455,7 +7497,9 @@
             "type": "string"
           },
           "hidden": {
-            "type": "boolean"
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
           },
           "start": {
             "type": "string",
@@ -8230,7 +8274,9 @@
             ]
           },
           "published": {
-            "type": "boolean"
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
           },
           "page_order": {
             "anyOf": [
@@ -8306,7 +8352,9 @@
             ]
           },
           "pending": {
-            "type": "boolean"
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
           },
           "updatedAt": {
             "type": "string",
@@ -8361,9 +8409,15 @@
             ]
           },
           "site_admin": {
-            "type": [
-              "boolean",
-              "null"
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              {
+                "type": "null"
+              }
             ]
           },
           "country": {
@@ -8568,24 +8622,34 @@
             ]
           },
           "sitewide": {
-            "default": false,
-            "type": "boolean"
+            "default": 0,
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
           },
           "hidden": {
-            "default": false,
-            "type": "boolean"
+            "default": 0,
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
           },
           "approval": {
-            "default": false,
-            "type": "boolean"
+            "default": 0,
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
           },
           "show_answers": {
-            "default": false,
-            "type": "boolean"
+            "default": 0,
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
           },
           "admin_only": {
-            "default": false,
-            "type": "boolean"
+            "default": 0,
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
           },
           "circuit": {
             "anyOf": [
@@ -8697,10 +8761,14 @@
             ]
           },
           "published": {
-            "type": "boolean"
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
           },
           "sitewide": {
-            "type": "boolean"
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
           },
           "special": {
             "anyOf": [
@@ -8996,16 +9064,24 @@
             "maximum": 9007199254740991
           },
           "official": {
-            "type": "boolean"
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
           },
           "onsite": {
-            "type": "boolean"
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
           },
           "email": {
-            "type": "boolean"
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
           },
           "book": {
-            "type": "boolean"
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
           },
           "nsda": {
             "type": "integer",
@@ -9090,7 +9166,9 @@
             "type": "string"
           },
           "onsite": {
-            "type": "boolean"
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
           },
           "chapterId": {
             "type": "integer",
@@ -9253,7 +9331,9 @@
             ]
           },
           "pending": {
-            "type": "boolean"
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
           },
           "updatedAt": {
             "type": "string",
@@ -9459,7 +9539,9 @@
             "type": "string"
           },
           "onsite": {
-            "type": "boolean"
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
           },
           "tournId": {
             "type": "integer",
@@ -9819,7 +9901,9 @@
             "type": "string"
           },
           "onsite": {
-            "type": "boolean"
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
           },
           "state": {
             "type": "string"

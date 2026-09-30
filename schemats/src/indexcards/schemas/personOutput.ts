@@ -25,8 +25,7 @@ export interface PersonOutput {
 	middle: string | null;
 	last: string;
 	state?: string | null;
-	/** @nullable */
-	site_admin?: boolean | null;
+	site_admin?: number | null;
 	/** @nullable */
 	country?: string | null;
 	/** @nullable */

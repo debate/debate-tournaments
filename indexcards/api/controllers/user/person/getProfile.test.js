@@ -23,7 +23,7 @@ describe('User Profile Loader', () => {
 			'Correct fake user profile is returned'
 		);
 
-		assert.isTrue(res.body.site_admin, 'Site Admin powers are enabled');
+		assert.equal(res.body.site_admin, 1, 'Site Admin powers are enabled');
 	});
 
 	it('Returns correct JSON for another user profile request', async () => {

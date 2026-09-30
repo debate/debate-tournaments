@@ -16,6 +16,5 @@ export type SessionSu = {
 	email: string;
 	first: string;
 	last: string;
-	/** @nullable */
-	site_admin?: boolean | null;
+	site_admin?: number | null;
 } | null;

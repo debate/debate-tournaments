@@ -6,7 +6,7 @@ export const SchoolSchema = z.object({
 	id: z.number().int(),
 	name: z.string(),
 	code: z.string(),
-	onsite: z.boolean(),
+	onsite: z.int(),
 	tournId: z.number().int(),
 	chapterId: z.number().int(),
 	state: z.string(),
@@ -22,7 +22,7 @@ export const SchoolSchema = z.object({
 export const CreateSchoolSchema = z.object({
 	name: z.string().optional(),
 	code: z.string().optional(),
-	onsite: z.boolean().optional(),
+	onsite: z.int().optional(),
 	chapterId: z.number().int(),
 	state: z.string().optional(),
 	regionId: z.number().int().optional(),
@@ -32,7 +32,7 @@ export const CreateSchoolSchema = z.object({
 export const UpdateSchoolSchema = z.object({
 	name: z.string(),
 	code: z.string(),
-	onsite: z.boolean(),
+	onsite: z.int(),
 	state: z.string(),
 	regionId: z.number().int(),
 	settings: z.record(z.string(), z.string()),

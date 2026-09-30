@@ -112,7 +112,7 @@ describe('paradigmsController', () => {
 					id: 1,
 					person: 1,
 					quiz: 1,
-					pending: false,
+					pending: 0,
 					approved_by: null,
 					updated_at: '2026-01-01T00:00:00.000Z',
 					quizId: 1,

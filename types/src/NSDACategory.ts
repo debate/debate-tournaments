@@ -6,7 +6,7 @@ export const NSDACategorySchema = z.object({
 	name: z.string().max(63).nullable(),
 	type: z.enum(['c', 'd', 's']).nullable().meta({ description: 'Congress, debate or speech' }),
 	code: z.number().int().nullable(),
-	national: z.boolean(),
+	national: z.int(),
 	timestamp: z.iso.datetime(),
 }).strict().meta({
 	id: 'NSDACategory',
