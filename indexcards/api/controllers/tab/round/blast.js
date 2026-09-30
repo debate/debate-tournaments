@@ -2,7 +2,9 @@ import moment from 'moment-timezone';
 import { getFollowers, getPairingFollowers } from '../../../helpers/followers.js';
 import { notify } from '../../../helpers/blast.js';
 import { sendPairingBlast, formatPairingBlast } from '../../../helpers/pairing.js';
+import { sql } from 'kysely';
 import db from '../../../data/db.js';
+import { db as kdb } from '../../../data/database.js';
 
 export async function blastRoundMessage(req, res) {
 	if (!req.body.message) {
@@ -48,7 +50,7 @@ export async function blastRoundMessage(req, res) {
 
 export async function scheduleAutoFlip(roundId, req) {
 
-	const roundData = await db.sequelize.query(`
+	const { rows: roundData } = await sql`
 		select round.id, round.flighted, round.type, round.published,
 			round.flighted flights,
 			round.start_time roundstart, timeslot.start,
@@ -87,7 +89,7 @@ export async function scheduleAutoFlip(roundId, req) {
 			on no_side_constraints.event = event.id
 			and no_side_constraints.tag = 'no_side_constraints'
 
-		where round.id = :roundId
+		where round.id = ${roundId}
 
 			and round.event = event.id
 			and round.timeslot = timeslot.id
@@ -111,10 +113,7 @@ export async function scheduleAutoFlip(roundId, req) {
 				where fa.round = round.id
 					and fa.tag like 'flip_%'
 			)
-		`, {
-		replacements : { roundId },
-		type         : db.sequelize.QueryTypes.SELECT,
-	});
+		`.execute(kdb);
 
 	if (roundData) {
 
@@ -205,8 +204,8 @@ export async function blastRoundPairing(req, res) {
 
 	const queryData = {};
 	queryData.replacements = { roundId };
-	queryData.where = 'where section.round = :roundId';
-	queryData.fields = '';
+	queryData.where = sql`where section.round = ${roundId}`;
+	queryData.fields = sql``;
 
 	let promises = [];
 
@@ -263,15 +262,12 @@ export async function blastRoundPairing(req, res) {
 		blastData.append = req.body.append;
 	}
 
-	const tourns = await db.sequelize.query(`
+	const { rows: tourns } = await sql`
     select
       tourn.id, tourn.name, tourn.webname
     from tourn
-      where tourn.id = :tournId
-  `, {
-		replacements: { tournId: req.params.tournId },
-		type: db.sequelize.QueryTypes.SELECT,
-	});
+      where tourn.id = ${req.params.tournId}
+  `.execute(kdb);
 
 	const tourn = tourns.shift();
 	const seconds = Math.floor(Date.now() / 1000);
@@ -320,7 +316,7 @@ export async function blastRoundPairing(req, res) {
 }
 
 export async function roundBlastStatus(req, res) {
-	const publish = await db.sequelize.query(`
+	const { rows: publish } = await sql`
     select
       aq.id,
       aq.tag, aq.message,
@@ -330,13 +326,10 @@ export async function roundBlastStatus(req, res) {
     from (autoqueue aq, round)
       left join person on person.id = aq.created_by
     where 1=1
-      and round.id  = :roundId
+      and round.id  = ${req.params.roundId}
       and round.id = aq.round
       and aq.tag IN ('blast', 'publish', 'blast_publish')
-  `, {
-		replacements: { roundId: req.params.roundId },
-		type: db.sequelize.QueryTypes.SELECT,
-	});
+  `.execute(kdb);
 
 	return res.status(200).json([...publish]); // always deliver an array, even when blank
 }

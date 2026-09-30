@@ -1,6 +1,7 @@
 import logger from '../../../helpers/logger.js';
 import { BadRequest, Forbidden, NotFound, NotImplemented } from '../../../helpers/problem.js';
 import db from '../../../data/db.js';
+import { db as kdb } from '../../../data/database.js';
 
 // Functions that manage overall tournament access.
 
@@ -257,16 +258,12 @@ export async function updateAccess(req, res) {
 	res.status(200).json(description);
 }
 export async function deleteAccess(req, res) {
-	const targetPerms = await db.sequelize.query(`
-		select
-			perm.id, perm.tag, perm.event, perm.category
-		from permission perm
-			where perm.person = :personId
-			and perm.tourn = :tournId
-	`, {
-		replacements: { ...req.params },
-		type: db.sequelize.QueryTypes.SELECT,
-	});
+	const targetPerms = await kdb
+		.selectFrom('permission as perm')
+		.select(['perm.id', 'perm.tag', 'perm.event', 'perm.category'])
+		.where('perm.person', '=', req.params.personId)
+		.where('perm.tourn', '=', req.params.tournId)
+		.execute();
 
 	const deletePerms = [];
 

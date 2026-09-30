@@ -1,6 +1,8 @@
 import { notify } from '../../../helpers/blast.js';
 import { BadRequest, UnexpectedError } from '../../../helpers/problem.js';
+import { sql } from 'kysely';
 import db from '../../../data/db.js';
+import { db as kdb } from '../../../data/database.js';
 
 export async function blastJudges(req, res) {
 	if (!req.body.message) {
@@ -9,16 +11,16 @@ export async function blastJudges(req, res) {
 
 	const jpool = await db.summon(db.jpool, req.params.jpoolId);
 
-	let query = '';
+	let query = sql``;
 
 	if (req.body.free) {
-		query = `
+		query = sql`
 			select distinct person.id
 				from (person, judge, jpool_judge jpj, jpool_round jpr, round)
-			where round.timeslot = :timeslotId
+			where round.timeslot = ${jpool.settings.standby_timeslot}
 				and round.id = jpr.round
 				and jpr.jpool = jpj.jpool
-				and round.site = :siteId
+				and round.site = ${jpool.site}
 				and jpj.judge = judge.id
 				and judge.person = person.id
 
@@ -34,16 +36,16 @@ export async function blastJudges(req, res) {
 			and not exists (
 				select jpj.id
 				from jpool_judge jpj
-				where jpj.jpool = :jpoolId
+				where jpj.jpool = ${req.params.jpoolId}
 				and jpj.judge = judge.id
 			)
 		`;
 
 	} else {
-		query = `
+		query = sql`
 			select distinct person.id
 				from (person, judge, jpool_judge jpj)
-			where jpj.jpool = :jpoolId
+			where jpj.jpool = ${req.params.jpoolId}
 				and jpj.judge = judge.id
 				and judge.person = person.id
 				and not exists (
@@ -54,21 +56,12 @@ export async function blastJudges(req, res) {
 						and panel.round = round.id
 						and round.timeslot = jps.value
 						and jps.tag = 'standby_timeslot'
-						and jps.jpool = :jpoolId
+						and jps.jpool = ${req.params.jpoolId}
 				)
 		`;
 	}
 
-	const jpoolJudgeIds = await db.sequelize.query(
-		query, {
-			replacements: {
-				jpoolId    : req.params.jpoolId,
-				timeslotId : jpool.settings.standby_timeslot,
-				siteId     : jpool.site,
-			},
-			type: db.sequelize.QueryTypes.SELECT,
-		}
-	);
+	const { rows: jpoolJudgeIds } = await query.execute(kdb);
 
 	const jpoolJudgeArray = [];
 
@@ -91,15 +84,12 @@ export async function blastJudges(req, res) {
 		fromAddress,
 	});
 
-	const rawRounds = await db.sequelize.query(`
+	const { rows: rawRounds } = await sql`
 		select distinct round.id
 			from round, jpool_round jpr
-		where jpr.jpool = :jpoolId
+		where jpr.jpool = ${req.params.jpoolId}
 			and jpr.round = round.id
-	`, {
-		replacements: { jpoolId: req.params.jpoolId },
-		type: db.sequelize.QueryTypes.SELECT,
-	});
+	`.execute(kdb);
 
 	const promises = [];
 

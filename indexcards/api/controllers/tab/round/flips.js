@@ -1,5 +1,7 @@
 // Functions to handle the online coinflip
+import { sql } from 'kysely';
 import { db } from '../../../helpers/litedb.js';
+import { db as kdb } from '../../../data/database.js';
 import logger from '../../../helpers/logger.js';
 
 export async function scheduleRoundFlips(req,res) {
@@ -12,7 +14,7 @@ export const scheduleFlips = async (roundId) => {
 	let flips = [];
 
 	try {
-		flips = await db.sequelize.query(`
+		flips = (await sql`
 			select round.id, round.flighted, round.type, round.published,
 				round.start_time startTime, timeslot.start,
 				CONVERT_TZ(flip_already.active_at, '+00:00', tourn.tz) activeAt,
@@ -60,14 +62,11 @@ export const scheduleFlips = async (roundId) => {
 					on flip_already.round = round.id
 					and flip_already.tag like 'flip%'
 
-			where round.id = :roundId
+			where round.id = ${roundId}
 				and round.event = event.id
 				and round.timeslot = timeslot.id
 				and event.tourn = tourn.id
-		`, {
-			replacements: { roundId },
-			type: db.Sequelize.QueryTypes.SELECT,
-		});
+		`.execute(kdb)).rows;
 
 	} catch (err) {
 		logger.error(`Flip schedule failed for round ${roundId} with error`,err);

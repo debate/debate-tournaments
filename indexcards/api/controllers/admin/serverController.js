@@ -1,4 +1,6 @@
 import axios from 'axios';
+import { sql } from 'kysely';
+import { db as kdb } from '../../data/database.js';
 import notify from '../../helpers/blast.js';
 import config from '../../config.js';
 import logger from '../../helpers/logger.js';
@@ -67,16 +69,14 @@ export async function getTabroomInstance(req, res) {
 // Simple counter of how many servers are currently running to display in the
 // header of cloud service administrators.
 export async function getTabroomInstanceCounts(req, res) {
-	const tabwebCount = await req.db.sequelize.query(`
+	const { rows: tabwebCount } = await sql`
 		select
 			count(distinct id) as count
 		from server
 			where 1=1
 			and hostname like 'tabweb%'
 			and status = 'running'
-	`, {
-		type: req.db.Sequelize.QueryTypes.SELECT,
-	});
+	`.execute(kdb);
 
 	if (tabwebCount && tabwebCount.length > 0) {
 		return res.status(200).json({ ...tabwebCount[0] });
@@ -165,15 +165,12 @@ export async function rebootInstance(req, res) {
 
 const notifyCloudAdmins = async (req, log, subject) => {
 
-	const cloudAdmins = await req.db.sequelize.query(`
+	const { rows: cloudAdmins } = await sql`
 		select distinct person.id
 			from person, person_setting ps
 		where person.id = ps.person
-			and ps.tag = :tag
-	`, {
-		replacements: { tag: 'system_administrator' },
-		type: req.db.sequelize.QueryTypes.SELECT,
-	});
+			and ps.tag = ${'system_administrator'}
+	`.execute(kdb);
 
 	let sender = '';
 

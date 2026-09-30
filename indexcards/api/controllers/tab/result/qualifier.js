@@ -1,4 +1,6 @@
+import { sql } from 'kysely';
 import db from '../../../data/db.js';
+import { db as kdb } from '../../../data/database.js';
 export async function circuitQualifiers(req, res) {
 	let events = [];
 
@@ -249,16 +251,13 @@ export const saveEventResult = async (eventId) => {
 			entriesByLastRound[entryRound.roundname].push(entryRound.entry);
 		}
 
-		const allElims = await db.sequelize.query(`
+		const { rows: allElims } = await sql`
 			select round.name, round.label
 				from round
-			where round.event = :eventId
+			where round.event = ${eventId}
 				and round.type IN ('elim', 'final')
 			ORDER BY round.name DESC
-		`, {
-			replacements: { eventId },
-			type: db.sequelize.QueryTypes.SELECT,
-		});
+		`.execute(kdb);
 
 		const entryPoints = {};
 		const entryPlace = {};

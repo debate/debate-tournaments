@@ -1,4 +1,5 @@
-import db from '../../data/db.js';
+import { sql } from 'kysely';
+import { db } from '../../data/database.js';
 import { NotImplemented, NotFound } from '../../helpers/problem.js';
 import { entryWins } from '../../services/results/entryWins.js';
 
@@ -20,7 +21,7 @@ export async function getEntryWinsByEvent(req, res) {
 
 export async function getField(req,res) {
 
-	const events = await db.sequelize.query(`
+	const { rows: events } = await sql`
 		select
 			event.*,
             field_waitlist.value fieldWaitlist,
@@ -35,16 +36,10 @@ export async function getField(req,res) {
                 on field_waitlist.event = event.id
                 and field_waitlist.tag = 'field_waitlist'
 		where 1=1
-            and event.tourn = :tournId
-            and event.abbr  = :eventAbbr
+            and event.tourn = ${req.params.tournId}
+            and event.abbr  = ${req.params.eventAbbr}
 		limit 1
-	`, {
-		replacements: {
-			tournId   : req.params.tournId,
-			eventAbbr : req.params.eventAbbr,
-		},
-		type: req.db.Sequelize.QueryTypes.SELECT,
-	});
+	`.execute(db);
 
 	if (!events || events.length < 1) {
 		return NotFound(req, res, `No valid event abbreviation sent`);
@@ -68,7 +63,7 @@ export async function getField(req,res) {
 		Entries    : [],
 	};
 
-	const entries = await db.sequelize.query(`
+	const { rows: entries } = await sql`
         SELECT
             entry.id, entry.code, entry.name,
             entry.active, entry.waitlist,
@@ -85,7 +80,7 @@ export async function getField(req,res) {
             left join entry_student es on es.entry = entry.id
             left join student on student.id = es.student
         where 1=1
-            and event.id = :eventId
+            and event.id = ${event.id}
 			and event.id = entry.event
             and exists (
                 select fr.id
@@ -97,12 +92,7 @@ export async function getField(req,res) {
             and (entry.active = 1 OR entry.waitlist = 1)
         group by entry.id
         order by entry.code, entry.name
-    `, {
-		replacements: {
-			eventId   : event.id,
-		},
-		type: req.db.Sequelize.QueryTypes.SELECT,
-	});
+    `.execute(db);
 
 	const entryById = {};
 
@@ -148,20 +138,12 @@ export async function getEventByAbbr(req, res) {
 		return NotFound(req, res, `No valid event abbreviation sent`);
 	}
 
-	const eventData = await db.sequelize.query(`
-		select
-			event.id,
-			event.name,
-			event.type,
-			event.code_style
-		from event
-		where 1=1
-			and event.tourn = :tournId
-			and event.abbr = :eventAbbr
-	`, {
-		replacements : { ...req.params },
-		type         : db.Sequelize.QueryTypes.SELECT,
-	});
+	const eventData = await db
+		.selectFrom('event')
+		.select(['event.id', 'event.name', 'event.type', 'event.code_style'])
+		.where('event.tourn', '=', req.params.tournId)
+		.where('event.abbr', '=', req.params.eventAbbr)
+		.execute();
 
 	if (!eventData || eventData.length !== 1) {
 		return NotFound(
@@ -174,25 +156,13 @@ export async function getEventByAbbr(req, res) {
 	// Latch to the one event
 	const event = eventData[0];
 
-	event.rounds = await db.sequelize.query(`
-		select
-			round.id,
-			round.name,
-			round.label,
-			round.type,
-			round.published
-		from round
-		where 1=1
-			and round.event = :eventId
-			and round.published != 0
-			order by round.name
-	`, {
-		replacements : {
-			eventId  : event.id,
-			...req.params,
-		},
-		type : db.Sequelize.QueryTypes.SELECT,
-	});
+	event.rounds = await db
+		.selectFrom('round')
+		.select(['round.id', 'round.name', 'round.label', 'round.type', 'round.published'])
+		.where('round.event', '=', event.id)
+		.where('round.published', '!=', 0)
+		.orderBy('round.name')
+		.execute();
 
 	return res.status(200).json(event);
 };

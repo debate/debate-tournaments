@@ -1,4 +1,7 @@
 import { NotFound } from '../../helpers/problem.js';
+import { sql } from 'kysely';
+import { db as kdb } from '../../data/database.js';
+
 
 // General CRUD for contact coaches
 export async function updateContact(req, res) {
@@ -89,13 +92,13 @@ export const checkContacts = {
 
 export const checkContactStatus = async (req) => {
 
-	let limit = '';
+	let limit = sql``;
 
 	if (req.body.email_contacts) {
-		limit = 'and contact.email = 1';
+		limit = sql`and contact.email = 1`;
 	}
 
-	const contacts = await req.db.sequelize.query(`
+	const { rows: contacts } = await sql`
 		select
 			contact.id contact_id,
 			contact.created_by,
@@ -115,14 +118,11 @@ export const checkContactStatus = async (req) => {
 
 		where person.id = contact.person
 			and contact.school = school.id
-			and school.id = :schoolId
+			and school.id = ${req.body.school || req.params.schoolId}
 			${limit}
 
 		order by contact.official DESC, person.last, person.first, person.nsda
-	`, {
-		replacements: { schoolId: req.body.school || req.params.schoolId },
-		type: req.db.Sequelize.QueryTypes.SELECT,
-	});
+	`.execute(kdb);
 
 	if (req.body.return) {
 		return contacts;

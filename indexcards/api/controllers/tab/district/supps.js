@@ -1,4 +1,6 @@
+import { sql } from 'kysely';
 import db from '../../../data/db.js';
+import { db as kdb } from '../../../data/database.js';
 // Functions governing supplements, especially the Great Divide
 // introduce in 2024 Des Moines nats
 
@@ -6,13 +8,7 @@ import db from '../../../data/db.js';
 export async function divideSchools(req, res) {
 	const numTeams = req.params.numTeams || 2;
 
-	const allDistricts = await db.sequelize.query(
-		`select district.id, district.name, district.code, count(entry.id) as suppCount from district, school, entry, event_setting supp where school.tourn = :tournId and school.district = district.id and school.id = entry.school and entry.event = supp.event and supp.tag = 'supp' group by district.id order by suppCount DESC`,
-		{
-			replacements: { tournId: req.params.tournId },
-			type: db.sequelize.QueryTypes.SELECT,
-		}
-	);
+	const { rows: allDistricts } = await sql`select district.id, district.name, district.code, count(entry.id) as suppCount from district, school, entry, event_setting supp where school.tourn = ${req.params.tournId} and school.district = district.id and school.id = entry.school and entry.event = supp.event and supp.tag = 'supp' group by district.id order by suppCount DESC`.execute(kdb);
 
 	let teamCounter = numTeams;
 

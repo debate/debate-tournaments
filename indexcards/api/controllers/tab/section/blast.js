@@ -1,3 +1,4 @@
+import { sql } from 'kysely';
 import { getFollowers, getPairingFollowers } from '../../../helpers/followers.js';
 import logger from '../../../helpers/logger.js';
 import { notify } from '../../../helpers/blast.js';
@@ -56,8 +57,8 @@ export async function blastSectionMessage(req, res) {
 export async function blastSectionPairing(req, res) {
 	const queryData = {};
 	queryData.replacements = { sectionId : req.params.sectionId };
-	queryData.where = 'where section.id = :sectionId';
-	queryData.fields = '';
+	queryData.where = sql`where section.id = ${req.params.sectionId}`;
+	queryData.fields = sql``;
 
 	const blastData = await formatPairingBlast(queryData, req);
 	const tourn = await db.summon(db.tourn, req.params.tournId);

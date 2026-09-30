@@ -1,5 +1,7 @@
+import { sql } from 'kysely';
 import { addZero } from '../../../helpers/text.js';
 import db from '../../../data/db.js';
+import { db as kdb } from '../../../data/database.js';
 
 export async function getRound(req,res) {
 	const round = await db.summon(db.round, req.params.roundId);
@@ -26,7 +28,7 @@ export async function deleteRound(req,res) {
 
 export async function sideCounts(req, res) {
 
-	const sideResults = await db.sequelize.query(`
+	const sideResults = (await sql`
 		select
 			ballot.judge, ballot.side,
 			aff_label.value aff,
@@ -42,7 +44,7 @@ export async function sideCounts(req, res) {
 				on neg_label.event = round.event
 				and neg_label.tag = 'neg_label'
 
-		where round.id = :roundId
+		where round.id = ${req.params.roundId}
 			and round.id = panel.round
 			and panel.id = ballot.panel
 			and ballot.bye != 1
@@ -57,10 +59,7 @@ export async function sideCounts(req, res) {
 			)
 		group by ballot.judge
 		order by ballot.side
-	`, {
-		replacements : { roundId: req.params.roundId },
-		type         : db.sequelize.QueryTypes.SELECT,
-	});
+	`.execute(kdb)).rows;
 
 	const sideCounter = {};
 
@@ -87,7 +86,7 @@ export async function sideCounts(req, res) {
 };
 
 export async function roundDecisionStatus(req, res) {
-	const labels = await db.sequelize.query(`
+	const labels = (await sql`
 		select
 			SUBSTRING(aff_label.value, 1, 1) aff,
 			SUBSTRING(neg_label.value, 1, 1) neg,
@@ -102,13 +101,10 @@ export async function roundDecisionStatus(req, res) {
 				on neg_label.event = event.id
 				and neg_label.tag = 'neg_label'
 
-		where round.id = :roundId
+		where round.id = ${req.params.roundId}
 			and round.event = event.id
 			and event.id = neg_label.event
-	`, {
-		replacements: { roundId: req.params.roundId },
-		type         : db.sequelize.QueryTypes.SELECT,
-	});
+	`.execute(kdb)).rows;
 
 	const tmplabel = labels.shift();
 
@@ -119,7 +115,7 @@ export async function roundDecisionStatus(req, res) {
 
 	const eventType = tmplabel.eventType || 'debate';
 
-	const rawBallots = await db.sequelize.query(`
+	const rawBallots = (await sql`
 		select
 			ballot.id ballot,
 			panel.id panel,
@@ -145,16 +141,13 @@ export async function roundDecisionStatus(req, res) {
 			left join score winloss on winloss.ballot = ballot.id and winloss.tag = 'winloss'
 			left join score rubric on rubric.ballot   = ballot.id and rubric.tag  = 'rubric'
 
-		where round.id = :roundId
+		where round.id = ${req.params.roundId}
 			and panel.round = round.id
 			and panel.id = ballot.panel
 			and round.event = event.id
 			and event.tourn = tourn.id
 		order by ballot.side
-	`, {
-		replacements: { roundId: req.params.roundId },
-		type         : db.sequelize.QueryTypes.SELECT,
-	});
+	`.execute(kdb)).rows;
 
 	const round = {
 		judges    : {},

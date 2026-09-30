@@ -1,5 +1,7 @@
 import { NotFound, UnexpectedError } from '../../../helpers/problem.js';
+import { sql } from 'kysely';
 import db from '../../../data/db.js';
+import { db as kdb } from '../../../data/database.js';
 
 export async function getRPool(req, res) {
 	const rpool = await db.summon(db.rpool, req.params.rpoolId);
@@ -79,14 +81,11 @@ export async function deleteRPoolRoom(req, res) {
 }
 
 export async function getRPoolRooms(req, res) {
-	const rooms = await db.sequelize.query(`
+	const { rows: rooms } = await sql`
 		select room.* from room, rpool_room rpj
 			where room.id = rpj.room
-			and rpj.rpool = :rpoolId
-	`, {
-		replacements: { rpoolId: req.params.rpoolId },
-		type: db.sequelize.QueryTypes.SELECT,
-	});
+			and rpj.rpool = ${req.params.rpoolId}
+	`.execute(kdb);
 
 	return res.status(200).json(rooms);
 };
@@ -176,14 +175,11 @@ export async function deleteRPoolRound(req, res) {
 // Update a bunch of rounds
 
 export async function getRPoolRounds(req, res) {
-	const rounds = await db.sequelize.query(`
+	const { rows: rounds } = await sql`
 		select round.* from round, rpool_round rpr
 		where round.id = rpr.round
-			and rpr.rpool = :rpoolId
-	`, {
-		replacements : { rpoolId : req.params.rpoolId },
-		type         : db.sequelize.QueryTypes.SELECT,
-	});
+			and rpr.rpool = ${req.params.rpoolId}
+	`.execute(kdb);
 
 	return res.status(200).json(rounds);
 };
@@ -194,15 +190,12 @@ export async function createRPoolRounds(req, res) {
 
 	if (req.body.property_value) {
 
-		const rounds = await db.sequelize.query(`
+		const { rows: rounds } = await sql`
 			select round.id, round.label, round.name, event.abbr
 			from round, event
-			where round.id = :roundId
+			where round.id = ${req.body.property_value}
 			and round.event = event.id
-		`, {
-			replacements: { roundId: req.body.property_value },
-			type: db.Sequelize.QueryTypes.SELECT,
-		});
+		`.execute(kdb);
 
 		if (!rounds || rounds.length < 1) {
 			return NotFound(req, res,`No round found with ID ${req.body.property_value}`);

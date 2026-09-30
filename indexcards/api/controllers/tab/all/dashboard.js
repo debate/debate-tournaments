@@ -2,7 +2,9 @@ import { showDateTime } from '@speechanddebate/nsda-js-utils';
 import { flightTimes } from '../../../helpers/round.js';
 import logger from '../../../helpers/logger.js';
 import { BadRequest, Unauthorized } from '../../../helpers/problem.js';
+import { sql } from 'kysely';
 import db from '../../../data/db.js';
+import { db as kdb } from '../../../data/database.js';
 
 //  Perms work done, needs testing
 
@@ -613,7 +615,7 @@ export async function getTournDashboard(req, res) {
 		tournId,
 	};
 
-	let queryLimit = '';
+	let queryLimit = sql``;
 
 	// Limit those with only some access to those events they have access to.
 	if (!req.actor.can('tourn', 'check', tournId)) {
@@ -622,10 +624,10 @@ export async function getTournDashboard(req, res) {
 		const categoryIds = req.actor.allowedIds('category', 'check').ids;
 
 		if (eventIds.length > 0 && categoryIds.length > 0) {
-			queryLimit = ` and (
-					round.event IN (:eventIds)
+			queryLimit = sql` and (
+					round.event IN (${sql.join(eventIds)})
 					OR round.event IN (
-						select event.id from event where event.category IN (:categoryIds)
+						select event.id from event where event.category IN (${sql.join(categoryIds)})
 					)
 				)`;
 			replacements.eventIds = eventIds;
@@ -633,18 +635,18 @@ export async function getTournDashboard(req, res) {
 
 		} else if (eventIds.length > 0) {
 
-			queryLimit = ` and round.event IN (:eventIds)`;
+			queryLimit = sql` and round.event IN (${sql.join(eventIds)})`;
 			replacements.eventIds = eventIds;
 
 		} else if (categoryIds.length > 0) {
-			queryLimit = ` and round.event IN (
-					select event.id from event where event.category IN (:categoryIds)
+			queryLimit = sql` and round.event IN (
+					select event.id from event where event.category IN (${sql.join(categoryIds)})
 				)`;
 			replacements.categoryIds = categoryIds;
 		}
 	}
 
-	const statusResults = await db.sequelize.query(`
+	const { rows: statusResults } = await sql`
 			select
 				event.id event_id, event.name event_name, event.abbr event_abbr,
 				round.id roundId, round.name round_name, round.type round_type,
@@ -665,7 +667,7 @@ export async function getTournDashboard(req, res) {
 
 				${queryLimit}
 
-				and event.tourn     = :tournId
+				and event.tourn     = ${replacements.tournId}
 				and round.id        = panel.round
 				and panel.id        = ballot.panel
 				and round.event     = event.id
@@ -691,10 +693,7 @@ export async function getTournDashboard(req, res) {
 					and b2.judge   > 0
 				)
 			order by event.abbr, round.name, ballot.judge, ballot.audit
-		`, {
-		replacements,
-		type: db.sequelize.QueryTypes.SELECT,
-	});
+		`.execute(kdb);
 
 	const status = { done: {}, keys : [] };
 

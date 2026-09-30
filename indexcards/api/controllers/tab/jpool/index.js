@@ -1,7 +1,9 @@
 // import { showDateTime } from '../../../helpers/common';
 
 import { UnexpectedError } from '../../../helpers/problem.js';
+import { sql } from 'kysely';
 import db from '../../../data/db.js';
+import { db as kdb } from '../../../data/database.js';
 
 // General CRUD for the jpool itself
 // Get jpool (read)
@@ -81,13 +83,7 @@ export async function deleteJPoolJudge(req, res) {
 // Update a bunch of judges
 // Get judges in jpool (read)
 export async function getJPoolJudges(req, res) {
-	const judges = await db.sequelize.query(
-		`select judge.* from judge, jpool_judge jpj where judge.id = jpj.judge and jpj.jpool = :jpoolId`,
-		{
-			replacements: { jpoolId: req.params.jpoolId },
-			type: db.sequelize.QueryTypes.SELECT,
-		}
-	);
+	const { rows: judges } = await sql`select judge.* from judge, jpool_judge jpj where judge.id = jpj.judge and jpj.jpool = ${req.params.jpoolId}`.execute(kdb);
 	res.status(200).json(judges);
 }
 
@@ -171,13 +167,7 @@ export async function deleteJPoolRound(req, res) {
 
 // Get rounds in jpool (read)
 export async function getJPoolRounds(req, res) {
-	const rounds = await db.sequelize.query(
-		`select round.* from round, jpool_round jpr where round.id = jpr.round and jpr.jpool = :jpoolId`,
-		{
-			replacements: { jpoolId: req.params.jpoolId },
-			type: db.sequelize.QueryTypes.SELECT,
-		}
-	);
+	const { rows: rounds } = await sql`select round.* from round, jpool_round jpr where round.id = jpr.round and jpr.jpool = ${req.params.jpoolId}`.execute(kdb);
 	res.status(200).json(rounds);
 }
 

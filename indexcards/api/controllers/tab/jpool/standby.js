@@ -1,7 +1,9 @@
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc.js';
 import timezone from 'dayjs/plugin/timezone.js';
+import { sql } from 'kysely';
 import db from '../../../data/db.js';
+import { db as kdb } from '../../../data/database.js';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -18,20 +20,17 @@ export async function placeJudgesStandby(req, res) {
 		let dayStart = '';
 		let dayEnd = '';
 
-		const times = await db.sequelize.query(`
+		const { rows: times } = await sql`
 			select
 				timeslot.start, timeslot.end, tourn.tz
 			from timeslot, round, jpool_round jpr, tourn
 			where 1=1
-				and jpr.jpool      = :jpoolId
+				and jpr.jpool      = ${req.body.parentId}
 				and jpr.round      = round.id
 				and round.timeslot = timeslot.id
 				and timeslot.tourn = tourn.id
 			order by timeslot.start
-		`, {
-			replacements: { jpoolId: req.body.parentId },
-			type: db.sequelize.QueryTypes.SELECT,
-		});
+		`.execute(kdb);
 
 		if (times && times.length > 0) {
 
@@ -47,7 +46,7 @@ export async function placeJudgesStandby(req, res) {
 				.utc()
 				.format('YYYY-MM-DD HH:mm:ss');
 
-			const standbyJudgeQuery = `
+			const standbyJudgeQuery = sql`
 				select
 					judge.id, judge.last, judge.school, region.id region,
 						count(distinct panel.id) ballots,
@@ -63,8 +62,8 @@ export async function placeJudgesStandby(req, res) {
 							where jps.jpool = standby.jpool
 								and jps.tag = 'standby_timeslot'
 								and jps.value = timeslot.id
-								and timeslot.start > :dayStart
-								and timeslot.start < :dayEnd
+								and timeslot.start > ${dayStart}
+								and timeslot.start < ${dayEnd}
 						)
 
 					left join ballot on ballot.judge = judge.id
@@ -75,21 +74,18 @@ export async function placeJudgesStandby(req, res) {
 					left join entry on entry.school = school.id
 						and entry.active = 1
 
-				where jpj.jpool = :parentId
+				where jpj.jpool = ${req.body.parentId}
 					and jpj.judge = judge.id
 				group by judge.id
 				order by standbys desc, ballots desc
 			`;
 
-			rawJudges = await db.sequelize.query(standbyJudgeQuery, {
-				replacements: { parentId: req.body.parentId, dayStart, dayEnd },
-				type: db.sequelize.QueryTypes.SELECT,
-			});
+			rawJudges = (await standbyJudgeQuery.execute(kdb)).rows;
 		}
 
 	} else if (req.body.categoryId) {
 
-		const standbyJudgeQuery = `
+		const standbyJudgeQuery = sql`
 			select
 				judge.id, judge.school, region.id region,
 					count(distinct panel.id) ballots,
@@ -113,15 +109,12 @@ export async function placeJudgesStandby(req, res) {
 				left join region on school.region = region.id
 				left join entry on entry.school = school.id and entry.active = 1
 
-			where judge.category = :categoryId
+			where judge.category = ${req.body.categoryId}
 			group by judge.id
 			order by standbys desc, ballots desc
 		`;
 
-		rawJudges = await db.sequelize.query(standbyJudgeQuery, {
-			replacements: { categoryId: req.body.categoryId },
-			type: db.sequelize.QueryTypes.SELECT,
-		});
+		rawJudges = (await standbyJudgeQuery.execute(kdb)).rows;
 	}
 
 	const chosen = {};

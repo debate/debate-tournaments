@@ -1,4 +1,6 @@
+import { sql } from 'kysely';
 import db from '../data/db.js';
+import { db as kdb } from '../data/database.js';
 import logger from './logger.js';
 /**
  * Dead code
@@ -96,23 +98,17 @@ export const tabAuth = async (req) => {
 		if (subType === 'section') {
 			subType = 'panel';
 		}
-		const outputs = await db.sequelize.query(`
+		const { rows: outputs } = await sql`
 			select
-				${subType}.*,
+				${sql.table(subType)}.*,
 				event.category category,
 				event.tourn tourn
-			from ${subType}, round, event
-			where ${subType}.id = :typeId
-				and ${subType}.round = round.id
+			from ${sql.table(subType)}, round, event
+			where ${sql.ref(`${subType}.id`)} = ${typeId}
+				and ${sql.ref(`${subType}.round`)} = round.id
 				and round.event = event.id
-				and event.tourn = :tournId
-		`, {
-			replacements: {
-				typeId,
-				tournId,
-			},
-			type: db.sequelize.QueryTypes.SELECT,
-		});
+				and event.tourn = ${tournId}
+		`.execute(kdb);
 
 		if (!outputs || !outputs.length > 0) {
 			delete req.session.tourn;
@@ -141,7 +137,7 @@ export const tabAuth = async (req) => {
 
 	if (subType === 'timeslot') {
 
-		let queryLimiter = '';
+		let queryLimiter = sql``;
 
 		const replacements = {
 			eventIds   : [],
@@ -162,32 +158,29 @@ export const tabAuth = async (req) => {
 					return 'You do not have access to that timeslot through your event level permissions';
 				}
 
-				queryLimiter = `
+				queryLimiter = sql`
 					and exists (
 						select round.id
 							from round
 						where round.timeslot = timeslot.id
-							and round.event IN (:eventIds)
+							and round.event IN (${sql.join(replacements.eventIds)})
 					)
 				`;
 			}
 		}
 
-		const outputs = await db.sequelize.query(`
+		const { rows: outputs } = await sql`
 			select
-				${subType}.*,
+				${sql.table(subType)}.*,
 				GROUP_CONCAT(event.id) as events
-			from ${subType}, round, event
-			where ${subType}.id = :timeslotId
-				and ${subType}.id = round.${subType}
+			from ${sql.table(subType)}, round, event
+			where ${sql.ref(`${subType}.id`)} = ${replacements.timeslotId}
+				and ${sql.ref(`${subType}.id`)} = ${sql.ref(`round.${subType}`)}
 				and round.event = event.id
-				and event.tourn = :tournId
+				and event.tourn = ${replacements.tournId}
 				${queryLimiter}
-			group by ${subType}.id
-		`, {
-			replacements,
-			type: db.sequelize.QueryTypes.SELECT,
-		});
+			group by ${sql.ref(`${subType}.id`)}
+		`.execute(kdb);
 
 		if (!outputs || !outputs.length > 0) {
 			delete req.session.tourn;
@@ -208,22 +201,16 @@ export const tabAuth = async (req) => {
 	// event level permission.
 
 	if (subType === 'round' || subType === 'entry') {
-		const outputs = await db.sequelize.query(`
+		const { rows: outputs } = await sql`
 			select
-				${subType}.*,
+				${sql.table(subType)}.*,
 				event.category category,
 				event.tourn tourn
-			from ${subType}, event
-			where ${subType}.id = :typeId
-				and ${subType}.event = event.id
-				and event.tourn = :tournId
-		`, {
-			replacements: {
-				typeId,
-				tournId,
-			},
-			type: db.sequelize.QueryTypes.SELECT,
-		});
+			from ${sql.table(subType)}, event
+			where ${sql.ref(`${subType}.id`)} = ${typeId}
+				and ${sql.ref(`${subType}.event`)} = event.id
+				and event.tourn = ${tournId}
+		`.execute(kdb);
 
 		if (!outputs || !outputs.length > 0) {
 			delete req.session.tourn;
@@ -254,21 +241,15 @@ export const tabAuth = async (req) => {
 
 	if (subType === 'event' || subType === 'judge' || subType === 'jpool') {
 
-		const outputs = await db.sequelize.query(`
+		const { rows: outputs } = await sql`
 			select
-				${subType}.*,
+				${sql.table(subType)}.*,
 				category.tourn tournId
-			from ${subType}, category
-			where ${subType}.id = :typeId
-				and ${subType}.category = category.id
-				and category.tourn = :tournId
-		`, {
-			replacements: {
-				typeId,
-				tournId,
-			},
-			type: db.sequelize.QueryTypes.SELECT,
-		});
+			from ${sql.table(subType)}, category
+			where ${sql.ref(`${subType}.id`)} = ${typeId}
+				and ${sql.ref(`${subType}.category`)} = category.id
+				and category.tourn = ${tournId}
+		`.execute(kdb);
 
 		if (!outputs || !outputs.length > 0) {
 			delete req.session.tourn;
@@ -321,19 +302,13 @@ export const tabAuth = async (req) => {
 
 export const tournPerms = async (tournId, personId) => {
 
-	const permissions = await db.sequelize.query(`
+	const { rows: permissions } = await sql`
 		select permission.id, permission.event, permission.category, permission.tag
 			from permission
-		where person = :personId
-			and tourn = :tournId
+		where person = ${personId}
+			and tourn = ${tournId}
 			order by tag
-	`, {
-		replacements: {
-			tournId,
-			personId,
-		},
-		type: db.sequelize.QueryTypes.SELECT,
-	});
+	`.execute(kdb);
 
 	if (permissions.length < 1) {
 		return;
@@ -388,18 +363,12 @@ export const localAuth = async (req) => {
 		|| localType === 'district'
 	) {
 
-		const permissions = await db.sequelize.query(`
+		const { rows: permissions } = await sql`
 			select perm.id, perm.tag
 				from permission perm
-			where perm.person = :personId
-				and perm.${localType} = :localId
-		`, {
-			replacements : {
-				localId,
-				personId: req.session.person,
-			},
-			type: db.sequelize.queryTypes.SELECT,
-		});
+			where perm.person = ${req.session.person}
+				and ${sql.ref(`perm.${localType}`)} = ${localId}
+		`.execute(kdb);
 
 		if (permissions && permissions[0]?.tag) {
 			const local = await db.summon(db[localType], localId);
@@ -439,7 +408,7 @@ export const checkJudgePerson = async (req, judgeId) => {
 	return false;
 };
 
-export const checkPerms = async (req, res, query, replacements) => {
+export const checkPerms = async (req, res, query) => {
 
 	if (!req.session) {
 		return 'You must be logged in to access that function';
@@ -449,27 +418,18 @@ export const checkPerms = async (req, res, query, replacements) => {
 		return true;
 	}
 
-	const [permsData] = await db.sequelize.query(query, {
-		replacements,
-		type: db.sequelize.QueryTypes.SELECT,
-	});
+	const { rows: [permsData] } = await query.execute(kdb);
 
 	if (!permsData) {
 		return 'Data about that tournament element was not found';
 	}
 
-	const permissions = await db.sequelize.query(`
+	const { rows: permissions } = await sql`
 		select permission.*
 			from permission
-		where permission.person = :personId
-			and permission.tourn = :tournId
-	`, {
-		replacements: {
-			personId: req.session.person,
-			tournId: permsData.tourn,
-		},
-		type: db.sequelize.QueryTypes.SELECT,
-	});
+		where permission.person = ${req.session.person}
+			and permission.tourn = ${permsData.tourn}
+	`.execute(kdb);
 
 	if (!permissions) {
 		return 'You have no access permissions to tab that tournament';
@@ -498,19 +458,13 @@ export const checkPerms = async (req, res, query, replacements) => {
 	}
 
 	if (permsData.site && permsData.timeslot) {
-		const okEvents = await db.sequelize.query(`
+		const { rows: okEvents } = await sql`
 			select
 				distinct round(event) id
 			from round
-				where round.timeslot = :timeslotId
-				and round.site = :siteId
-		`, {
-			replacements   : {
-				timeslotId : permsData.timeslot,
-				siteId     : permsData.site,
-			},
-			type: db.sequelize.QueryTypes.SELECT,
-		});
+				where round.timeslot = ${permsData.timeslot}
+				and round.site = ${permsData.site}
+		`.execute(kdb);
 
 		for await (const event of okEvents) {
 			if (!permsData.event) {
@@ -609,113 +563,104 @@ export const checkPerms = async (req, res, query, replacements) => {
 
 export const sectionCheck = async (req, res, sectionId) => {
 
-	const sectionQuery = `
+	const sectionQuery = sql`
 		select event.tourn, event.id event
 			from panel, round, event
-		where panel.id = :sectionId
+		where panel.id = ${sectionId}
 			and panel.round = round.id
 			and round.event = event.id
 	`;
 
-	const replacements = { sectionId };
-	return checkPerms(req, res, sectionQuery, replacements);
+	return checkPerms(req, res, sectionQuery);
 };
 
 export const roundCheck = async (req, res, roundId) => {
 
-	const roundQuery = `
+	const roundQuery = sql`
 		select event.tourn, event.id event
 			from round, event
-		where round.id = :roundId
+		where round.id = ${roundId}
 			and round.event = event.id
 	`;
 
-	const replacements = { roundId };
-	return checkPerms(req, res, roundQuery, replacements);
+	return checkPerms(req, res, roundQuery);
 };
 
 export const eventCheck = async (req, res, eventId) => {
-	const eventQuery = `
+	const eventQuery = sql`
 		select event.tourn, event.id event
 			from event
-		where event.id = :eventId
+		where event.id = ${eventId}
 	`;
 
-	const replacements = { eventId };
-	return checkPerms(req, res, eventQuery, replacements);
+	return checkPerms(req, res, eventQuery);
 };
 
 export const entryCheck = async (req, res, entryId) => {
-	const entryQuery = `
+	const entryQuery = sql`
 		select event.tourn, entry.event
 		from entry, event
-		where entry.id = :entryId
+		where entry.id = ${entryId}
 			and entry.event = event.id
 	`;
 
-	const replacements = { entryId };
-	return checkPerms(req, res, entryQuery, replacements);
+	return checkPerms(req, res, entryQuery);
 };
 
 export const schoolCheck = async (req, res, schoolId) => {
-	const schoolQuery = `
+	const schoolQuery = sql`
 		select school.tourn, school.id school
 			from school
-		where school.id = :schoolId
+		where school.id = ${schoolId}
 	`;
 
-	const replacements = { schoolId };
-	return checkPerms(req, res, schoolQuery, replacements);
+	return checkPerms(req, res, schoolQuery);
 };
 
 export const timeslotCheck = async (req, res, timeslotId) => {
-	const timeslotQuery = `
+	const timeslotQuery = sql`
 		select timeslot.tourn, timeslot.id timeslot
 			from timeslot
-		where timeslot.id = :timeslotId
+		where timeslot.id = ${timeslotId}
 	`;
 
-	const replacements = { timeslotId };
-	return checkPerms(req, res, timeslotQuery, replacements);
+	return checkPerms(req, res, timeslotQuery);
 };
 
 export const jpoolCheck = async (req, res, jpoolId) => {
-	const jpoolQuery = `
+	const jpoolQuery = sql`
 		select category.tourn, jpool.id jpool, round.event event,
 			st.value timeslot, jpool.site
 			from (jpool, category)
 				left join jpool_round jpr on jpr.jpool = jpool.id
 				left join round on round.id = jpr.round
 				left join jpool_setting st on st.tag = 'standby_timeslot' and st.jpool = jpool.id
-		where jpool.id = :jpoolId
+		where jpool.id = ${jpoolId}
 			and jpool.category = category.id
 			group by jpool.id
 	`;
-	const replacements = { jpoolId };
-	return checkPerms(req, res, jpoolQuery, replacements);
+	return checkPerms(req, res, jpoolQuery);
 };
 
 export const judgeCheck = async (req, res, judgeId) => {
-	const judgeQuery = `
+	const judgeQuery = sql`
 		select category.tourn, event.id event
 			from category, event, judge
-		where judge.id = :judgeId
+		where judge.id = ${judgeId}
 			and judge.category = category.id
 			and category.id = event.category
 	`;
 
-	const replacements = { judgeId };
-	return checkPerms(req, res, judgeQuery, replacements);
+	return checkPerms(req, res, judgeQuery);
 };
 
 export const categoryCheck = async (req, res, categoryId) => {
-	const categoryQuery = `
+	const categoryQuery = sql`
 		select category.tourn, event.id event
 			from category, event
-		where category.id = :categoryId
+		where category.id = ${categoryId}
 			and category.id = event.category
 	`;
 
-	const replacements = { categoryId };
-	return checkPerms(req, res, categoryQuery, replacements);
+	return checkPerms(req, res, categoryQuery);
 };

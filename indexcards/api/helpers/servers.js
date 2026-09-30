@@ -1,12 +1,14 @@
 import axios from 'axios';
+import { sql } from 'kysely';
 import db from '../data/db.js';
+import { db as kdb } from '../data/database.js';
 import config from '../config.js';
 import notify from './blast.js';
 import logger from './logger.js';
 
 export const showTabroomUsage = async () => {
 
-	const allStudents = await db.sequelize.query(`
+	const allStudents = (await sql`
 		select
 			count(distinct student.person) count
 		from student, entry_student es, entry, event, tourn
@@ -28,11 +30,9 @@ export const showTabroomUsage = async () => {
 					and timeslot.start < DATE_ADD(CURRENT_TIMESTAMP, INTERVAL 4 HOUR)
 					and timeslot.end > DATE_SUB(CURRENT_TIMESTAMP, INTERVAL 1 HOUR)
 			)
-	`, {
-		type: db.sequelize.QueryTypes.SELECT,
-	});
+	`.execute(kdb)).rows;
 
-	const onlineStudents = await db.sequelize.query(`
+	const onlineStudents = (await sql`
 		select
 			count(distinct student.person) count
 		from student, entry_student es, entry, event, tourn
@@ -62,11 +62,9 @@ export const showTabroomUsage = async () => {
 					and timeslot.start < DATE_ADD(CURRENT_TIMESTAMP, INTERVAL 4 HOUR)
 					and timeslot.end > DATE_SUB(CURRENT_TIMESTAMP, INTERVAL 1 HOUR)
 			)
-	`, {
-		type: db.sequelize.QueryTypes.SELECT,
-	});
+	`.execute(kdb)).rows;
 
-	const allJudges = await db.sequelize.query(`
+	const allJudges = (await sql`
 		select
 			count(distinct judge.person) count
 		from judge, category, tourn
@@ -84,11 +82,9 @@ export const showTabroomUsage = async () => {
 					and timeslot.start < DATE_ADD(CURRENT_TIMESTAMP, INTERVAL 4 HOUR)
 					and timeslot.end > DATE_SUB(CURRENT_TIMESTAMP, INTERVAL 1 HOUR)
 			)
-	`, {
-		type: db.sequelize.QueryTypes.SELECT,
-	});
+	`.execute(kdb)).rows;
 
-	const tournamentCount = await db.sequelize.query(`
+	const tournamentCount = (await sql`
 		select
 			count(distinct tourn.id) count
 		from tourn
@@ -104,18 +100,14 @@ export const showTabroomUsage = async () => {
 					and timeslot.start < DATE_ADD(CURRENT_TIMESTAMP, INTERVAL 4 HOUR)
 					and timeslot.end > DATE_SUB(CURRENT_TIMESTAMP, INTERVAL 1 HOUR)
 			)
-	`, {
-		type: db.sequelize.QueryTypes.SELECT,
-	});
+	`.execute(kdb)).rows;
 
-	const currentActiveUsers = await db.sequelize.query(`
+	const currentActiveUsers = (await sql`
 		select
 			count(distinct session.id) count
 		from session
 			where session.last_access > DATE_SUB(CURRENT_TIMESTAMP, INTERVAL 6 HOUR)
-	`, {
-		type: db.sequelize.QueryTypes.SELECT,
-	});
+	`.execute(kdb)).rows;
 
 	const totalUsers = (allJudges[0]?.count || 0)
 		+ (allStudents[0]?.count || 0)
@@ -123,16 +115,14 @@ export const showTabroomUsage = async () => {
 
 	let serverTarget = Math.ceil(totalUsers / (config.linode.users_per_server));
 
-	const overrides = await db.sequelize.query(`
+	const overrides = (await sql`
 		select
 			setting.*
 		from tabroom_setting setting
 		where 1=1
 			and setting.tag IN ('min_servers', 'max_servers')
 			and value_date > CURRENT_TIMESTAMP
-	`, {
-		type: db.sequelize.QueryTypes.SELECT,
-	});
+	`.execute(kdb)).rows;
 
 	for (const override of overrides) {
 
@@ -185,9 +175,7 @@ export const getLinodeInstances = async ( limit ) => {
 		return {};
 	}
 
-	const dbServers = await db.sequelize.query(`select * from server`,
-		{ type: db.sequelize.QueryTypes.SELECT }
-	);
+	const { rows: dbServers } = await sql`select * from server`.execute(kdb);
 
 	const serverByLinodeId = {};
 
@@ -540,15 +528,12 @@ export const decreaseLinodeCount = async (whodunnit, countNumber, silent) => {
 
 export const notifyCloudAdmins = async (whodunnit, log, subject) => {
 
-	const cloudAdmins = await db.sequelize.query(`
+	const cloudAdmins = (await sql`
 		select distinct person.id
 			from person, person_setting ps
 		where person.id = ps.person
-			and ps.tag = :tag
-	`, {
-		replacements: { tag: 'system_administrator' },
-		type: db.sequelize.QueryTypes.SELECT,
-	});
+			and ps.tag = ${'system_administrator'}
+	`.execute(kdb)).rows;
 
 	let sender = {};
 

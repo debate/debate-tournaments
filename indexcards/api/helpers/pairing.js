@@ -3,7 +3,9 @@ import { ordinalize } from '@speechanddebate/nsda-js-utils';
 import { notify } from './blast.js';
 import { sidelocks } from './round.js';
 import config from '../config.js';
+import { sql } from 'kysely';
 import db from '../data/db.js';
+import { db as kdb } from '../data/database.js';
 
 // Functions related to creating pairing blasts for each section.
 // formatBlast pulls the sql paramters from the blastSection/Round/Timeslot
@@ -11,7 +13,7 @@ import db from '../data/db.js';
 
 export const formatPairingBlast = async (queryData, req) => {
 
-	const entryQuery = `
+	const entryQuery = sql`
 		select
 			section.id sectionid, section.round roundid,
 			entry.id, entry.code, entry.name,
@@ -30,7 +32,7 @@ export const formatPairingBlast = async (queryData, req) => {
 		order by section.flight, section.id, ballot.side, ballot.speakerorder
 	`;
 
-	const judgeQuery = `
+	const judgeQuery = sql`
 		select
 			section.id sectionid, section.round roundid,
 			judge.id, judge.first, judge.middle, judge.last, judge.code,
@@ -46,7 +48,7 @@ export const formatPairingBlast = async (queryData, req) => {
 		order by section.flight, section.letter, ballot.chair DESC, judge.last
 	`;
 
-	const roundQuery = `
+	const roundQuery = sql`
 		select
 			section.id sectionid, section.letter, section.bye sbye, section.flight,
 			round.id roundid, round.name roundname, round.label roundlabel,
@@ -134,20 +136,9 @@ export const formatPairingBlast = async (queryData, req) => {
 			order by round.name, section.flight, section.letter
 	`;
 
-	const rawRoundData = await req.db.sequelize.query(roundQuery, {
-		replacements : queryData.replacements,
-		type         : req.db.sequelize.QueryTypes.SELECT,
-	});
-
-	const rawEntries = await req.db.sequelize.query(entryQuery, {
-		replacements : queryData.replacements,
-		type         : req.db.sequelize.QueryTypes.SELECT,
-	});
-
-	const rawJudges = await req.db.sequelize.query(judgeQuery, {
-		replacements : queryData.replacements,
-		type         : req.db.sequelize.QueryTypes.SELECT,
-	});
+	const { rows: rawRoundData } = await roundQuery.execute(kdb);
+	const { rows: rawEntries } = await entryQuery.execute(kdb);
+	const { rows: rawJudges } = await judgeQuery.execute(kdb);
 
 	const roundData = await processRounds(rawRoundData);
 

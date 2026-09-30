@@ -2,7 +2,8 @@
 import fetch from 'node-fetch';
 import logger from './logger.js';
 import objectify from './objectify.js';
-import litedb from './litedb.js';
+import { sql } from 'kysely';
+import { db as kdb } from '../data/database.js';
 
 // Takes a created round object with sections and writes it into the database
 
@@ -149,7 +150,7 @@ export const writeRound = async (db, round) => {
 
 export const sidelocks = async (roundId) => {
 
-	const sidelockQuery = `
+	const sidelockQuery = sql`
 		select
 			section.id,
 			count(other.id) count,
@@ -159,7 +160,7 @@ export const sidelocks = async (roundId) => {
 		from panel section, ballot aff_b, ballot neg_b, entry aff_e, entry neg_e,
 			panel other, ballot aff_bo, ballot neg_bo
 
-		where section.round = :roundId
+		where section.round = ${roundId}
 			and section.id = aff_b.panel
 			and aff_b.side = 1
 			and aff_b.entry = aff_e.id
@@ -177,10 +178,7 @@ export const sidelocks = async (roundId) => {
 			and neg_bo.entry = neg_e.id
 	`;
 
-	const sideLocks = await litedb.sequelize.query(sidelockQuery, {
-		replacements : { roundId },
-		type         : litedb.sequelize.QueryTypes.SELECT,
-	});
+	const { rows: sideLocks } = await sidelockQuery.execute(kdb);
 
 	if (sideLocks) {
 		return objectify(sideLocks);
@@ -189,7 +187,7 @@ export const sidelocks = async (roundId) => {
 
 export const flightTimes = async (roundId) => {
 
-	const roundSettings = await litedb.sequelize.query(`
+	const { rows: roundSettings } = await sql`
 		select
 			round.id, round.name, round.start_time, round.flighted, round.type,
 			tourn.tz,
@@ -211,13 +209,11 @@ export const flightTimes = async (roundId) => {
 				on elim_decision_deadline.event = event.id
 				and elim_decision_deadline.tag = 'elim_decision_deadline'
 
-		where round.id = :roundId
+		where round.id = ${roundId}
 			and round.event = event.id
 			and event.tourn = tourn.id
 
-	`, { replacements: { roundId },
-		type: litedb.sequelize.QueryTypes.SELECT,
-	});
+	`.execute(kdb);
 
 	const round = roundSettings.shift();
 	const times = { tz: round.tz };

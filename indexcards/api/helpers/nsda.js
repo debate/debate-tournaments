@@ -1,6 +1,8 @@
 import CryptoJS from 'crypto-js';
 import axios from 'axios';
+import { sql } from 'kysely';
 import db from '../data/db.js';
+import { db as kdb } from '../data/database.js';
 import config from '../config.js';
 
 export const getNSDAMemberId = async (email) => {
@@ -69,18 +71,15 @@ export const syncLearnResults = async (person) => {
 		}
 	}
 
-	const nsdaIdentities = await db.sequelize.query(`
+	const { rows: nsdaIdentities } = await sql`
 		select nsda_id.value nsda_id,
 			nsda_email.value nsda_email
 		from person
 			left join person_setting nsda_email on nsda_email.person = person.id and nsda_email.tag = 'nsda_email'
 			left join person_setting nsda_id on nsda_id.person = person.id and nsda_id.tag = 'nsda_id'
 		where 1=1
-			and person.id = :personId
-	`, {
-		replacements: { personId: targetPerson.id },
-		type: db.sequelize.QueryTypes.SELECT,
-	});
+			and person.id = ${targetPerson.id}
+	`.execute(kdb);
 
 	if (nsdaIdentities && nsdaIdentities[0].nsda_email) {
 		const membership = await getNSDAMemberId(nsdaIdentities[0].nsda_email);
@@ -107,19 +106,16 @@ export const syncLearnResults = async (person) => {
 		return `User ${targetPerson.nsda} does not have any completed NSDA Learn courses.`;
 	}
 
-	const existingQuizzes = await db.sequelize.query(`
+	const { rows: existingQuizzes } = await sql`
 		select
 			quiz.id, quiz.nsda_course,
 			pq.id pqId,
 			pq.pending, pq.approved_by, pq.completed, pq.updated_at
 		from quiz
-			left join person_quiz pq on pq.quiz = quiz.id and pq.person = :personId
+			left join person_quiz pq on pq.quiz = quiz.id and pq.person = ${targetPerson.id}
 		where 1=1
 			and quiz.nsda_course > 0
-	`, {
-		replacements: { personId: targetPerson.id },
-		type: db.sequelize.QueryTypes.SELECT,
-	});
+	`.execute(kdb);
 
 	const quizByNSDA  = {};
 
@@ -189,7 +185,7 @@ export const syncLearnByCourse = async (quiz) => {
 	// First filter everyone out who's already been tagged, and then
 	// update everyone with an existing PQ that is not completed.
 
-	const existingPQs = await db.sequelize.query(`
+	const { rows: existingPQs } = await sql`
 		select person.id, person.email, person.nsda, person.first, person.last,
 			pq.id pq, pq.completed, pq.updated_at, pq.approved_by,
 			nsda_email.value nsda_email,
@@ -199,14 +195,9 @@ export const syncLearnByCourse = async (quiz) => {
 			left join person_setting nsda_id on nsda_id.person = person.id and nsda_id.tag = 'nsda_id'
 		where 1=1
 			and person.id = pq.person
-			and pq.quiz = :quizId
+			and pq.quiz = ${quiz.id}
 		group by pq.id
-	`, {
-		replacements : {
-			quizId: quiz.id,
-		},
-		type : db.sequelize.QueryTypes.SELECT,
-	});
+	`.execute(kdb);
 
 	let allPromises = [];
 	const altSettings = [];
@@ -402,7 +393,7 @@ export const syncLearnByCourse = async (quiz) => {
 
 	if (userIds.length > 0) {
 
-		const notExisting = await db.sequelize.query(`
+		const { rows: notExisting } = await sql`
 			select person.id, person.nsda, person.email, person.middle,
 				nsda_id.value nsda_id,
 				nsda_email.value nsda_email
@@ -411,19 +402,16 @@ export const syncLearnByCourse = async (quiz) => {
 				left join person_setting nsda_email on nsda_email.person = person.email and nsda_email.tag = 'nsda_email'
 			where 1=1
 			and (
-				person.nsda IN (:userIds)
+				person.nsda IN (${sql.join(userIds)})
 				OR EXISTS (
 					select ps.id
 					from person_setting ps
 					where ps.person = person.id
 					and ps.tag='nsda_id'
-					and ps.value IN (:userIds)
+					and ps.value IN (${sql.join(userIds)})
 				)
 			)
-		`, {
-			replacements : { userIds },
-			type         : db.sequelize.QueryTypes.SELECT,
-		});
+		`.execute(kdb);
 
 		await db.sequelize.query(`
 			delete pq.*
@@ -486,26 +474,23 @@ export const syncLearnByCourse = async (quiz) => {
 		const emailAdds = [];
 		let stillNotExisting = [];
 
-		stillNotExisting = await db.sequelize.query(`
+		stillNotExisting = (await sql`
 			select person.id, person.nsda, person.email, person.last, nsda_email.value nsda_email
 				from person
 				left join person_setting nsda_email on nsda_email.tag = 'nsda_email' and nsda_email.person = person.id
 			where 1=1
 			and
 				(
-					person.email IN (:userEmails)
+					person.email IN (${sql.join(userEmails)})
 					OR EXISTS (
 						select ps.id
 						from person_setting ps
 						where ps.person = person.id
 						and ps.tag='nsda_email'
-						and ps.value IN (:userEmails)
+						and ps.value IN (${sql.join(userEmails)})
 					)
 				)
-		`, {
-			replacements : { userEmails },
-			type         : db.sequelize.QueryTypes.SELECT,
-		});
+		`.execute(kdb)).rows;
 
 		await db.sequelize.query(`
 			delete pq.*

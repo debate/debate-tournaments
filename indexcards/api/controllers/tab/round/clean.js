@@ -1,23 +1,22 @@
+import { sql } from 'kysely';
 import db from '../../../data/db.js';
+import { db as kdb } from '../../../data/database.js';
 export async function cleanRoundEmpties(req, res) {
 	const allPromises = [];
 
-	const duplicateBallots = await db.sequelize.query(`
+	const { rows: duplicateBallots } = await sql`
 		select
 				b2.id
 		from ballot b1 FORCE INDEX (panel), ballot b2 FORCE INDEX (panel), panel
 		where 1=1
-				and panel.round = :roundId
+				and panel.round = ${req.params.roundId}
 				and panel.id = b1.panel
 				and panel.id = b2.panel
 				and b1.entry = b2.entry
 				and b1.judge IS NULL
 				and b2.judge IS NULL
 				and b1.id < b2.id
-	`, {
-		type: db.sequelize.QueryTypes.SELECT,
-		replacements: { roundId: req.params.roundId },
-	});
+	`.execute(kdb);
 
 	const deleteBallotQuery = ` delete from ballot where id = :ballotId`;
 	let description = ``;
@@ -40,19 +39,16 @@ export async function cleanRoundEmpties(req, res) {
 		});
 	}
 
-	const emptySections = await db.sequelize.query(`
+	const { rows: emptySections } = await sql`
 		select panel.id
 		from panel
-		where panel.round = :roundId
+		where panel.round = ${req.params.roundId}
 		and not exists (
 			select ballot.id
 			from ballot
 			where ballot.panel = panel.id
 		)
-	`, {
-		type: db.sequelize.QueryTypes.SELECT,
-		replacements: { roundId: req.params.roundId },
-	});
+	`.execute(kdb);
 
 	const deleteSectionQuery = ` delete from panel where id = :sectionId`;
 
