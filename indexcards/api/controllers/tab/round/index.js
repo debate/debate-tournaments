@@ -1,24 +1,21 @@
 import { sql } from 'kysely';
 import { addZero } from '../../../helpers/text.js';
-import db from '../../../data/db.js';
+import { NotImplemented } from '../../../helpers/problem.js';
 import { db as kdb } from '../../../data/database.js';
+import { summon } from '../../../repos/utils/summon.js';
 
 export async function getRound(req,res) {
-	const round = await db.summon(db.round, req.params.roundId);
+	const round = await summon(kdb, 'round',req.params.roundId);
 	res.status(200).json(round);
 }
+// Never worked: it called update() on a plain object.
 export async function createRound(req,res) {
-	const round = await db.summon(db.round, req.params.roundId);
-	const updates = req.body;
-	delete updates.id;
-
-	await round.update(updates);
-	res.status(200).json(round);
+	return NotImplemented(req, res, 'Updating a round is not yet implemented');
 }
 export async function deleteRound(req,res) {
-	await db.round.destroy({
-		where: { id: req.params.roundId },
-	});
+	await kdb.deleteFrom('round')
+		.where('id', '=', req.params.roundId)
+		.execute();
 
 	res.status(200).json({
 		error: false,

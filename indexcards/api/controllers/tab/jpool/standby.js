@@ -2,7 +2,6 @@ import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc.js';
 import timezone from 'dayjs/plugin/timezone.js';
 import { sql } from 'kysely';
-import db from '../../../data/db.js';
 import { db as kdb } from '../../../data/database.js';
 
 dayjs.extend(utc);
@@ -147,13 +146,10 @@ export async function placeJudgesStandby(req, res) {
 		}
 	}
 
-	const addJudge = `insert into jpool_judge (judge, jpool) values (:judgeId, :jpoolId)`;
-
 	Object.keys(chosen).forEach( async (judgeId) => {
-		await db.sequelize.query(addJudge, {
-			replacements: { judgeId, jpoolId: req.body.jpoolId },
-			type: db.sequelize.QueryTypes.INSERT,
-		});
+		await kdb.insertInto('jpool_judge')
+			.values({ judge: judgeId, jpool: req.body.jpoolId })
+			.execute();
 	});
 
 	res.status(200).json({

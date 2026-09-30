@@ -20,7 +20,6 @@
 		"lint:fix": "oxlint --fix .",
 		"format": "prettier --write .",
 		"format-check": "prettier --check .",
-		"models": "NODE_ENV='development' node api/data/auto.js",
 		"updateTestFile": "NODE_ENV=test tsx scripts/updateTestFile.js"
 	},
 	"extensionless": {
@@ -59,7 +58,6 @@
 		"node-fetch": "^3.3.1",
 		"nodemailer": "^7.0.9",
 		"sanitize-html": "^2.17.4",
-		"sequelize": "^6.37.7",
 		"ua-parser-js": "^2.0.9",
 		"unixcrypt": "^3.0.4",
 		"uuid": "^13.0.0",
@@ -82,7 +80,6 @@
 		"node-mocks-http": "^1.10.1",
 		"nodemon": "^3.1.10",
 		"openapi3-ts": "^4.6.1",
-		"sequelize-auto": "^0.8.8",
 		"supertest": "^7.1.3",
 		"ts-node": "^10.9.1",
 		"tsx": "^4.19.2",

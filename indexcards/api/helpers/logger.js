@@ -18,7 +18,7 @@ function attachRequestContext(info) {
 
 	return info;
 }
-/** helper function to get the caller of a sequelize call for logging */
+/** helper function to get the caller of a database query for logging */
 function getCallerFrame(options = {}) {
 	const {
 		skipContains = [],
@@ -42,17 +42,18 @@ function getCallerFrame(options = {}) {
 	return preferred ?? frames[0] ?? 'unknown';
 }
 
-export function logDB(_sql, timingMs) {
+export function logDB(sql, timingMs) {
 	//if debug logging is on, log all queries otherwise just log the slow ones
 	if(timingMs >= config.logging.slowQueryLimit){
 		logger.warn('Slow SQL query', {
 			durationMs: timingMs,
-			caller: getCallerFrame({ skipContains: ['/node_modules/sequelize/', '/api/data/db.js'] }),
+			caller: getCallerFrame({ skipContains: ['/api/data/database.'] }),
 		});
-	} else {
+	} else if (logger.isDebugEnabled()) {
 		logger.debug('SQL query', {
+			sql,
 			durationMs: timingMs,
-			caller: getCallerFrame({ skipContains: ['/node_modules/sequelize/', '/api/data/db.js'] }),
+			caller: getCallerFrame({ skipContains: ['/api/data/database.'] }),
 		});
 	}
 };

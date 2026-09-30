@@ -2,8 +2,8 @@ import { sql } from 'kysely';
 import { db as kdb } from '../data/database.js';
 import logger from './logger.js';
 
-// Values for an IN (...) list. Sequelize rendered an empty list as NULL and a
-// single value as itself, so keep that behavior.
+// Values for an IN (...) list. Accepts a single value or an array, and renders
+// an empty list as NULL so the query stays valid.
 const inList = (values) => {
 	const list = [].concat(values ?? []);
 	return list.length > 0 ? sql.join(list) : sql`NULL`;

@@ -1,14 +1,20 @@
 // import { showDateTime } from '../../../helpers/common.js';
 import { objectify, arrayify, objectStrip, objectifySettings, objectifyGroupSettings } from '../../../helpers/objectify.js';
 import { sql } from 'kysely';
-import db from '../../../data/db.js';
 import { db as kdb } from '../../../data/database.js';
 import BackupService from '../../../services/BackupService.js';
 import { handleDomainError } from '../../../helpers/problem.js';
 
+const allByTourn = (table, tournId) => kdb.selectFrom(table)
+	.selectAll()
+	.where('tourn', '=', tournId)
+	.execute();
+
 export async function backupTourn(req,res) {
-	const tournShell  = await db.tourn.findByPk(req.params.tournId);
-	const tourn = tournShell.dataValues;
+	const tourn = await kdb.selectFrom('tourn')
+		.selectAll()
+		.where('id', '=', req.params.tournId)
+		.executeTakeFirst();
 
 	tourn.backup_created = new Date();
 	tourn.created_by     = req.person.email;
@@ -17,15 +23,15 @@ export async function backupTourn(req,res) {
 	// A bunch of little things that are all at the other end of a simple
 	// FK relationship:
 
-	tourn.emails      = objectify(await db.email.findAll({ where: { tourn: tourn.id } }));
-	tourn.webpages    = objectify(await db.webpage.findAll({ where: { tourn: tourn.id } }));
-	tourn.permissions = objectify(await db.permission.findAll({ where: { tourn: tourn.id } }));
-	tourn.fines       = objectify( await db.fine.findAll({ where: { tourn: tourn.id } }));
-	tourn.patterns    = objectify( await db.pattern.findAll({ where: { tourn: tourn.id } }));
-	tourn.timeslots   = objectify( await db.timeslot.findAll({ where: { tourn: tourn.id } }));
+	tourn.emails      = objectify(await allByTourn('email', tourn.id));
+	tourn.webpages    = objectify(await allByTourn('webpage', tourn.id));
+	tourn.permissions = objectify(await allByTourn('permission', tourn.id));
+	tourn.fines       = objectify( await allByTourn('fine', tourn.id));
+	tourn.patterns    = objectify( await allByTourn('pattern', tourn.id));
+	tourn.timeslots   = objectify( await allByTourn('timeslot', tourn.id));
 
 	tourn.settings      = objectifySettings(
-		await db.tournSetting.findAll({ where: { tourn: tourn.id } })
+		await allByTourn('tourn_setting', tourn.id)
 	);
 
 	// Circuits have a many to many join table so that's harder
@@ -120,7 +126,7 @@ export async function backupTourn(req,res) {
 	});
 
 	// Tournament result sets.  These can be bulky.
-	tourn.result_sets = objectify(await db.resultSet.findAll({ where: { tourn: tourn.id } }));
+	tourn.result_sets = objectify(await allByTourn('result_set', tourn.id));
 
 	const resultKeys = (await sql`
 		select result_key.*
@@ -178,7 +184,7 @@ export async function backupTourn(req,res) {
 	});
 
 	// And now the fun parts.  Registration data, which includes schools, entries, etc.  NOT judges in the full tourn dump.
-	tourn.schools = objectify( await db.school.findAll({ where: { tourn: tourn.id } }));
+	tourn.schools = objectify( await allByTourn('school', tourn.id));
 
 	const rawSchoolSettings = (await sql`
 		select ps.*

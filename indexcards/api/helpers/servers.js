@@ -1,7 +1,8 @@
 import axios from 'axios';
 import { sql } from 'kysely';
-import db from '../data/db.js';
 import { db as kdb } from '../data/database.js';
+import { summon } from '../repos/utils/summon.js';
+import changeLogRepo from '../repos/changeLogRepo.js';
 import config from '../config.js';
 import notify from './blast.js';
 import logger from './logger.js';
@@ -227,9 +228,9 @@ export const getLinodeInstances = async ( limit ) => {
 		const deletionPromises = [];
 
 		databaseSyncs.forEach( (machine) => {
-			const promise = db.server.destroy({
-				where: { hostname: machine.label },
-			});
+			const promise = kdb.deleteFrom('server')
+				.where('hostname', '=', machine.label)
+				.execute();
 			deletionPromises.push(promise);
 		});
 
@@ -238,12 +239,12 @@ export const getLinodeInstances = async ( limit ) => {
 		const creationPromises = [];
 
 		databaseSyncs.forEach( (machine) => {
-			const promise = db.server.create({
+			const promise = kdb.insertInto('server').values({
 				hostname   : machine.label,
 				status     : machine.status,
 				created_at : new Date(),
 				linode_id  : machine.id,
-			});
+			}).execute();
 
 			creationPromises.push(promise);
 		});
@@ -392,12 +393,12 @@ export const increaseLinodeCount = async (whodunnit, countNumber, silent) => {
 
 			const data = creationReply.data;
 
-			await db.server.create({
+			await kdb.insertInto('server').values({
 				hostname   : data.label,
 				status     : 'provisioning',
 				created_at : new Date(),
 				linode_id  : data.id,
-			});
+			}).execute();
 
 			resultMessages.push('');
 			resultMessages.push(`Machine ${data.label} creation request successful.\n`);
@@ -407,7 +408,7 @@ export const increaseLinodeCount = async (whodunnit, countNumber, silent) => {
 		}
 	}
 
-	await db.changeLog.create({
+	await changeLogRepo.createChangeLog(kdb, {
 		person     : whodunnit.id || 1,
 		tag        : 'sitewide',
 		created_at : new Date(),
@@ -488,12 +489,9 @@ export const decreaseLinodeCount = async (whodunnit, countNumber, silent) => {
 
 					destroyMe.push(hostname);
 
-					await db.sequelize.query(`delete from server where linode_id = :linodeId`,
-						{
-							replacements: { linodeId: machine.linode_id },
-							type: db.sequelize.QueryTypes.DELETE,
-						}
-					);
+					await kdb.deleteFrom('server')
+						.where('linode_id', '=', machine.linode_id)
+						.execute();
 				}
 
 			} catch (err) {
@@ -506,7 +504,7 @@ export const decreaseLinodeCount = async (whodunnit, countNumber, silent) => {
 		serialNumber++;
 	}
 
-	await db.changeLog.create({
+	await changeLogRepo.createChangeLog(kdb, {
 		person     : whodunnit.id || 1,
 		tag        : 'sitewide',
 		created_at : new Date(),
@@ -538,15 +536,15 @@ export const notifyCloudAdmins = async (whodunnit, log, subject) => {
 	let sender = {};
 
 	if (whodunnit.su) {
-		sender = await db.summon(db.person, whodunnit.su);
+		sender = await summon(kdb, 'person',whodunnit.su);
 	} else if (whodunnit.id) {
-		sender = await db.summon(db.person, whodunnit.id);
+		sender = await summon(kdb, 'person',whodunnit.id);
 	} else if (whodunnit.username === 'palmer') {
-		sender = await db.summon(db.person, 1);
+		sender = await summon(kdb, 'person',1);
 	} else if (whodunnit.username === 'hardy') {
-		sender = await db.summon(db.person, 3);
+		sender = await summon(kdb, 'person',3);
 	} else {
-		sender = await db.summon(db.person, 2);
+		sender = await summon(kdb, 'person',2);
 	}
 
 	const adminIds = cloudAdmins.map( item => item.id );

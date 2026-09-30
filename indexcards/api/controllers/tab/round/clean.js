@@ -1,6 +1,6 @@
 import { sql } from 'kysely';
-import db from '../../../data/db.js';
 import { db as kdb } from '../../../data/database.js';
+import changeLogRepo from '../../../repos/changeLogRepo.js';
 export async function cleanRoundEmpties(req, res) {
 	const allPromises = [];
 
@@ -18,7 +18,6 @@ export async function cleanRoundEmpties(req, res) {
 				and b1.id < b2.id
 	`.execute(kdb);
 
-	const deleteBallotQuery = ` delete from ballot where id = :ballotId`;
 	let description = ``;
 
 	if (duplicateBallots.length > 0) {
@@ -27,13 +26,9 @@ export async function cleanRoundEmpties(req, res) {
 
 		duplicateBallots.forEach( (ballot) => {
 
-			const promise = db.sequelize.query(
-				deleteBallotQuery,
-				{
-					type: db.sequelize.QueryTypes.DELETE,
-					replacements: { ballotId: ballot.id },
-				}
-			);
+			const promise = kdb.deleteFrom('ballot')
+				.where('id', '=', ballot.id)
+				.execute();
 
 			allPromises.push(promise);
 		});
@@ -50,8 +45,6 @@ export async function cleanRoundEmpties(req, res) {
 		)
 	`.execute(kdb);
 
-	const deleteSectionQuery = ` delete from panel where id = :sectionId`;
-
 	if (emptySections.length > 0) {
 
 		if (description) {
@@ -62,20 +55,16 @@ export async function cleanRoundEmpties(req, res) {
 
 		emptySections.forEach( (section) => {
 
-			const promise = db.sequelize.query(
-				deleteSectionQuery,
-				{
-					type: db.sequelize.QueryTypes.DELETE,
-					replacements: { sectionId: section.id },
-				}
-			);
+			const promise = kdb.deleteFrom('panel')
+				.where('id', '=', section.id)
+				.execute();
 
 			allPromises.push(promise);
 		});
 	}
 
 	if (description) {
-		await db.ChangeLog.create({
+		await changeLogRepo.createChangeLog(kdb, {
 			person      : req.session.person,
 			round       : req.params.roundId,
 			description,

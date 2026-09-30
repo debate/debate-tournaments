@@ -4,8 +4,8 @@ import { notify } from './blast.js';
 import { sidelocks } from './round.js';
 import config from '../config.js';
 import { sql } from 'kysely';
-import db from '../data/db.js';
 import { db as kdb } from '../data/database.js';
+import changeLogRepo from '../repos/changeLogRepo.js';
 
 // Functions related to creating pairing blasts for each section.
 // formatBlast pulls the sql paramters from the blastSection/Round/Timeslot
@@ -620,7 +620,7 @@ export const sendPairingBlast = async (followers, blastData, req, res) => {
 			const logPromises = [];
 
 			if (req.params.sectionId) {
-				const promise = db.changeLog.create({
+				const promise = changeLogRepo.createChangeLog(kdb, {
 					tag         : 'blast',
 					description : `Pairing sent to section. Message: ${req.body.message}`,
 					person      : blastData.sender || req.session?.person?.id,
@@ -633,7 +633,7 @@ export const sendPairingBlast = async (followers, blastData, req, res) => {
 			} else {
 
 				blastData.rounds.forEach( (round) => {
-					const promise = db.changeLog.create({
+					const promise = changeLogRepo.createChangeLog(kdb, {
 						tag         : 'blast',
 						description : `Round pairings blasted. Message: ${req.body.message}`,
 						person      : blastData.sender || req.session?.person?.id,

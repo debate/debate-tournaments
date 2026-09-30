@@ -3,7 +3,6 @@ import { randomPhrase } from '@speechanddebate/nsda-js-utils';
 import { getFollowers } from '../../../helpers/followers.js';
 import { emailBlast } from '../../../helpers/mail.js';
 import { sql } from 'kysely';
-import { db } from '../../../helpers/litedb.js';
 import { db as kdb } from '../../../data/database.js';
 
 export async function makeShareRooms(req, res) {
@@ -48,15 +47,10 @@ export const shareRooms = async (roundId) => {
 
 			const phrase = randomPhrase();
 
-			await db.sequelize.query(`
-				insert into panel_setting (panel, tag, value)
-				values (:sectionId, 'share', :phrase)
-				on duplicate key update
-				value = :phrase
-			`, {
-				replacements: { sectionId: section.id, phrase },
-				type: db.Sequelize.QueryTypes.INSERT,
-			});
+			await kdb.insertInto('panel_setting')
+				.values({ panel: section.id, tag: 'share', value: phrase })
+				.onDuplicateKeyUpdate({ value: phrase })
+				.execute();
 
 			const email = await getFollowers({
 				panelId        : section.id,

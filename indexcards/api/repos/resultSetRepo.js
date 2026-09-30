@@ -1,6 +1,5 @@
 import { sql } from 'kysely';
 import { stripNulls, dbToObject } from '../helpers/text.js';
-import db from '../data/db.js';
 import { db as kdb } from '../data/database.js';
 
 const buildResultSetQuery = ({opts = {}, scope = {}}) => {
@@ -238,15 +237,10 @@ export const getResultSet = async (scope = {}, query = {}, opts = {}) => {
 				}
 			}
 
-			await db.sequelize.query(`
-				update result_set set cache = :cache where id = :resultSetId
-			`, {
-				replacements: {
-					cache       : JSON.stringify({ ...newCache }),
-					resultSetId : resultSet.id,
-				},
-				type: db.Sequelize.QueryTypes.UPDATE,
-			});
+			await kdb.updateTable('result_set')
+				.set({ cache: JSON.stringify({ ...newCache }) })
+				.where('id', '=', resultSet.id)
+				.execute();
 
 			delete resultSet.cache;
 		}
@@ -469,15 +463,10 @@ const createResultCache = async (resultSet) => {
 
 	Object.keys(results).forEach( (resultId) => {
 
-		const promise = db.sequelize.query(`
-			update result set cache = :cache where id = :resultId
-		`, {
-			replacements : {
-				cache    : JSON.stringify(results[resultId]),
-				resultId,
-			},
-			type: db.Sequelize.QueryTypes.UPDATE,
-		});
+		const promise = kdb.updateTable('result')
+			.set({ cache: JSON.stringify(results[resultId]) })
+			.where('id', '=', resultId)
+			.execute();
 		promises.push(promise);
 	});
 
@@ -558,15 +547,10 @@ const createBracketCache = async (resultSet) => {
 
 	});
 
-	await db.sequelize.query(`
-		update result_set set cache = :cache where id = :resultSetId
-	`, {
-		replacements: {
-			cache       : JSON.stringify({ rounds }),
-			resultSetId : resultSet.id,
-		},
-		type: db.Sequelize.QueryTypes.UPDATE,
-	});
+	await kdb.updateTable('result_set')
+		.set({ cache: JSON.stringify({ rounds }) })
+		.where('id', '=', resultSet.id)
+		.execute();
 
 	return { rounds };
 };

@@ -1,6 +1,8 @@
 import axios from 'axios';
 import { sql } from 'kysely';
 import { db as kdb } from '../../data/database.js';
+import { summon } from '../../repos/utils/summon.js';
+import changeLogRepo from '../../repos/changeLogRepo.js';
 import notify from '../../helpers/blast.js';
 import config from '../../config.js';
 import logger from '../../helpers/logger.js';
@@ -149,7 +151,7 @@ export async function rebootInstance(req, res) {
 		});
 	}
 
-	await req.db.changeLog.create({
+	await changeLogRepo.createChangeLog(kdb, {
 		person     : req.session.su || req.session.person,
 		tag        : 'sitewide',
 		created_at : new Date(),
@@ -175,9 +177,9 @@ const notifyCloudAdmins = async (req, log, subject) => {
 	let sender = '';
 
 	if (req.session.su) {
-		sender = await req.db.summon(req.db.person, req.session.su);
+		sender = await summon(kdb, 'person',req.session.su);
 	} else {
-		sender = await req.db.summon(req.db.person, req.session.person);
+		sender = await summon(kdb, 'person',req.session.person);
 	}
 
 	const adminIds = cloudAdmins.map( item => item.id );

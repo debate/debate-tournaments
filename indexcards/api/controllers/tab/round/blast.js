@@ -3,8 +3,9 @@ import { getFollowers, getPairingFollowers } from '../../../helpers/followers.js
 import { notify } from '../../../helpers/blast.js';
 import { sendPairingBlast, formatPairingBlast } from '../../../helpers/pairing.js';
 import { sql } from 'kysely';
-import db from '../../../data/db.js';
 import { db as kdb } from '../../../data/database.js';
+import { summon } from '../../../repos/utils/summon.js';
+import changeLogRepo from '../../../repos/changeLogRepo.js';
 
 export async function blastRoundMessage(req, res) {
 	if (!req.body.message) {
@@ -12,7 +13,7 @@ export async function blastRoundMessage(req, res) {
 	}
 
 	const personIds = await getFollowers(req.body);
-	const tourn = await db.summon(db.tourn, req.params.tournId);
+	const tourn = await summon(kdb, 'tourn',req.params.tournId);
 
 	const seconds = Math.floor(Date.now() / 1000);
 	const numberwang = seconds.toString().substring(-5);
@@ -38,7 +39,7 @@ export async function blastRoundMessage(req, res) {
 		logMessage.person = req.body.sender;
 	}
 
-	await db.changeLog.create(logMessage);
+	await changeLogRepo.createChangeLog(kdb, logMessage);
 
 	const message = `Message sent to whole timeslot. ${blast.inbox || 0} recipients messaged, ${blast.web || 0} by web and ${blast.email || 0} by email`;
 
@@ -165,20 +166,20 @@ export async function scheduleAutoFlip(roundId, req) {
 				const flight = tick + 1;
 
 				if (round.flip_split_flights && round.flights > 1) {
-					const promise = db.autoqueue.create({
+					const promise = kdb.insertInto('autoqueue').values({
 						tag        : `flip_${flight}`,
 						round      : round.id,
-						active_at  : flipAt[flight],
+						active_at  : flipAt[flight]?.toDate(),
 						created_by : req.body.sender || 0,
-					});
+					}).execute();
 					promises.push(promise);
 				} else {
-					const promise = db.autoqueue.create({
+					const promise = kdb.insertInto('autoqueue').values({
 						tag        : `flip`,
 						round      : round.id,
-						active_at  : flipAt[flight],
+						active_at  : flipAt[flight]?.toDate(),
 						created_by : req.body.sender || 0,
-					});
+					}).execute();
 
 					promises.push(promise);
 				}
@@ -210,13 +211,12 @@ export async function blastRoundPairing(req, res) {
 	let promises = [];
 
 	if (req.body.publish) {
-		const publish = db.sequelize.query(
-			`update round set published = 1 where round.id = :roundId `, {
-				replacements: queryData.replacements,
-				type: db.sequelize.QueryTypes.UPDATE,
-			});
+		const publish = kdb.updateTable('round')
+			.set({ published: 1 })
+			.where('round.id', '=', roundId)
+			.execute();
 
-		const log = db.changeLog.create({
+		const log = changeLogRepo.createChangeLog(kdb, {
 			tag: 'publish',
 			description: `Round published`,
 			person: sender,
@@ -228,22 +228,18 @@ export async function blastRoundPairing(req, res) {
 		promises = [flip, log, publish];
 	}
 
-	const rmBlasted = db.sequelize.query(
-		`delete from round_setting where round = :roundId and tag = 'blasted'`, {
-			replacements: queryData.replacements,
-			type: db.sequelize.QueryTypes.DELETE,
-		});
+	const rmBlasted = kdb.deleteFrom('round_setting')
+		.where('round', '=', roundId)
+		.where('tag', '=', 'blasted')
+		.execute();
 
 	promises.push(rmBlasted);
 
-	const mkBlasted = db.sequelize.query(
-		`insert into round_setting (tag, round, value_date, value)
-        values ('blasted', :roundId, now(), 'date')
+	const mkBlasted = sql`
+		insert into round_setting (tag, round, value_date, value)
+        values ('blasted', ${roundId}, now(), 'date')
         ON DUPLICATE KEY UPDATE value_date = now()
-    `, {
-			replacements: queryData.replacements,
-			type: db.sequelize.QueryTypes.INSERT,
-		});
+    `.execute(kdb);
 
 	promises.push(mkBlasted);
 	await Promise.all(promises);
@@ -288,15 +284,15 @@ export async function blastRoundPairing(req, res) {
 				roundId,
 			};
 
-			const logPromise = db.sequelize.query(`
-        insert into change_log
-          (tag, description, person, round, tourn)
-        values
-          ('tabbing', :description, :personId, :roundId, :tournId)
-      `, {
-				type: db.sequelize.QueryTypes.INSERT,
-				replacements,
-			});
+			const logPromise = kdb.insertInto('change_log')
+				.values({
+					tag         : 'tabbing',
+					description : replacements.description,
+					person      : replacements.personId,
+					round       : replacements.roundId,
+					tourn       : replacements.tournId,
+				})
+				.execute();
 
 			Promise.resolve(logPromise).then(() => {
 				resolve(blastResponse);

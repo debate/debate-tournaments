@@ -1,8 +1,8 @@
 import CryptoJS from 'crypto-js';
 import axios from 'axios';
 import { sql } from 'kysely';
-import db from '../data/db.js';
 import { db as kdb } from '../data/database.js';
+import changeLogRepo from '../repos/changeLogRepo.js';
 import config from '../config.js';
 
 export const getNSDAMemberId = async (email) => {
@@ -52,7 +52,10 @@ export const syncLearnResults = async (person) => {
 	const nsdaIds = {};
 
 	if (typeof person === 'number') {
-		targetPerson = await db.person.findByPk(person);
+		targetPerson = await kdb.selectFrom('person')
+			.selectAll()
+			.where('id', '=', person)
+			.executeTakeFirst();
 	} else if (typeof person === 'object') {
 		targetPerson = person;
 	}
@@ -67,7 +70,10 @@ export const syncLearnResults = async (person) => {
 		const membership = await getNSDAMemberId(targetPerson.email);
 		if (membership && membership.id) {
 			targetPerson.nsda = membership.id;
-			await targetPerson.save();
+			await kdb.updateTable('person')
+				.set({ nsda: membership.id })
+				.where('id', '=', targetPerson.id)
+				.execute();
 		}
 	}
 
@@ -135,29 +141,22 @@ export const syncLearnResults = async (person) => {
 
 				if (!quizByNSDA[result.courseId].approved_by) {
 
-					await db.sequelize.query(`
-						update person_quiz pq
-							set pq.pending = 0,
-							pq.completed   = 1,
-							pq.approved_by = 3
-						where 1=1
-							and pq.id = :personQuizId
-					`, {
-						replacements: { personQuizId: quizByNSDA[result.courseId].pqId },
-						type: db.sequelize.QueryTypes.UPDATE,
-					});
+					await kdb.updateTable('person_quiz')
+						.set({ pending: 0, completed: 1, approved_by: 3 })
+						.where('id', '=', quizByNSDA[result.courseId].pqId)
+						.execute();
 					results.updates++;
 				}
 
 			} else if (quizByNSDA[result.courseId]) {
 
-				await db.personQuiz.create({
+				await kdb.insertInto('person_quiz').values({
 					person      : targetPerson.id,
 					approved_by : 3,
 					quiz        : quizByNSDA[result.courseId].id,
 					completed   : 1,
 					updated_at  : new Date(),
-				});
+				}).execute();
 
 				results.new++;
 			}
@@ -285,16 +284,14 @@ export const syncLearnByCourse = async (quiz) => {
 
 			} else if (!person.nsda) {
 
-				await db.sequelize.query(`
-					update person set nsda = :nsdaId where id = :personId
-				`, {
-					replacements: { personId: person.id, nsdaId: existing.person_id },
-					type: db.sequelize.QueryTypes.UPDATE,
-				});
+				await kdb.updateTable('person')
+					.set({ nsda: existing.person_id })
+					.where('id', '=', person.id)
+					.execute();
 
 				logs.push(`${now} Linked Tabroom ${person.email} to NSDA ID: ${existing.person_id}`);
 
-				await db.changeLog.create({
+				await changeLogRepo.createChangeLog(kdb, {
 					tag         : 'link',
 					person      : person.id,
 					description : `NSDA Learn linked user to ${existing.person_id} because of email match`,
@@ -357,12 +354,10 @@ export const syncLearnByCourse = async (quiz) => {
 
 			if (usersByNsdaId[person.nsda] || usersByEmail[person.email.toLowerCase()]) {
 
-				const promise = db.sequelize.query(`
-					update person_quiz pq set completed = 1, approved_by = 3, updated_at = :updatedAt where id = :pqId
-				`, {
-					replacements: { pqId: person.pq, updatedAt: person.updated_at },
-					type: db.sequelize.QueryTypes.UPDATE,
-				});
+				const promise = kdb.updateTable('person_quiz')
+					.set({ completed: 1, approved_by: 3, updated_at: person.updated_at })
+					.where('id', '=', person.pq)
+					.execute();
 
 				allPromises.push(promise);
 
@@ -376,12 +371,12 @@ export const syncLearnByCourse = async (quiz) => {
 		}
 	}
 
-	await db.personSetting.bulkCreate(
-		altSettings,
-		{
-			ignoreDuplicates: true,
-		}
-	);
+	if (altSettings.length > 0) {
+		await kdb.insertInto('person_setting')
+			.values(altSettings)
+			.ignore()
+			.execute();
+	}
 
 	await Promise.all(allPromises);
 	allPromises = [];
@@ -413,20 +408,14 @@ export const syncLearnByCourse = async (quiz) => {
 			)
 		`.execute(kdb);
 
-		await db.sequelize.query(`
+		await sql`
 			delete pq.*
 				from person, person_quiz pq
 			where 1=1
-				and person.nsda IN (:userIds)
+				and person.nsda IN (${sql.join(userIds)})
 				and person.id = pq.person
-				and pq.quiz = :quizId
-		`, {
-			replacements : {
-				userIds,
-				quizId   : quiz.id,
-			},
-			type : db.sequelize.QueryTypes.DELETE,
-		});
+				and pq.quiz = ${quiz.id}
+		`.execute(kdb);
 
 		const pqAdds = [];
 
@@ -460,8 +449,10 @@ export const syncLearnByCourse = async (quiz) => {
 			}
 		}
 
-		const bigPromise = db.personQuiz.bulkCreate(pqAdds);
-		allPromises.push(bigPromise);
+		if (pqAdds.length > 0) {
+			const bigPromise = kdb.insertInto('person_quiz').values(pqAdds).execute();
+			allPromises.push(bigPromise);
+		}
 	}
 
 	await Promise.all(allPromises);
@@ -492,28 +483,22 @@ export const syncLearnByCourse = async (quiz) => {
 				)
 		`.execute(kdb)).rows;
 
-		await db.sequelize.query(`
+		await sql`
 			delete pq.*
 				from person, person_quiz pq
 			where 1=1
-				and (person.email IN (:userEmails)
+				and (person.email IN (${sql.join(userEmails)})
 					OR EXISTS (
 						select ps.id
 						from person_setting ps
 						where ps.person = person.id
 						and ps.tag='nsda_email'
-						and ps.value IN (:userEmails)
+						and ps.value IN (${sql.join(userEmails)})
 					)
 				)
 				and person.id = pq.person
-				and pq.quiz = :quizId
-		`, {
-			replacements   : {
-				userEmails,
-				quizId     : quiz.id,
-			},
-			type : db.sequelize.QueryTypes.DELETE,
-		});
+				and pq.quiz = ${quiz.id}
+		`.execute(kdb);
 
 		for (const person of stillNotExisting) {
 
@@ -538,12 +523,10 @@ export const syncLearnByCourse = async (quiz) => {
 
 					logs.push(` ${now} ${person.email} has no NSDA ID but email correponds to ${courseUser.person_id}.  Linking.`);
 
-					const promiseOne = db.sequelize.query(`
-						update person set nsda = :nsdaId where id = :personId
-					`, {
-						replacements: { personId: person.id, nsdaId: courseUser.person_id },
-						type: db.sequelize.QueryTypes.UPDATE,
-					});
+					const promiseOne = kdb.updateTable('person')
+						.set({ nsda: courseUser.person_id })
+						.where('id', '=', person.id)
+						.execute();
 
 					allPromises.push(promiseOne);
 				}
@@ -567,8 +550,10 @@ export const syncLearnByCourse = async (quiz) => {
 			}
 		}
 
-		const otherPromise = db.personQuiz.bulkCreate(emailAdds);
-		allPromises.push(otherPromise);
+		if (emailAdds.length > 0) {
+			const otherPromise = kdb.insertInto('person_quiz').values(emailAdds).execute();
+			allPromises.push(otherPromise);
+		}
 
 	}
 
@@ -586,36 +571,46 @@ export const syncLearnByCourse = async (quiz) => {
 		}
 	}
 
-	const quizMisses = await db.tabroomSetting.findOne({ where: { tag: `quiz_misses_${quiz.id}` } });
+	const quizMisses = await kdb.selectFrom('tabroom_setting')
+		.select('id')
+		.where('tag', '=', `quiz_misses_${quiz.id}`)
+		.executeTakeFirst();
 
 	if (quizMisses) {
-		quizMisses.value_text = JSON.stringify(unmatchedResults, null, );
-		await quizMisses.save();
+		await kdb.updateTable('tabroom_setting')
+			.set({ value_text: JSON.stringify(unmatchedResults, null, ) })
+			.where('id', '=', quizMisses.id)
+			.execute();
 
 	} else {
 
-		await db.tabroomSetting.create({
+		await kdb.insertInto('tabroom_setting').values({
 			tag        : `quiz_misses_${quiz.id}`,
 			value      : 'text',
 			person     : 3,
 			value_text : JSON.stringify(unmatchedResults, null, 4),
-		});
+		}).execute();
 	}
 
-	const quizLog = await db.tabroomSetting.findOne({ where: { tag: `quiz_log_${quiz.id}` } });
+	const quizLog = await kdb.selectFrom('tabroom_setting')
+		.select('id')
+		.where('tag', '=', `quiz_log_${quiz.id}`)
+		.executeTakeFirst();
 
 	if (quizLog) {
-		quizLog.value_text = JSON.stringify(logs, null, 4);
-		await quizLog.save();
+		await kdb.updateTable('tabroom_setting')
+			.set({ value_text: JSON.stringify(logs, null, 4) })
+			.where('id', '=', quizLog.id)
+			.execute();
 
 	} else {
 
-		await db.tabroomSetting.create({
+		await kdb.insertInto('tabroom_setting').values({
 			tag        : `quiz_log_${quiz.id}`,
 			value      : 'text',
 			person     : 3,
 			value_text : JSON.stringify(logs, null, 4),
-		});
+		}).execute();
 	}
 
 	return `${quiz.label} synchronized for ${courseData.length} records with ${logs.length} changes`;
@@ -623,14 +618,12 @@ export const syncLearnByCourse = async (quiz) => {
 };
 
 export const swapNSDA = async (personId, goodNSDA, logMsg) => {
-	await db.sequelize.query(`
-		update person set nsda = :goodNSDA where id = :personId
-	`, {
-		replacements: { personId, goodNSDA },
-		type: db.sequelize.QueryTypes.UPDATE,
-	});
+	await kdb.updateTable('person')
+		.set({ nsda: goodNSDA })
+		.where('id', '=', personId)
+		.execute();
 
-	await db.changeLog.create({
+	await changeLogRepo.createChangeLog(kdb, {
 		tag         : 'link',
 		person      : personId,
 		description : logMsg || `NSDA ID swapped to ${goodNSDA}`,
@@ -638,14 +631,12 @@ export const swapNSDA = async (personId, goodNSDA, logMsg) => {
 };
 
 export const wipeNSDA = async (personId, logMsg) => {
-	await db.sequelize.query(`
-		update person set nsda = NULL where id = :personId
-	`, {
-		replacements: { personId },
-		type: db.sequelize.QueryTypes.UPDATE,
-	});
+	await kdb.updateTable('person')
+		.set({ nsda: null })
+		.where('id', '=', personId)
+		.execute();
 
-	await db.changeLog.create({
+	await changeLogRepo.createChangeLog(kdb, {
 		tag         : 'link',
 		person      : personId,
 		description : logMsg || `NSDA ID deleted `,

@@ -1,3 +1,6 @@
+import { sql } from 'kysely';
+import { db as kdb } from '../../../data/database.js';
+
 export async function updateLastAccess(req,res) {
 	if (req.session?.Su) {
 		return res.status(200).json({
@@ -17,13 +20,10 @@ export async function updateLastAccess(req,res) {
 		(Number.isNaN(last) || last < then)
 		|| req.query.forceUpdate
 	) {
-		response = await req.db.sequelize.query(`
-			update session set last_access = NOW()
-			where session.id = :sessionId
-		`, {
-			replacements: { sessionId: req.session.id },
-			type: req.db.sequelize.QueryTypes.UPDATE,
-		});
+		response = await kdb.updateTable('session')
+			.set({ last_access: sql`NOW()` })
+			.where('session.id', '=', req.session.id)
+			.execute();
 
 		response = {
 			message: 'Update performed',

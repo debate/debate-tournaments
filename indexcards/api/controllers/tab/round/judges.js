@@ -1,7 +1,7 @@
 import { NotFound } from '../../../helpers/problem.js';
 import { sql } from 'kysely';
-import db from '../../../data/db.js';
 import { db as kdb } from '../../../data/database.js';
+import { summon } from '../../../repos/utils/summon.js';
 export async function getRoundAvailableJudges (req, res) {
 
 	// Returns a list of judges who can judge this round, filtering out any
@@ -19,7 +19,7 @@ export async function getRoundAvailableJudges (req, res) {
 	if (req.round) {
 		round = req.round;
 	} else {
-		round = await db.summon(db.round, req.params.roundId);
+		round = await summon(kdb, 'round',req.params.roundId);
 	}
 
 	let judgeQuery = sql`
@@ -187,7 +187,7 @@ export async function getRoundJudgeConflicts(req, res) {
 	if (req.round) {
 		round = req.round;
 	} else {
-		round = await db.summon(db.round, req.params.roundId);
+		round = await summon(kdb, 'round',req.params.roundId);
 	}
 
 	const judgeConflicts = {};

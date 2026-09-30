@@ -3,7 +3,9 @@ import { getFollowers, getPairingFollowers } from '../../../helpers/followers.js
 import logger from '../../../helpers/logger.js';
 import { notify } from '../../../helpers/blast.js';
 import { sendPairingBlast, formatPairingBlast } from '../../../helpers/pairing.js';
-import db from '../../../data/db.js';
+import { db as kdb } from '../../../data/database.js';
+import { summon } from '../../../repos/utils/summon.js';
+import changeLogRepo from '../../../repos/changeLogRepo.js';
 
 export async function blastSectionMessage(req, res) {
 	if (!req.body.message) {
@@ -13,8 +15,8 @@ export async function blastSectionMessage(req, res) {
 		});
 	}
 
-	await db.summon(db.section, req.params.sectionId);
-	const tourn = await db.summon(db.tourn, req.params.tournId);
+	await summon(kdb, 'panel',req.params.sectionId);
+	const tourn = await summon(kdb, 'tourn',req.params.tournId);
 
 	const personIds = await getFollowers(
 		{ sectionId : req.params.sectionId },
@@ -39,7 +41,7 @@ export async function blastSectionMessage(req, res) {
 		return res.status(200).json(notifyResponse);
 	}
 
-	await db.changeLog.create({
+	await changeLogRepo.createChangeLog(kdb, {
 		tag         : 'blast',
 		description : `${req.body.message} sent to ${notifyResponse.push?.count || 0} web and ${notifyResponse.email?.count || 0} email recipients `,
 		person      : req.session.person,
@@ -61,7 +63,7 @@ export async function blastSectionPairing(req, res) {
 	queryData.fields = sql``;
 
 	const blastData = await formatPairingBlast(queryData, req);
-	const tourn = await db.summon(db.tourn, req.params.tournId);
+	const tourn = await summon(kdb, 'tourn',req.params.tournId);
 
 	const seconds = Math.floor(Date.now() / 1000);
 	const numberwang = seconds.toString().substring(-5);
@@ -81,7 +83,7 @@ export async function blastSectionPairing(req, res) {
 	blastData.tourn = tourn.id;
 	const response = await sendPairingBlast(followers, blastData, req, res);
 
-	await db.changeLog.create({
+	await changeLogRepo.createChangeLog(kdb, {
 		tag         : 'blast',
 		description : `Pairing individually sent to section : ${response.message} `,
 		person      : req.session.person,

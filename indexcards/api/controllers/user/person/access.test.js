@@ -1,6 +1,6 @@
 import request from 'supertest';
 import { assert } from 'chai';
-import db from '../../../data/db';
+import { db } from '../../../data/database.js';
 import config from '../../../config.js';
 import server from '../../../../app';
 import { testUserSession } from '../../../../tests/testFixtures';
@@ -9,14 +9,10 @@ import { testUserSession } from '../../../../tests/testFixtures';
 describe.todo('Session Last Access Updated', () => {
 
 	beforeAll( async () => {
-		await db.sequelize.query(`
-			update session
-				set last_access = '2024-01-01 00:00:00'
-				where person = :personId
-		`, {
-			replacements: { personId: testUserSession.person },
-			type: db.Sequelize.QueryTypes.UPDATE,
-		});
+		await db.updateTable('session')
+			.set({ last_access: new Date('2024-01-01T00:00:00Z') })
+			.where('person', '=', testUserSession.person)
+			.execute();
 	});
 
 	it('Updates Last Access Timestamp', async () => {

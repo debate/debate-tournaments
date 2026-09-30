@@ -1,11 +1,11 @@
 import { getRoundAvailableJudges, getRoundJudgeConflicts } from '../round/judges.js';
 import { getSectionEntries } from './entries.js';
 import { sql } from 'kysely';
-import db from '../../../data/db.js';
 import { db as kdb } from '../../../data/database.js';
+import { summon } from '../../../repos/utils/summon.js';
 
 export async function getSectionCleanJudges(req, res) {
-	const section = await db.summon(db.section, req.params.sectionId);
+	const section = await summon(kdb, 'panel',req.params.sectionId);
 
 	// Pull settings and everything else we need about this round
 	section.round = await roundData(section.round);

@@ -3,7 +3,6 @@ import { flightTimes } from '../../../helpers/round.js';
 import logger from '../../../helpers/logger.js';
 import { BadRequest, Unauthorized } from '../../../helpers/problem.js';
 import { sql } from 'kysely';
-import db from '../../../data/db.js';
 import { db as kdb } from '../../../data/database.js';
 
 //  Perms work done, needs testing
@@ -13,7 +12,7 @@ export async function getTournAttendance(req, res) {
 
 	await req.actor.assert('tourn', 'read', tournId);
 
-	let queryLimit = '';
+	let queryLimit = sql``;
 
 	if (req.params.timeslotId) {
 		req.params.timeslotId = parseInt(req.params.timeslotId);
@@ -23,15 +22,10 @@ export async function getTournAttendance(req, res) {
 		req.params.roundId = parseInt(req.params.roundId);
 	}
 
-	const replacements = {};
-	const type = db.sequelize.QueryTypes.SELECT;
-
 	if (req.params.timeslotId) {
-		queryLimit = `where round.timeslot = :timeslotId`;
-		replacements.timeslotId = req.params.timeslotId;
+		queryLimit = sql`where round.timeslot = ${req.params.timeslotId}`;
 	} else if (req.params.roundId) {
-		queryLimit = `where round.id = :roundId`;
-		replacements.roundId = req.params.roundId;
+		queryLimit = sql`where round.id = ${req.params.roundId}`;
 	} else {
 		return BadRequest(req, res, 'No parameters sent for query');
 	}
@@ -46,30 +40,26 @@ export async function getTournAttendance(req, res) {
 		const categoryIds = allowedCategories.ids;
 
 		if ( eventIds.length > 0 && categoryIds.length > 0) {
-			queryLimit += ` and (
-					round.event IN (:eventIds)
+			queryLimit = sql`${queryLimit} and (
+					round.event IN (${sql.join(eventIds)})
 					OR round.event IN (
-						select event.id from event where event.category IN (:categoryIds)
+						select event.id from event where event.category IN (${sql.join(categoryIds)})
 					)
 				)`;
-			replacements.eventIds = eventIds;
-			replacements.categoryIds = categoryIds;
 
 		} else if ( eventIds.length > 0 ) {
 
-			queryLimit += ` and round.event IN (:eventIds)`;
-			replacements.eventIds = eventIds;
+			queryLimit = sql`${queryLimit} and round.event IN (${sql.join(eventIds)})`;
 
 		} else if ( categoryIds.length > 0 ) {
-			queryLimit += ` and round.event IN (
-					select event.id from event where event.category IN (:categoryIds)
+			queryLimit = sql`${queryLimit} and round.event IN (
+					select event.id from event where event.category IN (${sql.join(categoryIds)})
 				)`;
-			replacements.categoryIds = categoryIds;
 		}
 	}
 
 	// List of linked persons (students or judges) and their current status
-	const attendanceResults = await db.sequelize.query(`
+	const attendanceResults = (await sql`
 			select
 				cl.panel panel, cl.tag tag, cl.description description,
 					cl.timestamp timestamp,
@@ -107,9 +97,9 @@ export async function getTournAttendance(req, res) {
 					)
 				)
 			order by cl.timestamp
-		`, { replacements, type });
+		`.execute(kdb)).rows;
 
-	const unlinkedAttendanceResults = await db.sequelize.query(`
+	const unlinkedAttendanceResults = (await sql`
 			select
 				cl.panel panel, cl.tag tag, cl.description description,
 					cl.timestamp timestamp,
@@ -147,12 +137,12 @@ export async function getTournAttendance(req, res) {
 					)
 				)
 			order by cl.timestamp
-		`, { replacements, type });
+		`.execute(kdb)).rows;
 
 	// Attendance status by entry not person (when tagging
 	// by team not student, such as in person).
 
-	const entryAttendanceResults = await db.sequelize.query(`
+	const entryAttendanceResults = (await sql`
 			select
 				cl.panel panel, cl.tag tag, cl.description description,
 					cl.timestamp timestamp,
@@ -176,9 +166,9 @@ export async function getTournAttendance(req, res) {
 				and entry.active = 1
 
 			order by cl.timestamp
-		`, { replacements, type });
+		`.execute(kdb)).rows;
 
-	const startsResults = await db.sequelize.query(`
+	const startsResults = (await sql`
 			select
 				judge.person person, panel.id panel, panel.timestamp timestamp,
 				ballot.judge_started startTime,
@@ -208,10 +198,10 @@ export async function getTournAttendance(req, res) {
 				and entry.active = 1
 			group by panel.id, judge.id
 			order by ballot.timestamp
-		`, { replacements, type });
+		`.execute(kdb)).rows;
 
 	// Pull an array of all the ballots that have been audited fully.
-	const confirmedResults = await db.sequelize.query(`
+	const confirmedResults = (await sql`
 			select
 				panel.id panel, panel.bye bye,
 					confirmed_started.timestamp confirmedAt,
@@ -233,7 +223,7 @@ export async function getTournAttendance(req, res) {
 				and round.id = panel.round
 				and round.event = event.id
 				and event.tourn = tourn.id
-		`, { replacements, type });
+		`.execute(kdb)).rows;
 
 	const status = {
 		panel   : {},
@@ -362,20 +352,25 @@ export async function postTournAttendance(req, res) {
 
 	try {
 
-		const now = Date();
+		const now = new Date();
+
+		const findById = (table, id) => kdb.selectFrom(table)
+			.selectAll()
+			.where('id', '=', id)
+			.executeTakeFirst();
 
 		const targetType = req.body.target_type;
 		const targetId = req.body.target_id;
 		let target = '';
 
 		if (targetType === 'student') {
-			target = await db.student.findByPk(targetId);
+			target = await findById('student', targetId);
 		} else if (targetType === 'entry') {
-			target = await db.entry.findByPk(targetId);
+			target = await findById('entry', targetId);
 		} else if (targetType === 'judge') {
-			target = await db.judge.findByPk(targetId);
+			target = await findById('judge', targetId);
 		} else {
-			target = await db.person.findByPk(targetId);
+			target = await findById('person', targetId);
 		}
 
 		if (!target) {
@@ -385,7 +380,7 @@ export async function postTournAttendance(req, res) {
 			});
 		}
 
-		const panel = await db.panel.findByPk(req.body.panel);
+		const panel = await findById('panel', req.body.panel);
 
 		if (!panel) {
 			return res.status(201).json({
@@ -401,21 +396,16 @@ export async function postTournAttendance(req, res) {
 			if (targetType === 'judge') {
 				judge = target;
 			} else {
-				judge = await db.judge.findByPk(req.body.judge);
+				judge = await findById('judge', req.body.judge);
 			}
 
 			if (parseInt(req.body.property_name) > 0) {
 
-				const eraseStart = `
-					update ballot
-						set started_by = NULL, judge_started = NULL
-					where judge = :judgeId
-						and panel = :panelId
-				`;
-
-				await db.sequelize.query(eraseStart, {
-					replacements: { judgeId: judge.id, panelId: panel.id },
-				});
+				await kdb.updateTable('ballot')
+					.set({ started_by: null, judge_started: null })
+					.where('judge', '=', judge.id)
+					.where('panel', '=', panel.id)
+					.execute();
 
 				const response = {
 					error : false,
@@ -445,15 +435,14 @@ export async function postTournAttendance(req, res) {
 				return res.status(201).json(response);
 			}
 
-			await db.ballot.update({
-				started_by    : req.session.person,
-				judge_started : now,
-			},{
-				where : {
-					panel : panel.id,
-					judge : judge.id,
-				},
-			});
+			await kdb.updateTable('ballot')
+				.set({
+					started_by    : req.session.person,
+					judge_started : now,
+				})
+				.where('panel', '=', panel.id)
+				.where('judge', '=', judge.id)
+				.execute();
 
 			const response = {
 				error : false,
@@ -514,7 +503,7 @@ export async function postTournAttendance(req, res) {
 				log.person = target.id;
 			}
 
-			await db.campusLog.create(log);
+			await kdb.insertInto('campus_log').values(log).execute();
 
 			// Oh for the days I have active webpages going and don't need
 			// to do the following nonsense
@@ -572,7 +561,7 @@ export async function postTournAttendance(req, res) {
 			log.person = target.id;
 		}
 
-		await db.campusLog.create(log);
+		await kdb.insertInto('campus_log').values(log).execute();
 
 		return res.status(201).json({
 			error   : false,

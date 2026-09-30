@@ -2,6 +2,7 @@ import { sql } from 'kysely';
 import { verify } from 'unixcrypt';
 import { db as kdb } from '../../../data/database.js';
 import { BadRequest } from '../../../helpers/problem.js';
+import personRepo from '../../../repos/personRepo.js';
 
 // This name is currently a misnomer, because this doesn't actually create a
 // session, it just validates the username and password Eventually, this should
@@ -9,18 +10,12 @@ import { BadRequest } from '../../../helpers/problem.js';
 
 export const login = {
 	POST: async (req, res) => {
-		const db = req.db;
 
 		if (!req.body?.username) {
 			return BadRequest(req, res, 'No username sent');
 		}
 
-		const person = await db.person.findOne({
-			where: { email: req.body.username },
-			include : [
-				{ model: db.personSetting, as: 'Settings' },
-			],
-		});
+		const person = await personRepo.getPersonByUsername(kdb, req.body.username);
 
 		if (!person || typeof person !== 'object' || !person.id || !person.password) {
 			return BadRequest(req, res, 'No user found for username');

@@ -1,10 +1,10 @@
 import { sql } from 'kysely';
-import db from '../../../data/db.js';
 import { db as kdb } from '../../../data/database.js';
+import { summon } from '../../../repos/utils/summon.js';
 // NSDA Nationals Specific code to create judge pools with according weights via auto assignment.
 
 export async function placeJudgesNats(req, res) {
-	const tourn = await db.summon(db.tourn, req.params.tournId);
+	const tourn = await summon(kdb, 'tourn',req.params.tournId);
 
 	const now = new Date();
 
@@ -28,7 +28,7 @@ export async function placeJudgesNats(req, res) {
 		return;
 	}
 
-	const parentPool = await db.summon(db.jpool, req.params.jpoolId);
+	const parentPool = await summon(kdb, 'jpool',req.params.jpoolId);
 
 	if (!parentPool) {
 		res.status(201).json({
@@ -39,10 +39,10 @@ export async function placeJudgesNats(req, res) {
 	}
 
 	if (!req.body.augment) {
-		await db.sequelize.query(`
+		await sql`
 			delete jpj.*
 				from jpool, jpool_judge jpj
-			where jpool.parent = :parentId
+			where jpool.parent = ${parentPool.id}
 				and jpj.jpool = jpool.id
 				and jpool.id != jpool.parent
 
@@ -52,14 +52,11 @@ export async function placeJudgesNats(req, res) {
 					where pool_ignore.tag = 'pool_ignore'
 					and pool_ignore.jpool = jpj.jpool
 			)
-		`, {
-			replacements : { parentId: parentPool.id },
-			type         : db.sequelize.QueryTypes.DELETE,
-		});
+		`.execute(kdb);
 	}
 
-	const children = await getNatsChildPools(db, parentPool.id);
-	const judges = await getNatsJPoolJudges(db, parentPool.id, children, weights);
+	const children = await getNatsChildPools(parentPool.id);
+	const judges = await getNatsJPoolJudges(parentPool.id, children, weights);
 	const jpoolsByPriority = {};
 
 	// Now arrange the pools into arrays keyed by the priority.  Do this so
@@ -290,13 +287,9 @@ export async function placeJudgesNats(req, res) {
 	// Write them in
 	Object.keys(jpoolJudges).forEach( (jpoolId) => {
 		jpoolJudges[jpoolId].forEach( async (judgeId) => {
-			await db.sequelize.query(
-				`insert into jpool_judge (judge, jpool) values (:judgeId, :jpoolId)`,
-				{
-					replacements : { judgeId, jpoolId },
-					type         : db.sequelize.QueryTypes.INSERT,
-				}
-			);
+			await kdb.insertInto('jpool_judge')
+				.values({ judge: judgeId, jpool: jpoolId })
+				.execute();
 		});
 	});
 
@@ -702,7 +695,7 @@ export async function placeSuppOnlyJudges(req, res) {
 	// 2) whose schools have only supp entries.
 	// Indicate who has debate and speech and both.
 
-	const parent = await db.summon(db.jpool, req.params.jpoolId);
+	const parent = await summon(kdb, 'jpool',req.params.jpoolId);
 	const suppOnlyJudges = (await sql`
 		SELECT
 			judge.id,
@@ -750,15 +743,12 @@ export async function placeSuppOnlyJudges(req, res) {
 	});
 
 	// Remove existing pool assignments from supp subpools
-	await db.sequelize.query(`
-		delete jpj.* 
-			from jpool_judge jpj
-		where jpj.judge IN (:judgeIds)
-		and jpj.jpool IN (:jpoolIds)
-	`, {
-		replacements: { jpoolIds, judgeIds },
-		type: db.sequelize.QueryTypes.DELETE,
-	});
+	if (judgeIds.length > 0 && jpoolIds.length > 0) {
+		await kdb.deleteFrom('jpool_judge')
+			.where('judge', 'in', judgeIds)
+			.where('jpool', 'in', jpoolIds)
+			.execute();
+	}
 
 	const judgeStrikes = judgeIds.length < 1 ? [] : await kdb
 		.selectFrom('judge')
@@ -801,12 +791,9 @@ export async function placeSuppOnlyJudges(req, res) {
 				}
 
 				if (!busy) {
-					judges[judgeId].response = await db.sequelize.query(`
-						insert into jpool_judge (jpool, judge) values (:jpoolId, :judgeId)
-					`, {
-						replacements: { jpoolId: jpool.id, judgeId },
-						type: db.sequelize.QueryTypes.INSERT,
-					});
+					judges[judgeId].response = await kdb.insertInto('jpool_judge')
+						.values({ jpool: jpool.id, judge: judgeId })
+						.execute();
 
 					judges[judgeId].rounds -= jpool.rounds;
 

@@ -32,6 +32,7 @@ export async function updateAccess(req, res) {
 	const currentPerm = await db.selectFrom('permission')
 		.where('person', '=', targetPerson.id)
 		.where('category', '=', targetCategory.id)
+		.selectAll()
 		.executeTakeFirst();
 
 	if (!currentPerm) {
@@ -43,7 +44,10 @@ export async function updateAccess(req, res) {
 	}
 
 	currentPerm.tag = currentPerm.tag === 'checker' ? 'tabber' : 'checker';
-	await currentPerm.save();
+	await db.updateTable('permission')
+		.set({ tag: currentPerm.tag })
+		.where('id', '=', currentPerm.id)
+		.execute();
 	const description = `${targetPerson.email}'s access to ${targetCategory.abbr} is now ${currentPerm.tag}`;
 
 	const replace = [
@@ -117,9 +121,10 @@ export async function createBackupAccess(req, res) {
 		return BadRequest(req, res, 'That Tabroom account is set to not allow emails to be sent to it');
 	}
 
-	const backupAccounts = await db.selectFrom('categorySetting')
+	const backupAccounts = await db.selectFrom('category_setting')
 		.where('category', '=', req.params.categoryId)
 		.where('tag', '=', 'backup_followers')
+		.selectAll()
 		.executeTakeFirst();
 
 	const followers = [];
@@ -139,15 +144,17 @@ export async function createBackupAccess(req, res) {
 	const uniqueFollowers = [...new Set(followers)];
 
 	if (backupAccounts?.id) {
-		backupAccounts.value_text = uniqueFollowers;
-		await backupAccounts.update();
+		await db.updateTable('category_setting')
+			.set({ value: 'json', value_text: JSON.stringify(uniqueFollowers) })
+			.where('id', '=', backupAccounts.id)
+			.execute();
 	} else {
 		await db.insertInto('category_setting')
 			.values({
 				category: req.params.categoryId,
 				tag: 'backup_followers',
 				value: 'json',
-				value_text: uniqueFollowers,
+				value_text: JSON.stringify(uniqueFollowers),
 			})
 			.execute();
 	}
@@ -157,9 +164,10 @@ export async function createBackupAccess(req, res) {
 
 // Delete backup follower
 export async function deleteBackupAccess(req, res) {
-	const backupAccounts = await db.selectFrom('categorySetting')
+	const backupAccounts = await db.selectFrom('category_setting')
 		.where('category', '=', req.params.categoryId)
 		.where('tag', '=', 'backup_followers')
+		.selectAll()
 		.executeTakeFirst();
 
 	if (!backupAccounts?.id) {
@@ -180,10 +188,14 @@ export async function deleteBackupAccess(req, res) {
 	}
 
 	if (followers.length < 1) {
-		await backupAccounts.destroy();
+		await db.deleteFrom('category_setting')
+			.where('id', '=', backupAccounts.id)
+			.execute();
 	} else {
-		backupAccounts.value_text = followers;
-		await backupAccounts.update();
+		await db.updateTable('category_setting')
+			.set({ value: 'json', value_text: JSON.stringify(followers) })
+			.where('id', '=', backupAccounts.id)
+			.execute();
 	}
 
 	return res.status(200).json(`Backup follower removed`);

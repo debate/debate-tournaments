@@ -143,8 +143,10 @@ export async function saveRubric(req, res) {
 	if (score && score.id) {
 
 		try {
-			score.content = JSON.stringify(autoSave);
-			await score.save();
+			await db.updateTable('score')
+				.set({ content: JSON.stringify(autoSave) })
+				.where('id', '=', score.id)
+				.execute();
 		} catch (err) {
 			logger.error(`Error encountered in savings scores ${err} ballot ${ballot.id} score ${score.id}`);
 		}

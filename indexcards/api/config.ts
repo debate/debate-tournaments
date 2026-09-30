@@ -50,20 +50,16 @@ export const ConfigSchema = z.object({
 		replica: z.string().min(1).optional(),
 		user: z.string().default('root'),
 		pass: z.string().min(1),
-		sequelizeOptions : z.object({
-			dialect : z.enum(['mariadb', 'mysql', 'postgres', 'sqlite', 'mssql']).default('mariadb'),
-			define  : z.object({
-				freezeTableName : z.boolean().default(true),
-				modelName       : z.string().default('singularName'),
-				underscored     : z.boolean().default(true),
-				timestamps      : z.boolean().default(false),
-			}).prefault({}),
-			pool: z.object({
-				max: z.int().min(1),
-				min: z.int().min(0),
-				acquire: z.int().min(0),
-				idle: z.int().min(0),
-			}).optional(),
+		/** mariadb connection pool options */
+		pool: z.object({
+			/** Maximum number of connections */
+			connectionLimit: z.int().min(1).default(5),
+			/** Connections to keep open when idle. Defaults to connectionLimit */
+			minimumIdle: z.int().min(0).optional(),
+			/** Milliseconds to wait for a free connection before erroring */
+			acquireTimeout: z.int().min(0).default(10000),
+			/** Seconds an idle connection stays open before it is released */
+			idleTimeout: z.int().min(0).default(1800),
 		}).prefault({}),
 	}),
 	//------------------------------------------------------------------------------

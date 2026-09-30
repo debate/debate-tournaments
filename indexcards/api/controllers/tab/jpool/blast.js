@@ -1,15 +1,16 @@
 import { notify } from '../../../helpers/blast.js';
 import { BadRequest, UnexpectedError } from '../../../helpers/problem.js';
 import { sql } from 'kysely';
-import db from '../../../data/db.js';
 import { db as kdb } from '../../../data/database.js';
+import { summon } from '../../../repos/utils/summon.js';
+import changeLogRepo from '../../../repos/changeLogRepo.js';
 
 export async function blastJudges(req, res) {
 	if (!req.body.message) {
 		return BadRequest(req, res, 'No message to blast sent');
 	}
 
-	const jpool = await db.summon(db.jpool, req.params.jpoolId);
+	const jpool = await summon(kdb, 'jpool',req.params.jpoolId);
 
 	let query = sql``;
 
@@ -69,7 +70,7 @@ export async function blastJudges(req, res) {
 		jpoolJudgeArray.push(jpj.id);
 	});
 
-	const tourn = await db.summon(db.tourn, req.params.tournId);
+	const tourn = await summon(kdb, 'tourn',req.params.tournId);
 	const seconds = Math.floor(Date.now() / 1000);
 	const numberwang = seconds.toString().substring(-5);
 
@@ -94,7 +95,7 @@ export async function blastJudges(req, res) {
 	const promises = [];
 
 	rawRounds.forEach( async (round) => {
-		promises.push(db.changeLog.create({
+		promises.push(changeLogRepo.createChangeLog(kdb, {
 			tag         : 'blast',
 			description : `${req.body.message} sent to ${jpoolJudgeIds.length} judges in ${jpool.name}`,
 			person      : req.session.person,

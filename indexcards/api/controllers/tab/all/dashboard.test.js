@@ -1,7 +1,7 @@
 import request from 'supertest';
 import { assert } from 'chai';
 import config from '../../../config';
-import db from '../../../data/db';
+import { db } from '../../../data/database.js';
 import server from '../../../../app';
 import factories from '../../../../tests/factories';
 
@@ -46,7 +46,7 @@ describe('Status Board', () => {
 			},
 		];
 
-		await db.campusLog.bulkCreate(campusLogs);
+		await db.insertInto('campus_log').values(campusLogs).execute();
 
 	});
 
@@ -155,12 +155,9 @@ describe('Status Board', () => {
 
 	afterAll(async () => {
 
-		await db.sequelize.query(`delete from campus_log where marker = :personId`,
-			{
-				replacements: { personId: personId },
-				type: db.sequelize.QueryTypes.DELETE,
-			}
-		);
+		await db.deleteFrom('campus_log')
+			.where('marker', '=', personId)
+			.execute();
 	});
 
 });

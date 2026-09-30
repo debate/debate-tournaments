@@ -1,6 +1,6 @@
 import { sql } from 'kysely';
-import db from '../data/db.js';
 import { db as kdb } from '../data/database.js';
+import { summon } from '../repos/utils/summon.js';
 import logger from './logger.js';
 /**
  * Dead code
@@ -27,7 +27,7 @@ export const tabAuth = async (req) => {
 	let tourn = {};
 
 	try {
-		tourn = await db.summon(db.tourn, tournId);
+		tourn = await summon(kdb, 'tourn',tournId);
 	} catch (err) {
 		return (err);
 	}
@@ -275,7 +275,7 @@ export const tabAuth = async (req) => {
 	}
 
 	if (subType === 'category') {
-		const category = await db.summon(db.category, typeId);
+		const category = await summon(kdb, 'category',typeId);
 		if (category.tourn !== req.session.tourn.id) {
 			delete req.session.tourn;
 			delete req.session.perms;
@@ -371,7 +371,7 @@ export const localAuth = async (req) => {
 		`.execute(kdb);
 
 		if (permissions && permissions[0]?.tag) {
-			const local = await db.summon(db[localType], localId);
+			const local = await summon(kdb, localType,localId);
 			return { local, perms: permissions[0].tag };
 		}
 	}
@@ -399,7 +399,7 @@ export const checkJudgePerson = async (req, judgeId) => {
 		return true;
 	}
 
-	const judge = await db.summon(db.judge, judgeId);
+	const judge = await summon(kdb, 'judge',judgeId);
 
 	if (judge.person === req.session.person) {
 		return true;
