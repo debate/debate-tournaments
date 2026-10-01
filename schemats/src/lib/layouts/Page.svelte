@@ -35,11 +35,11 @@
 					pt-4 pl-8 pr-4 pb-8
 					w-[72%] resize-x grow
 					content-start
-					bg-back
+					bg-surface
 					border-t border-r
-					border-primary-800
+					border-primary-deep
 					rounded-t-md
-					border-l border-l-secondary-400
+					border-l border-l-accent
 				"
 			>
 				{@html pageData.content }
@@ -54,8 +54,8 @@
 					ms-2 ps-1
 					pb-4
 					content-start
-					border-l border-l-back-400
-					bg-back-200
+					border-l border-l-border-strong
+					bg-page
 				">
 					{@html pageData.sidebar }
 				</span>

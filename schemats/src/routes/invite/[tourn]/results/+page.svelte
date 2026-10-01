@@ -11,7 +11,7 @@
 
 	<div class="main">
 		{#if resultSets.status === 'pending'}
-			<div class='text-success-500 font-semibold'>
+			<div class='text-success font-semibold'>
 				Data Loading...
 			</div>
 		{:else if resultSets.status === 'error'}
@@ -19,7 +19,7 @@
 		{:else}
 
 			{#if resultSets.isPending}
-				<div class='text-success-500 font-semibold'>
+				<div class='text-success font-semibold'>
 					Data Updating...
 				</div>
 			{:else}

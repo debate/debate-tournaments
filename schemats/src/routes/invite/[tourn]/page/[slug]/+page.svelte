@@ -33,7 +33,7 @@
 		<div class="main">
 			{#if webPage}
 				<h5
-					class='border-b border-primary-500 mb-4'
+					class='border-b border-primary mb-4'
 				>{webPage.title || 'Main' }</h5>
 				{@html webPage.content}
 			{:else }

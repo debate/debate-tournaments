@@ -31,7 +31,7 @@
 						class='m-0 leading-none'
 					>{ entry.code }</h3>
 					{#if entry.name !== entry.code}
-						<h5 class='text-primary-600 leading-none'>{ entry.name }</h5>
+						<h5 class='text-primary-strong leading-none'>{ entry.name }</h5>
 					{/if}
 				</span>
 				<span
@@ -40,11 +40,11 @@
 					<h5
 						class='leading-none'
 					>{ entry.Event.name } ({entry.Event.abbr})</h5>
-					<h6 class='text-primary-600 leading-none'>{ tourn.start.substring(0, 4) } { tourn.name }</h6>
+					<h6 class='text-primary-strong leading-none'>{ tourn.start.substring(0, 4) } { tourn.name }</h6>
 				</span>
 			</div>
 
-			<div class='border-t-2 border-t-secondary-400 w-full pt-2'>
+			<div class='border-t-2 border-t-accent w-full pt-2'>
 				{#if entry.Event.type === 'speech'}
 					<Speech entry={ entry } />
 				{:else if entry.Event.type === 'congress'}

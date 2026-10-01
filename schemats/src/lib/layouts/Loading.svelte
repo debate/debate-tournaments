@@ -64,7 +64,7 @@
 	{#if loadStatus.tag === 'pending'}
 		<div class="main pt-4 ps-4">
 			<h4>Hold, please</h4>
-			<div class='text-success-500 font-semibold'>
+			<div class='text-success font-semibold'>
 				Accessing Data from Indexcards...
 			</div>
 		</div>
@@ -77,7 +77,7 @@
 	{:else if loadStatus.isPending}
 		<div class="main pt-4 ps-4">
 			<h4>Just a minute</h4>
-			<div class='text-success-500 font-semibold'>
+			<div class='text-success font-semibold'>
 				Data Updating...
 			</div>
 		</div>

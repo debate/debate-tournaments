@@ -19,17 +19,14 @@
 
 	let activeClass = `
 		active
-		text-primary-700
-		bg-back-50
-		hover:text-primary-800 hover:bg-back-100
-		dark:bg-back-800 dark:text-primary-500
-		hover:dark:text-warning-200 hover:dark:bg-back-700
+		text-primary-strong
+		bg-surface
+		hover:text-primary-deep hover:bg-surface-alt
 	`;
 
 	let inactiveClass = `
-		text-black
-		bg-back-200
-		dark:bg-back-800 dark:text-primary-500
+		text-text
+		bg-page
 	`;
 
 	const processedTabs:TabLink[] = $derived(tabs.map( (tab) => {
@@ -77,7 +74,7 @@
 					text-sm text-center
 					disabled:cursor-not-allowed
 					font-semibold
-					hover:bg-secondary-100
+					hover:bg-accent-soft
 				'
 				aria-selected = '{ page.url.pathname.includes(tab.route) || tab.defaultSelected }'
 				href          = {tab.route}

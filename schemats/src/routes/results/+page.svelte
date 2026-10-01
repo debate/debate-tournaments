@@ -42,7 +42,7 @@
 
 	<Sidebar>
 		<div class="sidenote">
-			<h5 class='my-0 border-b border-secondary-500 pb-0 leading-8 mb-2'>
+			<h5 class='my-0 border-b border-accent pb-0 leading-8 mb-2'>
 				School Year
 			</h5>
 

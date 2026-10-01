@@ -15,7 +15,6 @@
 		DropdownHeader,
 		DropdownItem,
 		DropdownGroup,
-		Button,
 		Tooltip,
 		Indicator,
 	} from 'flowbite-svelte';
@@ -64,13 +63,13 @@
 		activeUrl = page.url.pathname;
 	});
 
-	const dropdownItemClasses = 'text-sm hover:bg-gray-200 dark:hover:bg-neutral-600 py-2 flex items-center gap-1';
+	const dropdownItemClasses = 'text-sm hover:bg-accent-soft py-2 flex items-center gap-1';
 </script>
 
 <div>
 	<Navbar
 		class = 'items-start flex-nowrap flex-row
-			bg-linear-to-b from-primary-1000 to-primary-800
+			bg-primary-deep
 			sm:px-2 xl:px-4'
 		breakpoint="lg"
 		fluid = {true}
@@ -102,7 +101,7 @@
 					<h1
 						class="
 						hidden sm:inline
-							whitespace-nowrap font-semibold text-neutral-50
+							whitespace-nowrap font-semibold text-white
 							text-[28px]
 							md:text-[36px] md:leading-4 md:tracking-[0.02em]
 							lg:text-[42px] lg:tracking-[.02em] lg:py-1 lg:leading-7 pe-2
@@ -113,7 +112,7 @@
 						TABROOM.COM
 					</h1>
 					<div class="
-						text-secondary-300 italic w-auto font-semibold
+						text-accent italic w-auto font-semibold
 						sm:inline
 						md:text-[12px] md:ms-1 md:pb-1
 						lg:text-[14px] lg:ms-1 lg:pb-1
@@ -132,9 +131,9 @@
 					order-2'
 			{activeUrl}
 			classes={{
-				ul: 'bg-primary-900 border-primary-700 lg:bg-inherit lg:border-none lg:flex-row lg:justify-around lg:p-2 lg:text-xs lg:font-medium lg:mt-0 xl:mt-0',
-				active: '!text-neutral-50 font-semibold underline underline-offset-4 decoration-secondary-400 decoration-solid hover:bg-primary-700 hover:!text-secondary-300 lg:hover:bg-transparent lg:hover:!text-secondary-300 lg:hover:underline lg:ps-2 lg:pe-2 lg:w-[12ex] xl:w-[12ex]',
-				nonActive: '!text-neutral-200 tracking-wide hover:bg-primary-700 hover:!text-white lg:hover:bg-transparent lg:hover:!text-secondary-300 lg:hover:underline lg:hover:underline-offset-4 lg:ps-2 lg:pe-2 lg:w-[11ex] xl:w-[12ex]',
+				ul: 'bg-primary-deep border-primary-strong lg:bg-inherit lg:border-none lg:flex-row lg:justify-around lg:p-2 lg:text-xs lg:font-medium lg:mt-0 xl:mt-0',
+				active: '!text-white font-semibold underline underline-offset-4 decoration-accent decoration-solid hover:bg-primary-strong hover:!text-white lg:hover:bg-transparent lg:hover:!text-accent lg:hover:underline lg:ps-2 lg:pe-2 lg:w-[12ex] xl:w-[12ex]',
+				nonActive: '!text-primary-soft tracking-wide hover:bg-primary-strong hover:!text-white lg:hover:bg-transparent lg:hover:!text-accent lg:hover:underline lg:hover:underline-offset-4 lg:ps-2 lg:pe-2 lg:w-[11ex] xl:w-[12ex]',
 			}}
 		>
 			<NavLi
@@ -163,7 +162,7 @@
 
 		<!-- The Flowbite Svelte Search module proved to be a real PITA of obscurity -->
 		<div id="search-bar"
-			class="text-stone-200 mx-1
+			class="text-primary-soft mx-1
 				md:flex
 				md:order-3 md:w-1/6 md:ml-2 mr-2
 				xl:ps-1 xl:pe-1 xl:w-1/5
@@ -171,7 +170,7 @@
 		">
 			<form class='w-full'>
 			<label
-				class = "mb-2 text-sm font-medium text-gray-900 sr-only dark:text-white"
+				class = "mb-2 text-sm font-medium text-text sr-only"
 				for   = "default-search"
 			>
 				Search
@@ -179,7 +178,7 @@
 			<div class="relative">
 				<div class="absolute inset-y-0 inset-s-0 flex items-center ps-3 pointer-events-none">
 					<svg
-						class       = "w-4 h-4 text-secondary-100"
+						class       = "w-4 h-4 text-accent-soft"
 						aria-hidden = "true"
 						fill        = "none"
 						viewBox     = "0 0 20 20"
@@ -198,11 +197,11 @@
 					id    = "default-search"
 					class = "block w-full p-2 ps-9 text-xs italic
 						rounded-lg
-						bg-primary-700
+						bg-primary-strong
 						text-white
-						border border-primary-500
-						focus:border-warning-400
-						lg:placeholder-stone-300
+						border border-primary
+						focus:border-accent
+						lg:placeholder-primary-soft
 						placeholder-transparent
 					"
 					placeholder = "Ctrl-s to search..."
@@ -227,24 +226,24 @@
 				<div id="auth-user-buttons" class="flex gap-2">
 					{#snippet authButton({href,linkLabel,tooltip, type}:
 						{href?: string, linkLabel: string, tooltip: string, type: 'home' | 'User: Inbox' | 'profile'})}
-						<Button
+						<svelte:element
+							this={href ? 'a' : 'button'}
 							id="{type}-button"
 							class="
 								relative
-								text-2xl
-								font-bold
+								inline-flex items-center justify-center
 								w-12 h-12
-								bg-stone-50
-								hover:bg-stone-50!
-								active:bg-stone-50!
-								text-primary-800
-								hover:text-warning-600
-								border-2
-								border-primary-300
+								rounded-full
+								border-2 border-primary
+								bg-surface
+								text-2xl font-bold
+								text-primary-deep
+								hover:text-warning
+								focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent
 							"
 							aria-label={linkLabel}
 							{href}
-							pill={true}
+							type={href ? undefined : 'button'}
 						>
 						{#if type === 'home'}<HomeSolid class="h-6 w-6" />{/if}
 						{#if type === 'User: Inbox'}
@@ -258,7 +257,7 @@
 						{#if type === 'profile'}
 							{activePerson?.first?.[0]}{activePerson?.last?.[0]}
 						{/if}
-						</Button>
+						</svelte:element>
 						<Tooltip placement="bottom">{tooltip}</Tooltip>
 					{/snippet}
 					{@render authButton({href: resolve('/user/home'), linkLabel: 'go to user Home', tooltip: 'Home', type: 'home'})}
@@ -268,11 +267,11 @@
 				<div id="auth-user-details"
 					class="flex flex-col leading-tight pe-1 ps-1 text-right w-full">
 					{#if isSuSession()}
-					<span class="text-xs italic text-secondary-300 whitespace-nowrap">
+					<span class="text-xs italic text-accent whitespace-nowrap">
 						{rootPerson?.email}
 					</span>
 					{/if}
-					<a class="text-xs italic text-secondary-200 whitespace-nowrap hover:underline"
+					<a class="text-xs italic text-accent-soft whitespace-nowrap hover:underline"
 					href="{resolve('/user/home')}">
 						{isSuSession() ? 'as ' : ''}{activePerson?.email}
 					</a>
@@ -284,7 +283,7 @@
 				triggeredBy = "#profile-button"
 			>
 				<DropdownHeader
-					class = "block w-full px-2 pt-1 border-b border-warning-700 text-primary-1000"
+					class = "block w-full px-2 pt-1 border-b border-warning text-primary-deep"
 				>
 						<span class="block text-xs font-semibold">
 							{activePerson?.first} {activePerson?.last}
@@ -339,15 +338,14 @@
 			<div class="flex items-center gap-2">
 				<a
 					class='
-						bg-secondary-400
-						text-gray-900
-						hover:bg-secondary-300
-						focus:ring-4 focus:outline-hidden focus:ring-secondary-500
+						bg-accent
+						text-text
+						hover:bg-accent-soft
+						focus:ring-4 focus:outline-hidden focus:ring-accent
 						font-medium rounded-md text-sm
 						px-2 py-1.5
 						text-center
-						border border-secondary-600
-						hover:border-secondary-500
+						border border-accent
 					'
 					href="https://www.tabroom.com/user/login/new_user.mhtml"
 				>
@@ -356,15 +354,15 @@
 
 				<a
 					class='
-						text-neutral-50
-						bg-primary-600
-						hover:bg-primary-500
-						focus:ring-4 focus:outline-hidden focus:ring-primary-300
+						text-white
+						bg-primary-strong
+						hover:bg-primary-deep
+						focus:ring-4 focus:outline-hidden focus:ring-primary
 						font-medium rounded-md text-sm
 						px-2 py-1.5
 						text-center
-						border border-primary-900
-						hover:border-primary-300
+						border border-primary-deep
+						hover:border-primary
 					'
 					href={loginHref}
 				>

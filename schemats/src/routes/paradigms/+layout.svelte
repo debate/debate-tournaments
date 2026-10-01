@@ -3,7 +3,8 @@
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
 	import { onMount, setContext } from 'svelte';
-	import { Search, Button } from 'flowbite-svelte';
+	import { Search } from 'flowbite-svelte';
+	import Button from '$lib/components/Button.svelte';
 
 	import { handleOrval } from '$lib/helpers/query';
 	import Sidebar from '$lib/layouts/Sidebar.svelte';
@@ -101,7 +102,7 @@
 	});
 </script>
 
-<div class="flex min-h-[80vh] flex-wrap override px-2 sm:px-4 bg-white">
+<div class="flex min-h-[80vh] flex-wrap override px-2 sm:px-4 bg-surface">
 	<div class="w-full pb-1 pl-1 pt-0 sm:pl-2">
 			<h2>Judge Paradigms</h2>
 	</div>
@@ -127,7 +128,7 @@
 								color="primary"
 								disabled={paradigmsQuery.isLoading}
 								onclick={handleSearch}
-								type="button"
+								size="sm"
 							>
 								{paradigmsQuery.isLoading ? 'Searching...' : 'Search'}
 							</Button>
@@ -149,7 +150,7 @@
 			</div>
 		{:else}
 			<div class="mx-auto w-full max-w-5xl">
-				<div class="rounded-lg border border-secondary-300 bg-white p-3">
+				<div class="rounded-lg border border-accent bg-surface p-3">
 					<Search
 						id="paradigm-search"
 						onkeydown={(e) => e.key === 'Enter' && handleSearch()}
@@ -162,7 +163,7 @@
 							color="primary"
 							disabled={paradigmsQuery.isLoading}
 							onclick={handleSearch}
-							type="button"
+							size="sm"
 						>
 							{paradigmsQuery.isLoading ? 'Searching...' : 'Search'}
 						</Button>

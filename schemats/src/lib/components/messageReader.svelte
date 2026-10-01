@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { InboxMessage } from '$indexcards/schemas';
-	import IconButton from '$lib/components/IconButton.svelte';
+	import Button from '$lib/components/Button.svelte';
 	import { showDateTime } from '$lib/helpers/dt';
 	import { Spinner } from 'flowbite-svelte';
 	import { EnvelopeSolid, TrashBinOutline } from 'flowbite-svelte-icons';
@@ -13,7 +13,7 @@
 	} = $props();
 
 </script>
-<div class="flex min-h-[18rem] flex-1 flex-col overflow-hidden rounded-md border border-slate-300 bg-white shadow-sm">
+<div class="flex min-h-[18rem] flex-1 flex-col overflow-hidden rounded-md border border-border bg-surface shadow-sm">
 {#if message}
 	{@const senderName = message.Sender?.name?.trim() || 'Unknown sender'}
 	{@const senderEmail = message.Sender?.email?.trim() || 'No email available'}
@@ -21,58 +21,61 @@
 	{@const tournName = message.Tourn?.name?.trim() || 'None'}
 	{@const sentAt = showDateTime({dtISO: message.visible_at ?? undefined})}
 	{@const content = message.Email?.content?.trim() || message.body?.trim() || ''}
-	<div class="flex items-start justify-between gap-3 border-b border-slate-200 px-4 py-3">
+	<div class="flex items-start justify-between gap-3 border-b border-border px-4 py-3">
 		<dl
 			class="
 				grid flex-1 gap-x-4 gap-y-2 text-sm
 				md:grid-cols-[9rem_minmax(0,1fr)]
 			"
 		>
-			<dt class="font-semibold text-slate-500">Subject</dt>
-			<dd class="text-slate-900">{subject}</dd>
-			<dt class="font-semibold text-slate-500">Sender</dt>
-			<dd class="text-slate-900">{senderName}</dd>
+			<dt class="font-semibold text-muted">Subject</dt>
+			<dd class="text-text">{subject}</dd>
+			<dt class="font-semibold text-muted">Sender</dt>
+			<dd class="text-text">{senderName}</dd>
 
-			<dt class="font-semibold text-slate-500">Sender email</dt>
+			<dt class="font-semibold text-muted">Sender email</dt>
 			<dd>
 				{#if message.Sender?.email}
-					<a class="text-blue-700 underline break-all" href={`mailto:${message.Sender.email}`}>{message.Sender.email}</a>
+					<a class="text-primary-strong underline break-all" href={`mailto:${message.Sender.email}`}>{message.Sender.email}</a>
 				{:else}
-					<span class="text-slate-600">{senderEmail}</span>
+					<span class="text-muted">{senderEmail}</span>
 				{/if}
 			</dd>
 
-			<dt class="font-semibold text-slate-500">Sent</dt>
-			<dd class="text-slate-900">{sentAt}</dd>
+			<dt class="font-semibold text-muted">Sent</dt>
+			<dd class="text-text">{sentAt}</dd>
 
-			<dt class="font-semibold text-slate-500">Tournament</dt>
-			<dd class="text-slate-900">{tournName}</dd>
+			<dt class="font-semibold text-muted">Tournament</dt>
+			<dd class="text-text">{tournName}</dd>
 		</dl>
 
 		<div class="flex items-center gap-2">
-			<IconButton
-			disabled={!onMarkUnreadClick}
-			label="Mark message as unread"
-			onclick={() => onMarkUnreadClick?.(message.id)}>
+			<Button
+				disabled={!onMarkUnreadClick}
+				label="Mark message as unread"
+				onclick={() => onMarkUnreadClick?.(message.id)}
+				variant="outline"
+			>
 				<EnvelopeSolid class="h-5 w-5" />
-			</IconButton>
-			<IconButton
-				color="red"
+			</Button>
+			<Button
+				color="danger"
 				label="Delete message"
 				onclick={() => onDeleteClick(message.id)}
+				variant="outline"
 			>
 				<TrashBinOutline class="h-5 w-5" />
-			</IconButton>
+			</Button>
 		</div>
 	</div>
 
 	<div class="min-h-0 flex-1 overflow-auto px-4 py-4">
 		{#if content}
-			<div class="message-reader-body text-sm leading-6 text-slate-800">
+			<div class="message-reader-body text-sm leading-6 text-text">
 				{@html content}
 			</div>
 		{:else}
-			<p class="italic text-slate-500">No message content.</p>
+			<p class="italic text-muted">No message content.</p>
 		{/if}
 	</div>
 {:else if loading}
@@ -83,12 +86,12 @@
 	<section
 		class="
 			flex h-full w-full flex-1 items-center justify-center
-			rounded-md border border-dashed border-slate-300 bg-slate-50 px-6 py-10 text-center
+			rounded-md border border-dashed border-border bg-surface-alt px-6 py-10 text-center
 		"
 	>
 		<div class="max-w-md">
-			<h2 class="text-base font-semibold text-slate-800">Select a message</h2>
-			<p class="mt-2 text-sm text-slate-600">
+			<h2 class="text-base font-semibold text-text">Select a message</h2>
+			<p class="mt-2 text-sm text-muted">
 				Choose a message from your inbox to see the sender, sent date, tournament, and full contents here.
 			</p>
 		</div>

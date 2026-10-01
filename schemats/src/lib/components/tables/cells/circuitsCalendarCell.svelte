@@ -9,7 +9,7 @@
 
 </script>
 <span
-class = "w-1/3 text-primary-600 hover:text-primary-700 py-1"
+class = "w-1/3 text-primary-strong hover:text-primary-deep py-1"
 >
 <a href="{resolve(linkUrl,{})}">
 	<CalendarMonthSolid

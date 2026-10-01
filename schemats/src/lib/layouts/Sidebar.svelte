@@ -17,15 +17,15 @@
 			box-border
 			pt-4
 			content-start
-			border-l-2 border-back-300
-			bg-back-100
+			border-l-2 border-border
+			bg-surface-alt
 			rounded-tr-lg
 			absolute top-0 right-0 z-50 lg:z-auto
 			lg:float-right
 			lg:relative
 		">
 			<button
-				class      ="{isOpen ? '' : 'absolute top-2 -left-8 bg-back-100 border border-back-300 rounded-l px-1.5 py-1 text-sm'}"
+				class      ="{isOpen ? '' : 'absolute top-2 -left-8 bg-surface-alt border border-border rounded-l px-1.5 py-1 text-sm'}"
 				aria-label ="Toggle sidebar visibility"
 				onclick    ={toggleButtonState}
 			>{isOpen ? '→' : '←'}</button>

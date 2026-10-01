@@ -12,7 +12,7 @@
 
 	<div class="main">
 		{#if roundList.status === 'pending'}
-			<div class='text-success-500 font-semibold'>
+			<div class='text-success font-semibold'>
 				Data Loading...
 			</div>
 		{:else if roundList.status === 'error'}
@@ -20,7 +20,7 @@
 		{:else}
 
 			{#if roundList.isPending}
-				<div class='text-success-500 font-semibold'>
+				<div class='text-success font-semibold'>
 					Data Updating...
 				</div>
 

@@ -38,7 +38,7 @@
 
 <div class="flex w-full flex-row h-screen">
 	<div class="main">
-		<h5 class="border-b border-primary-500 mb-4">Main Content</h5>
+		<h5 class="border-b border-primary mb-4">Main Content</h5>
 		<p>
 			This area represents the page body. Resize the Storybook viewport to check how
 			the main section and sidebar sit together.
@@ -51,7 +51,7 @@
 
 	<Sidebar>
 		<div class="sidenote">
-			<h5 class="my-0 border-b border-secondary-500 pb-0 leading-8 mb-2">
+			<h5 class="my-0 border-b border-accent pb-0 leading-8 mb-2">
 				Sidebar Links
 			</h5>
 			<p class="mb-2">Secondary navigation and metadata live here.</p>

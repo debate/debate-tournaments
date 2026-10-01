@@ -14,6 +14,6 @@
 
 </script>
 	<a
-		class = 'hover:text-primary-700 hover:text-decoration-line break-normal font-normal'
+		class = 'hover:text-primary-strong hover:text-decoration-line break-normal font-normal'
 		href  = {linkUrl}
 	>{@html linkText}</a>

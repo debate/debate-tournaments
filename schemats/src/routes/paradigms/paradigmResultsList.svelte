@@ -28,6 +28,6 @@
 			{/each}
 		</div>
 	{:else}
-		<p class="text-sm text-secondary-600">No paradigms found matching "{searchTerm}"</p>
+		<p class="text-sm text-muted">No paradigms found matching "{searchTerm}"</p>
 	{/if}
 </InfiniteScroll>

@@ -26,7 +26,7 @@
 	<div class='main'>
 		{#if mainPages && mainPages.length > 0}
 			<h5
-				class='border-b border-primary-500 mb-4'
+				class='border-b border-primary mb-4'
 			>{ ucfirst(mainPages[0].title) || 'Invitation' }</h5>
 
 			{@html mainPages[0].content}

@@ -105,7 +105,7 @@
 			w-full
 			px-4
 			ps-8
-			bg-back-200
+			bg-page
 		">
 			<!-- svelte-ignore attribute_quoted -->
 			<MainTitle
@@ -119,7 +119,7 @@
 				<TabLinks tabs={tabs} />
 				<div
 					class="flex w-full
-					border-t-2 border-secondary-400
+					border-t-2 border-accent
 				">
 					{@render children() }
 				</div>

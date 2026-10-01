@@ -15,8 +15,8 @@
 	}
 
 	const ownerClass:OwnerClass = {
-		me   : 'text-tertiary-500 font-semibold py-0.5 px-0 w-full',
-		mine : 'text-warning-600 font-semibold p-0 py-0.5 m-0 w-full',
+		me   : 'text-tertiary font-semibold py-0.5 px-0 w-full',
+		mine : 'text-warning font-semibold p-0 py-0.5 m-0 w-full',
 	};
 
 	// oxlint-disable-next-line @typescript-eslint/no-explicit-any
@@ -210,7 +210,7 @@
 
 </script>
 
-	<div class='px-3 overflow-x-scroll pb-3 bg-back wg-full text-success-600'>
+	<div class='px-3 overflow-x-scroll pb-3 bg-surface wg-full text-success'>
 		<SVGrid
 			columns   = { columns }
 			options   = { options }

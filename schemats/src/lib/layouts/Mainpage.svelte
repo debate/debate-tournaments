@@ -15,7 +15,7 @@
 			inline-block
 			content-start
 			w-[75%] resize-x
-			bg-back-200
+			bg-page
 			rounded-tl-md
 			pb-4 pe-4 ps-6
 		'

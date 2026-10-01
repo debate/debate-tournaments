@@ -32,7 +32,7 @@
 			<div class="
 				flex
 				bt-0 mt-0
-				border-b-2 border-primary-600
+				border-b-2 border-primary-strong
 				pb-2 mb-2
 			">
 				<span class="w-3/5 justify-around flex flex-col">

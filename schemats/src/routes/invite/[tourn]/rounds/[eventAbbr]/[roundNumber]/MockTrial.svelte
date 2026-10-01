@@ -109,7 +109,7 @@
 
 </script>
 
-	<div class='px-3 overflow-x-scroll pb-3 bg-back wg-full'>
+	<div class='px-3 overflow-x-scroll pb-3 bg-surface wg-full'>
 		<SVGrid
 			columns   = { columns }
 			options   = { options }

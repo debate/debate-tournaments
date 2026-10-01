@@ -99,7 +99,7 @@
 
 				{#if events[key] && Object.keys(events[key]).length}
 
-					<h5 class='my-0 border-b border-secondary-500 pb-0 leading-8 mb-2 pt-1'>
+					<h5 class='my-0 border-b border-accent pb-0 leading-8 mb-2 pt-1'>
 						{multiple ? ucfirst(key) : ''} Events
 					</h5>
 
@@ -120,15 +120,15 @@
 
 						<div class='flex flex-wrap'>
 							<a
-								class = 'blue w-full bg-back-100 text-sm
-									border-s-2 border-primary-400
-									border-y border-y-back-300
-									hover:bg-back-200
+								class = 'blue w-full bg-surface-alt text-sm
+									border-s-2 border-primary
+									border-y border-y-border
+									hover:bg-page
 									p-1
 									ps-2
 									text-[12px]
 									flex
-									{selectedEventAbbr === events[key][id]?.abbr ? 'selected bg-secondary-200 font-semibold' : '' }
+									{selectedEventAbbr === events[key][id]?.abbr ? 'selected bg-accent-soft font-semibold' : '' }
 								'
 								href = { resolve('/invite/[tourn]/rounds/[eventAbbr]', {
 									tourn     : String(tourn.id),
@@ -143,7 +143,7 @@
 									flex-col
 									justify-around
 									text-right pe-0.75
-									text-back-1000 text-xs
+									text-xs
 								'>
 									{events[key][id].abbr}
 								</span>
@@ -156,7 +156,7 @@
 										<div
 											class = 'w-full flex {
 												myTourn.data?.me?.rounds.includes(round.id)
-													? 'text-warning-600 font-semibold'
+													? 'text-warning font-semibold'
 													: ''
 											}'
 										>
@@ -164,11 +164,11 @@
 												{@html '&#x21e8;'}
 											{/if}
 											<a class='w-2/3
-												bg-back-100 text-xs
-												border-s-2 border-secondary-200
-												border-y border-y-back-300
-												hover:bg-secondary-200
-												{ (parent !== 'results' && selectedRoundNumber === round.name ? 'selected bg-warning-200 ' : '') }'
+												bg-surface-alt text-xs
+												border-s-2 border-accent
+												border-y border-y-border
+												hover:bg-accent-soft
+												{ (parent !== 'results' && selectedRoundNumber === round.name ? 'selected bg-warning-soft ' : '') }'
 												href = {resolve('/invite/[tourn]/rounds/[eventAbbr]/[roundNumber]', {
 													tourn       : tourn.webname,
 													eventAbbr   : events[key][id].abbr,
@@ -176,11 +176,11 @@
 												})}
 											>{ events[key][id].abbr } { round.label || `Round ${round.name}`} Schematic</a>
 											<a class='w-1/4 ml-1 grow
-												bg-back-100 text-xs
-												border-s-2 border-secondary-200
-												border-y border-y-back-300
-												{ (parent === 'results' && selectedRoundNumber === round.name) ? 'selected bg-warning-200 ' : '' }
-												hover:bg-secondary-200'
+												bg-surface-alt text-xs
+												border-s-2 border-accent
+												border-y border-y-border
+												{ (parent === 'results' && selectedRoundNumber === round.name) ? 'selected bg-warning-soft ' : '' }
+												hover:bg-accent-soft'
 												href = {resolve('/invite/[tourn]/rounds/[eventAbbr]/[roundNumber]/results', {
 													tourn       : tourn.webname,
 													eventAbbr   : events[key][id].abbr,
@@ -191,12 +191,12 @@
 									{:else}
 										<a
 											class = 'blue w-full
-												bg-back-100 text-xs
-												border-s-2 border-secondary-200
-												border-y border-y-back-300
-												hover:bg-secondary-200
-												{myTourn.data?.me?.rounds.includes(round.id) ? 'text-warning-600 font-semibold' : '' }
-												{selectedRoundNumber === round.name ? 'selected bg-secondary-200 ' : '' }
+												bg-surface-alt text-xs
+												border-s-2 border-accent
+												border-y border-y-border
+												hover:bg-accent-soft
+												{myTourn.data?.me?.rounds.includes(round.id) ? 'text-warning font-semibold' : '' }
+												{selectedRoundNumber === round.name ? 'selected bg-accent-soft ' : '' }
 											'
 											href = {resolve('/invite/[tourn]/rounds/[eventAbbr]/[roundNumber]', {
 												tourn       : tourn.webname,

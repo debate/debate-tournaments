@@ -22,7 +22,7 @@
 		HeaderMenu,
 	} from '@svar-ui/svelte-grid';
 
-	import IconButton from '$lib/components/IconButton.svelte';
+	import Button from '$lib/components/Button.svelte';
 	import CsvIcon from 'flowbite-svelte-icons/FileCsvOutline.svelte';
 	import PrinterOutline from 'flowbite-svelte-icons/PrinterOutline.svelte';
 	import DatabaseOutline from 'flowbite-svelte-icons/DatabaseOutline.svelte';
@@ -183,7 +183,7 @@
 
 <!-- begin layouts/grid/SVGrid.svelte here -->
 
-	<div class='bg-back tabroomStyled'>
+	<div class='bg-surface tabroomStyled'>
 		<div class="flex items-center mb-1">
 			{#if !options?.noTitle }
 				{#if options?.bigTitle }
@@ -204,7 +204,7 @@
 			{/if}
 
 			{#if !options?.noFilter}
-				<span class="w-[30%] content-center text-center h-1/2 border border-neutral-300">
+				<span class="w-[30%] content-center text-center h-1/2 border border-border-strong">
 					<Willow>
 						<FilterBar
 							fields={[
@@ -221,34 +221,38 @@
 			{/if}
 
 			<span class="w-1/5 pe-2 parent-toolbar text-right flex-2 content-center">
-				<IconButton
-					color="purple"
+				<Button
+					color="tertiary"
 					label="Export JSON Data"
 					onclick={() => jsonGrid()}
+					variant="outline"
 				>
 					<DatabaseOutline/>
-				</IconButton>
-				<IconButton
-					color="red"
+				</Button>
+				<Button
+					color="primary"
 					label="Print Portrait Mode"
 					onclick={() => printPortrait()}
+					variant="outline"
 				>
 					<PrinterOutline />
-				</IconButton>
-				<IconButton
-					color="blue"
+				</Button>
+				<Button
+					color="primary"
 					label="Print Landscape Mode"
 					onclick={() => printLandscape()}
+					variant="outline"
 				>
 					<ArchiveOutline />
-				</IconButton>
-				<IconButton
-					color="green"
+				</Button>
+				<Button
+					color="success"
 					label="Export CSV Data"
 					onclick={() => exportCsv(api)}
+					variant="outline"
 				>
 					<CsvIcon/>
-				</IconButton>
+				</Button>
 			</span>
 		</div>
 		<Willow>
@@ -315,25 +319,25 @@
 
 	:global(.tabroomStyled .wx-willow-theme) {
 
-		--wx-table-select-background         : #eaedf5;
-		--wx-table-select-focus-background   : #ebedf3;
+		--wx-table-select-background         : var(--color-primary-soft);
+		--wx-table-select-focus-background   : var(--color-primary-soft);
 		--wx-table-select-color              : var(--wx-color-font);
 		--wx-table-select-border             : inset 3px 0 var(--wx-color-primary);
-		--wx-table-header-background         : var(--color-secondary-100);
-		--wx-table-header-border             : 1px solid var(--color-secondary-400);
+		--wx-table-header-background         : var(--color-accent-soft);
+		--wx-table-header-border             : 1px solid var(--color-accent);
 		--wx-table-header-cell-border        : var(--wx-table-header-border);
 		--wx-header-font-weight              : 600;
 		--wx-table-cell-border               : var(--wx-table-border);
-		--wx-table-fixed-column-right-border : 3px solid #e6e6e6;
+		--wx-table-fixed-column-right-border : 3px solid var(--color-border);
 		--wx-table-editor-dropdown-border    : var(--wx-table-border);
 		--wx-table-editor-dropdown-shadow    : 0px 4px 20px 0px rgba(44, 47, 60, 0.12);
 
 		--wx-font-family : "IBM Plex Sans";
 		--wx-font-size   : 12px;
-		--wx-color-font  : var(--color-neutral-950);
+		--wx-color-font  : var(--color-text);
 
-		border-left   : 1px solid var(--color-neutral-400);
-		border-right  : 1px solid var(--color-neutral-400);
+		border-left   : 1px solid var(--color-border-strong);
+		border-right  : 1px solid var(--color-border-strong);
 		padding-right : 1px;
 	}
 
@@ -347,13 +351,13 @@
 	}
 
     :global(.tabroomStyled .wx-body) {
-		background-color: var(--color-neutral-100);
+		background-color: var(--color-surface-alt);
 	}
 
     :global(.tabroomStyled .wx-grid .wx-table-box) {
 		border-right  : none;
-		border-top    : 1px solid var(--color-secondary-600);
-		border-bottom : 1px solid var(--color-secondary-400);
+		border-top    : 1px solid var(--color-accent);
+		border-bottom : 1px solid var(--color-accent);
 		border-radius : 4px;
 		margin-top    : -1px;
 	}
@@ -418,12 +422,12 @@
 	}
 
 	:global(.tabroomStyled .wx-willow-theme .wx-row:nth-of-type(2n)) {
-		background-color: var(--color-neutral-100);
+		background-color: var(--color-surface-alt);
 	}
 
 	:global(.wx-willow-theme .menu) {
 		box-shadow : 0px 4px 20px 0px rgba(44, 47, 60, 0.12);
-		outline    : 1px solid #e6e6e6;
+		outline    : 1px solid var(--color-border);
 	}
 
 	:global(.tabroomStyled .wx-row.wx-autoheight .wx-cell.whitespace-nowrap) {

@@ -27,7 +27,7 @@
 
 	<div class="main">
 		{#if schedule.status === 'pending'}
-			<div class='text-success-500 font-semibold'>
+			<div class='text-success font-semibold'>
 				Data Loading...
 			</div>
 		{:else if schedule.status === 'error'}
@@ -35,7 +35,7 @@
 		{:else}
 
 			{#if schedule.isPending}
-				<div class='text-success-500 font-semibold'>
+				<div class='text-success font-semibold'>
 					Data Updating...
 				</div>
 			{:else}
@@ -44,7 +44,7 @@
 
 				{#each rounds as round (round.id) }
 
-					<div class="flex border-t border-neutral-400 w-full py-2">
+					<div class="flex border-t border-border-strong w-full py-2">
 						<span class="w-1/4 ps-1">
 							{ round.label || `Round ${round.name}` }
 						</span>

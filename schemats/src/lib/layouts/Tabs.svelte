@@ -16,8 +16,8 @@
 	// Provide default values where there were none from the upstream.
 	let defaultedClasses = $derived.by( () => {
 		return {
-			content: contentClass || 'mt-0 border-t-2 border-secondary-400  dark:bg-secondary-700 rounded',
-			divider: `h-px bg-secondary-400 dark:bg-secondary-700`,
+			content: contentClass || 'mt-0 border-t-2 border-accent rounded',
+			divider: `h-px bg-accent`,
 			...classes,
 		};
 	});

@@ -16,8 +16,8 @@
 			<div class='w-full flex'>
 				<a
 					class  = '
-						px-0.25 py-0.5 my-0 mr-1 text-success-600 {col.elementClass}
-						hover:bg-success-600 hover:text-white
+						px-0.25 py-0.5 my-0 mr-1 text-success {col.elementClass}
+						hover:bg-success hover:text-white
 					'
 					href   = '{ room.url }'
 					target = '_blank'
