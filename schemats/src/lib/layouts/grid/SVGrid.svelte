@@ -23,10 +23,7 @@
 	} from '@svar-ui/svelte-grid';
 
 	import Button from '$lib/components/Button.svelte';
-	import CsvIcon from 'flowbite-svelte-icons/FileCsvOutline.svelte';
-	import PrinterOutline from 'flowbite-svelte-icons/PrinterOutline.svelte';
-	import DatabaseOutline from 'flowbite-svelte-icons/DatabaseOutline.svelte';
-	import ArchiveOutline from 'flowbite-svelte-icons/ArchiveOutline.svelte';
+	import { Archive, Database, FileSpreadsheet, Printer } from '@lucide/svelte';
 
     import type { IApi, IExportOptions } from '@svar-ui/svelte-grid';
 	import type { GridOptions, SchematColumn } from './svgrid';
@@ -227,7 +224,7 @@
 					onclick={() => jsonGrid()}
 					variant="outline"
 				>
-					<DatabaseOutline/>
+					<Database class="size-5" />
 				</Button>
 				<Button
 					color="danger"
@@ -235,7 +232,7 @@
 					onclick={() => printPortrait()}
 					variant="outline"
 				>
-					<PrinterOutline />
+					<Printer class="size-5" />
 				</Button>
 				<Button
 					color="primary"
@@ -243,7 +240,7 @@
 					onclick={() => printLandscape()}
 					variant="outline"
 				>
-					<ArchiveOutline />
+					<Archive class="size-5" />
 				</Button>
 				<Button
 					color="success"
@@ -251,7 +248,7 @@
 					onclick={() => exportCsv(api)}
 					variant="outline"
 				>
-					<CsvIcon/>
+					<FileSpreadsheet class="size-5" />
 				</Button>
 			</span>
 		</div>

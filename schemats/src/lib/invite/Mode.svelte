@@ -2,9 +2,7 @@
 
 	let { row } = $props();
 
-	import LaptopCodeSolid from 'flowbite-svelte-icons/LaptopCodeSolid.svelte';
-	import UsersSolid from 'flowbite-svelte-icons/UsersSolid.svelte';
-	import CodeForkSolid from 'flowbite-svelte-icons/CodeForkSolid.svelte';
+	import { Laptop, Users, Blend } from '@lucide/svelte';
 
 </script>
 
@@ -17,10 +15,7 @@
 					py-1"
 				title = "{ row.inPerson } event{ row.inPerson > 1 ? 's are' : ' is' } in person"
 			>
-				<UsersSolid
-					class = 'm-auto'
-					size  = 'xs'
-				/>
+				<Users class='m-auto size-3' />
 				<span class='hidden'>
 					In Person
 				</span>
@@ -35,10 +30,7 @@
 					py-1"
 				title = "{ row.online } event{ row.online > 1 ? 's are' : ' is' } online"
 			>
-				<LaptopCodeSolid
-					class = 'm-auto'
-					size  = 'xs'
-				/>
+				<Laptop class='m-auto size-3' />
 				<span class='hidden'>
 					Online
 				</span>
@@ -53,10 +45,7 @@
 					py-1"
 				title = "{ row.hybrid } event{ row.hybrid > 1 ? 's are' : ' is' } hybrid"
 			>
-				<CodeForkSolid
-					class = 'm-auto'
-					size  = "xs"
-				/>
+				<Blend class='m-auto size-3' />
 				<span class='hidden'>
 					Hybrid
 				</span>

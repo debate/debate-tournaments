@@ -3,7 +3,7 @@
 	import Button from '$lib/components/Button.svelte';
 	import { showDateTime } from '$lib/helpers/dt';
 	import { Spinner } from 'flowbite-svelte';
-	import { EnvelopeSolid, TrashBinOutline } from 'flowbite-svelte-icons';
+	import { Mail, Trash2 } from '@lucide/svelte';
 
 	const { message, onDeleteClick, onMarkUnreadClick, loading = false }: {
 		message: InboxMessage | null,
@@ -56,7 +56,7 @@
 				onclick={() => onMarkUnreadClick?.(message.id)}
 				variant="outline"
 			>
-				<EnvelopeSolid class="h-5 w-5" />
+				<Mail class="h-5 w-5" />
 			</Button>
 			<Button
 				color="danger"
@@ -64,7 +64,7 @@
 				onclick={() => onDeleteClick(message.id)}
 				variant="outline"
 			>
-				<TrashBinOutline class="h-5 w-5" />
+				<Trash2 class="h-5 w-5" />
 			</Button>
 		</div>
 	</div>

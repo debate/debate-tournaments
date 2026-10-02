@@ -73,7 +73,6 @@
 }
 
 @source '../node_modules/flowbite-svelte/dist';
-@source '../node_modules/flowbite-svelte-icons/dist';
 
 /*
   The default border color has changed to `currentcolor` in Tailwind CSS v4,

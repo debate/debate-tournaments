@@ -13,12 +13,7 @@
 	import { renderSnippet } from '@tanstack/svelte-table';
 	import { useQueryClient } from '@tanstack/svelte-query';
 	import Button from '$lib/components/Button.svelte';
-	import {
-		RefreshOutline,
-		EnvelopeSolid,
-		EnvelopeOpenOutline,
-		EnvelopeOpenSolid,
-	} from 'flowbite-svelte-icons';
+	import { RefreshCw, Mail, MailOpen } from '@lucide/svelte';
 	import QueryTable from '$lib/components/utils/QueryTable.svelte';
     import MessageReader from './messageReader.svelte';
 	import { handleOrval } from '$lib/helpers/query';
@@ -106,9 +101,9 @@
 
 {#snippet statusCell(readAt: string | null)}
 	{#if !readAt}
-		<EnvelopeSolid />
+		<Mail class="size-5" />
 	{:else}
-		<EnvelopeOpenOutline />
+		<MailOpen class="size-5" />
 	{/if}
 {/snippet}
 
@@ -130,7 +125,7 @@
 					onclick={refreshInbox}
 					variant="outline"
 				>
-				<RefreshOutline class="h-5 w-5" />
+				<RefreshCw class="h-5 w-5" />
 				</Button>
 				<Button
 					disabled={markAllReadMutation.isPending}
@@ -138,7 +133,7 @@
 					onclick={markAllRead}
 					variant="outline"
 				>
-				<EnvelopeOpenSolid class="h-5 w-5" />
+				<MailOpen class="h-5 w-5" />
 				</Button>
 			</div>
 		</div>

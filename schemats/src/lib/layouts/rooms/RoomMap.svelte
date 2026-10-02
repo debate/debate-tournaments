@@ -2,7 +2,7 @@
 
 	let { room = undefined, row = {}, col = {} } = $props();
 
-	import { MapPinAltOutline } from 'flowbite-svelte-icons';
+	import { MapPin } from '@lucide/svelte';
 
 	$effect( () => {
 		if (row && row.Room) room = row.Room;
@@ -22,10 +22,7 @@
 					href   = '{ room.url }'
 					target = '_blank'
 					title  = 'Room Map Link'
-				><MapPinAltOutline
-					height = '16'
-					width  = '16'
-				/></a>
+				><MapPin size={16} /></a>
 				<span class='{col.elementClass} grow py-1'>
 					{ room.name }
 				</span>

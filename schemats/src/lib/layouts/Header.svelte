@@ -19,11 +19,12 @@
 		Indicator,
 	} from 'flowbite-svelte';
 	import {
-		HomeSolid,
-		EnvelopeSolid,
-		ArrowRightToBracketOutline,
-		ChalkboardSolid,
-	}  from 'flowbite-svelte-icons';
+		House,
+		Mail,
+		LogOut,
+		LayoutDashboard,
+		Search,
+	} from '@lucide/svelte';
 
 	import { isAuthenticated, isSuSession, getSessionOwner, getPerson } from '$lib/helpers/SessionContext.svelte';
 
@@ -177,21 +178,7 @@
 			</label>
 			<div class="relative">
 				<div class="absolute inset-y-0 inset-s-0 flex items-center ps-3 pointer-events-none">
-					<svg
-						class       = "w-4 h-4 text-accent-soft"
-						aria-hidden = "true"
-						fill        = "none"
-						viewBox     = "0 0 20 20"
-						xmlns       = "http://www.w3.org/2000/svg"
-					>
-						<path
-							d               = "m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"
-							stroke          = "currentColor"
-							stroke-linecap  = "round"
-							stroke-linejoin = "round"
-							stroke-width    = "2"
-						/>
-					</svg>
+					<Search class="w-4 h-4 text-accent-soft" />
 				</div>
 				<input
 					id    = "default-search"
@@ -236,7 +223,7 @@
 								rounded-full
 								border-2 border-primary
 								bg-surface
-								text-2xl font-bold
+								text-2xl font-semibold
 								text-primary-deep
 								hover:text-warning
 								focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent
@@ -245,9 +232,9 @@
 							{href}
 							type={href ? undefined : 'button'}
 						>
-						{#if type === 'home'}<HomeSolid class="h-6 w-6" />{/if}
+						{#if type === 'home'}<House class="h-6 w-6" strokeWidth={2.5} />{/if}
 						{#if type === 'User: Inbox'}
-							<EnvelopeSolid class="h-6 w-6" />
+							<Mail class="h-6 w-6" strokeWidth={2.5} />
 							{#if notificationCount > 0}
 							<Indicator color="red" placement="top-right" size="xl">
 								<span class="text-xs font-bold text-white">{notificationCount > 99 ? '99+' : notificationCount}</span>
@@ -301,13 +288,13 @@
 					<DropdownItem
 					class={dropdownItemClasses}
 					href={resolve('/user/home')}
-					><HomeSolid class="w-4 h-4" />Home</DropdownItem>
+					><House class="w-4 h-4" />Home</DropdownItem>
 				<DropdownItem
 						class={dropdownItemClasses}
 						href={resolve('/user/inbox')}
 						>
 						<span class="relative inline-flex items-center">
-							<EnvelopeSolid class="w-4 h-4" />
+							<Mail class="w-4 h-4" />
 							{#if notificationCount > 0}
 								<Indicator color="red" placement="top-right" size="xs"/>
 							{/if}
@@ -317,7 +304,7 @@
 				<DropdownItem
 					class="{dropdownItemClasses} opacity-50 cursor-not-allowed"
 					disabled={true}
-					><ChalkboardSolid class="w-4 h-4" />Dashboard</DropdownItem>
+					><LayoutDashboard class="w-4 h-4" />Dashboard</DropdownItem>
 				</DropdownGroup>
 				<DropdownGroup>
 				{#if isSuSession()}
@@ -325,13 +312,13 @@
 					class="{dropdownItemClasses} cursor-pointer"
 					disabled={suEnding}
 					onclick={suEnd}
-					><ArrowRightToBracketOutline class="w-4 h-4" />End Su Session</DropdownItem>
+					><LogOut class="w-4 h-4" />End Su Session</DropdownItem>
 				{/if}
 				<DropdownItem
 					class="{dropdownItemClasses} cursor-pointer"
 					disabled={loggingOut}
 					onclick={logout}
-					><ArrowRightToBracketOutline class="w-4 h-4" />{loggingOut ? 'Logging out...' : 'Logout'}</DropdownItem>
+					><LogOut class="w-4 h-4" />{loggingOut ? 'Logging out...' : 'Logout'}</DropdownItem>
 				</DropdownGroup>
 			</Dropdown>
 			{:else} <!-- Logged out state -->

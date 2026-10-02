@@ -8,7 +8,7 @@
 
 <script lang='ts'>
 	import { onMount, type Snippet } from 'svelte';
-	import { ChevronRightOutline } from 'flowbite-svelte-icons';
+	import { ChevronRight } from '@lucide/svelte';
 
 	type Props = {
 		children: Snippet<[SidebarControls]>;
@@ -119,7 +119,7 @@
 			aria-label="Toggle sidebar"
 			onclick={() => { open = !open; }}
 		>
-			<ChevronRightOutline
+			<ChevronRight
 				class="size-4 transition-transform motion-reduce:transition-none {chevronClass}"
 			/>
 		</button>

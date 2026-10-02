@@ -1,7 +1,7 @@
 <script lang="ts">
 
 	let {myTourn, tourn, schematic}  = $props();
-	import Gavel from '$lib/layouts/Gavel.svelte';
+	import { Gavel } from '@lucide/svelte';
 	import { intersection } from '$lib/helpers/text';
 	import { resolve } from '$app/paths';
 
@@ -139,7 +139,7 @@
 							{#if section.Judges[judgeId].chair}
 								<div class='flex font-semibold text-xs'>
 									<span class="pe-0.5 border">
-										<Gavel />
+										<Gavel color='#954535' size={17} />
 									</span>
 									{ section.Judges[judgeId].code }
 									{ section.Judges[judgeId].first }
