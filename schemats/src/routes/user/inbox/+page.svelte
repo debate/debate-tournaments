@@ -20,7 +20,7 @@
 		EnvelopeOpenSolid,
 	} from 'flowbite-svelte-icons';
 	import QueryTable from '$lib/components/utils/QueryTable.svelte';
-    import MessageReader from '$lib/components/messageReader.svelte';
+    import MessageReader from './messageReader.svelte';
 	import { handleOrval } from '$lib/helpers/query';
 	import { showDateTime } from '$lib/helpers/dt';
 
