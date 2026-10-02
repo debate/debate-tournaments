@@ -6,7 +6,8 @@
 	import type { PersonTournPresence, ResultSet as ResultSetData } from '@tabroom/types';
 
 	import Loading from '$lib/layouts/Loading.svelte';
-	import Sidebar from '../sidebar.svelte';
+	import WithSidebar from '$lib/layouts/WithSidebar.svelte';
+	import ResultsSidebar from '../sidebar.svelte';
 	import ResultSet from './ResultSet.svelte';
 
 	import type { Tourn } from '$indexcards/schemas';
@@ -24,15 +25,14 @@
 
 </script>
 
-	<Loading tanstackJobs={ [myTourn, resultSetFetch] }></Loading>
+	<WithSidebar>
+		<Loading tanstackJobs={ [myTourn, resultSetFetch] }></Loading>
 
-	{#if resultSetFetch.status === 'success'}
-
-		<div class="main">
+		{#if resultSetFetch.status === 'success'}
 			<div class="
 				flex
 				bt-0 mt-0
-				border-b-2 border-primary-600
+				border-b-2 border-primary-strong
 				pb-2 mb-2
 			">
 				<span class="w-3/5 justify-around flex flex-col">
@@ -60,10 +60,14 @@
 					tourn     = {tourn}
 				/>
 			{/if}
-		</div>
+		{/if}
 
-		<Sidebar
-			selectedEventId = { resultSet.Event?.id }
-			selectedResultSetId = { resultSet.id }
-		/>
-	{/if}
+		{#snippet sidebar()}
+			{#if resultSetFetch.status === 'success'}
+				<ResultsSidebar
+					selectedEventId = { resultSet.Event?.id }
+					selectedResultSetId = { resultSet.id }
+				/>
+			{/if}
+		{/snippet}
+	</WithSidebar>

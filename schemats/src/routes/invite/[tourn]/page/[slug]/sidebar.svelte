@@ -1,5 +1,4 @@
 <script lang='ts'>
-	import Sidebar from '$lib/layouts/Sidebar.svelte';
 	import ShowDateRange from '$lib/layouts/ShowDateRange.svelte';
 	import { shortZone } from '$lib/helpers/dt';
 
@@ -21,9 +20,9 @@
 
 </script>
 
-	<Sidebar >
+	<!-- invite/page/[slug]/sidebar.svelte: content for a WithSidebar sidebar snippet -->
 		<div class="sidenote">
-			<h5 class='my-0 border-b border-secondary-500 pb-0 leading-8 mb-2'>
+			<h5 class='my-0 border-b border-accent pb-0 leading-8 mb-2'>
 				Location
 			</h5>
 
@@ -31,7 +30,7 @@
 				{ tourn?.city }, { locationState }
 			</p>
 
-			<h5 class='my-0 border-b border-secondary-500 pb-0 leading-8 mb-0'>
+			<h5 class='my-0 border-b border-accent pb-0 leading-8 mb-0'>
 				Dates
 			</h5>
 
@@ -76,4 +75,3 @@
 				{/each}
 			{/if}
 		</div>
-	</Sidebar>

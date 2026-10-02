@@ -2,9 +2,7 @@
 
 	let { row } = $props();
 
-	import LaptopCodeSolid from 'flowbite-svelte-icons/LaptopCodeSolid.svelte';
-	import UsersSolid from 'flowbite-svelte-icons/UsersSolid.svelte';
-	import CodeForkSolid from 'flowbite-svelte-icons/CodeForkSolid.svelte';
+	import { Laptop, Users, Blend } from '@lucide/svelte';
 
 </script>
 
@@ -12,15 +10,12 @@
 
 		{#if row.inPerson}
 			<span
-				class = "w-1/3 text-primary-600
-					hover:bg-primary-600 hover:text-white
+				class = "w-1/3 text-primary-strong
+					hover:bg-primary-strong hover:text-white
 					py-1"
 				title = "{ row.inPerson } event{ row.inPerson > 1 ? 's are' : ' is' } in person"
 			>
-				<UsersSolid
-					class = 'm-auto'
-					size  = 'xs'
-				/>
+				<Users class='m-auto size-3' />
 				<span class='hidden'>
 					In Person
 				</span>
@@ -30,15 +25,12 @@
 		{#if row.online}
 			<span
 				class = "
-					w-1/3 text-error-500
-					hover:bg-error-500 hover:text-white
+					w-1/3 text-danger
+					hover:bg-danger hover:text-white
 					py-1"
 				title = "{ row.online } event{ row.online > 1 ? 's are' : ' is' } online"
 			>
-				<LaptopCodeSolid
-					class = 'm-auto'
-					size  = 'xs'
-				/>
+				<Laptop class='m-auto size-3' />
 				<span class='hidden'>
 					Online
 				</span>
@@ -48,15 +40,12 @@
 		{#if row.hybrid}
 			<span
 				class = "
-					w-1/3 text-tertiary-500
-					hover:bg-tertiary-500 hover:text-white
+					w-1/3 text-tertiary
+					hover:bg-tertiary hover:text-white
 					py-1"
 				title = "{ row.hybrid } event{ row.hybrid > 1 ? 's are' : ' is' } hybrid"
 			>
-				<CodeForkSolid
-					class = 'm-auto'
-					size  = "xs"
-				/>
+				<Blend class='m-auto size-3' />
 				<span class='hidden'>
 					Hybrid
 				</span>

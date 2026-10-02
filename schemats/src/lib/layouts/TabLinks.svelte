@@ -19,17 +19,14 @@
 
 	let activeClass = `
 		active
-		text-primary-700
-		bg-back-50
-		hover:text-primary-800 hover:bg-back-100
-		dark:bg-back-800 dark:text-primary-500
-		hover:dark:text-warning-200 hover:dark:bg-back-700
+		text-primary-strong
+		bg-surface
+		hover:text-primary-deep hover:bg-surface-alt
 	`;
 
 	let inactiveClass = `
-		text-black
-		bg-back-200
-		dark:bg-back-800 dark:text-primary-500
+		text-text
+		bg-page
 	`;
 
 	const processedTabs:TabLink[] = $derived(tabs.map( (tab) => {
@@ -64,12 +61,17 @@
 
 </script>
 
+<!--
+	Scrolls sideways when the tabs don't fit. Left to overflow, they'd widen
+	the whole page on phones, and the fixed sidebar drawer would end up off
+	screen past the right edge.
+-->
 <ul
-	class = 'flex space-x-2 rtl:space-x-reverse'
+	class = 'flex space-x-2 rtl:space-x-reverse overflow-x-auto'
 	role  = 'tablist'
 >
 	{#each processedTabs.sort((a, b) => (a.sort || 0) - (b.sort || 0)) as tab (tab.route)}
-		<li class='group focus-within:z-10' role='presentation'>
+		<li class='group shrink-0 focus-within:z-10' role='presentation'>
 			<a
 				class ='{ tab.tabClass }
 					inline-block p-2 px-4
@@ -77,7 +79,7 @@
 					text-sm text-center
 					disabled:cursor-not-allowed
 					font-semibold
-					hover:bg-secondary-100
+					hover:bg-accent-soft
 				'
 				aria-selected = '{ page.url.pathname.includes(tab.route) || tab.defaultSelected }'
 				href          = {tab.route}

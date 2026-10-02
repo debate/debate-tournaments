@@ -1,7 +1,7 @@
 <script lang="ts">
 
 	import { resolve } from '$app/paths';
-	import Gavel from '$lib/layouts/Gavel.svelte';
+	import { Gavel } from '@lucide/svelte';
 	let { row, column } = $props();
 
 	const judges = $derived(row.Judges);
@@ -35,7 +35,7 @@
 				<div class="w-full py-0.25 { column.style} flex ">
 					{#if row.Judges[judgeId].chair}
 						<span>
-							<Gavel color='7fad70' />
+							<Gavel color='#7fad70' size={17} />
 						</span>
 					{/if}
 					{#if  row.Judges[judgeId].paradigm}

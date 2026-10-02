@@ -13,13 +13,12 @@
 
 	const defaultActiveClass = `
 		${ tabStyle }
-		active text-primary-600 bg-gray-100 dark:bg-gray-800 dark:text-primary-500
+		active text-primary-strong bg-primary-soft
 	`;
 
 	const defaultInactiveClass = `
 		${ tabStyle }
-		hover:text-primary-900 hover:bg-secondary-100
-		dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-300
+		hover:text-primary-deep hover:bg-accent-soft
 	`;
 
 	let {

@@ -11,7 +11,8 @@
 	import Deadlines from './Deadlines.svelte';
 
 	import Loading from '$lib/layouts/Loading.svelte';
-	import Sidebar from '../../sidebar.svelte';
+	import WithSidebar from '$lib/layouts/WithSidebar.svelte';
+	import RoundsSidebar from '../../sidebar.svelte';
     import { ordinate } from '$lib/helpers/text';
 
 	import type { Tourn } from '$indexcards/schemas';
@@ -29,15 +30,14 @@
 
 </script>
 
-	<Loading tanstackJobs={ [myTourn, schematic] }></Loading>
+	<WithSidebar>
+		<Loading tanstackJobs={ [myTourn, schematic] }></Loading>
 
-	{#if schematic.status === 'success'}
-		<div class="main">
-
+		{#if schematic.status === 'success'}
 			<div class="
 				flex
 				bt-0 mt-0
-				border-b-2 border-primary-600
+				border-b-2 border-primary-strong
 				pb-2 mb-2
 			">
 				<span class="w-3/5">
@@ -53,7 +53,7 @@
 							{/if}
 						</h3>
 						{#if schematic.data.message}
-							<p class="px-0 font-semibold italic text-md pt-1 pb-0 leading-3 text-error-600">
+							<p class="px-0 font-semibold italic text-md pt-1 pb-0 leading-3 text-danger">
 								{schematic.data.message}
 							</p>
 						{/if}
@@ -74,9 +74,9 @@
 				<p class="
 					px-0 py-1 pb-3 mb-2
 					font-semibold italic text-md leading-3
-					text-primary-800
+					text-primary-deep
 					text-center
-					border-b-2 border-neutral-300
+					border-b-2 border-border
 				">
 					MOTION: {schematic.data.motion}
 				</p>
@@ -103,8 +103,9 @@
 					tourn     = {tourn}
 				/>
 			{/if}
+		{/if}
 
-		</div>
-
-		<Sidebar />
-	{/if}
+		{#snippet sidebar()}
+			<RoundsSidebar />
+		{/snippet}
+	</WithSidebar>

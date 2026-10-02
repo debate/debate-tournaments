@@ -38,13 +38,13 @@
 
 	{#if linkUrl}
 		<a
-			class = 'hover:text-primary-700 hover:text-decoration-line text-neutral-900
+			class = 'hover:text-primary-strong hover:text-decoration-line text-text
 				break-normal font-normal w-full py-1 ps-2 my-0'
 			href  = {linkUrl}
 			title = '{ linkNames?.hover }'
 		>{linkNames?.name}</a>
 	{:else }
 		<span
-			class = 'text-neutral-900 break-normal font-normal'
+			class = 'text-text break-normal font-normal'
 		>{row.entityName }</span>
 	{/if}

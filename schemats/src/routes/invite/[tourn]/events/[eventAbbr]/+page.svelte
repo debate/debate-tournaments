@@ -8,7 +8,7 @@
 
 	import {eventType} from '$lib/helpers/text';
 
-	import Sidebar from '$lib/layouts/Sidebar.svelte';
+	import WithSidebar from '$lib/layouts/WithSidebar.svelte';
 	import { resolve } from '$app/paths';
 
 	import type { Tourn } from '$indexcards/schemas';
@@ -22,7 +22,7 @@
 </script>
 
 	{#if pageContent.status === 'pending'}
-		<div class='text-success-500 font-semibold'>
+		<div class='text-success font-semibold'>
 			Data Loading...
 		</div>
 	{:else if pageContent.status === 'error'}
@@ -30,30 +30,30 @@
 	{:else}
 
 		{#if pageContent.isPending}
-			<div class='text-success-500 font-semibold'>
+			<div class='text-success font-semibold'>
 				Data Updating...
 			</div>
 		{:else}
 
-			<div class="main">
+			<WithSidebar>
 
 			{#if eventPage.length === 1}
 				<h5
-					class='border-b border-primary-500 mb-4'
+					class='border-b border-primary mb-4'
 				>{eventPage[0].title || 'Main' }</h5>
 
 				{@html eventPage[0].content}
 			{:else }
 				<h4
-					class='border-b border-primary-500 mb-1'
+					class='border-b border-primary mb-1'
 				>Events Offered</h4>
 			{/if}
 
 			{#each pageContent.data?.Events ?? [] as event (event.id) }
 
-				<div class='border-b border-b-primary-600'>
+				<div class='border-b border-b-primary-strong'>
 
-					<div class='w-full flex py-1 ps-1 border-b border-b-back-200'>
+					<div class='w-full flex py-1 ps-1 border-b border-b-page'>
 
 						<span class="w-1/2 flex grow">
 							<span>
@@ -68,11 +68,11 @@
 							<span class="w-1/4 text-right content-center">
 								<a
 									class ='
-										bg-back
+										bg-surface
 										font-semibold
 										px-2
-										text-primary-800
-										hover:text-primary-500
+										text-primary-deep
+										hover:text-primary-strong
 									'
 									href  = {resolve('/invite/[tourn]/events/[eventAbbr]/field', {
 										tourn     : tourn.webname,
@@ -175,12 +175,11 @@
 				</div>
 			{/each}
 
-			</div>
-
-			<Sidebar>
+			{#snippet sidebar()}
 				<div class="sidenote min-h-[50dvh]">
 				</div>
-			</Sidebar>
+			{/snippet}
+			</WithSidebar>
 
 		{/if}
 	{/if}

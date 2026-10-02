@@ -8,7 +8,8 @@
 	import { getContext } from 'svelte';
 
 	import { ucfirst } from '$lib/helpers/text';
-	import Sidebar from './page/[slug]/sidebar.svelte';
+	import WithSidebar from '$lib/layouts/WithSidebar.svelte';
+	import InviteSidebar from './page/[slug]/sidebar.svelte';
 	import Loading from '$lib/layouts/Loading.svelte';
 
 	import type { Tourn } from '$indexcards/schemas';
@@ -21,12 +22,12 @@
 
 </script>
 
-	<Loading tanstackJob={pageContent}></Loading>
+	<WithSidebar>
+		<Loading tanstackJob={pageContent}></Loading>
 
-	<div class='main'>
 		{#if mainPages && mainPages.length > 0}
 			<h5
-				class='border-b border-primary-500 mb-4'
+				class='border-b border-primary mb-4'
 			>{ ucfirst(mainPages[0].title) || 'Invitation' }</h5>
 
 			{@html mainPages[0].content}
@@ -38,10 +39,12 @@
 				consult any page links at right.
 			</p>
 		{/if}
-	</div>
 
-	{#if pageContent.data}
-		<Sidebar
-			tourn = {pageContent.data}
-		/>
-	{/if}
+		{#snippet sidebar()}
+			{#if pageContent.data}
+				<InviteSidebar
+					tourn = {pageContent.data}
+				/>
+			{/if}
+		{/snippet}
+	</WithSidebar>

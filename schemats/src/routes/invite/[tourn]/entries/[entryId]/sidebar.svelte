@@ -6,7 +6,6 @@
 
 	import indexFetch from '$lib/indexfetch';
 	import type { EventField } from '@tabroom/types';
-	import Sidebar from '$lib/layouts/Sidebar.svelte';
     import Select from '$lib/layouts/Select.svelte';
 	import type { Tourn } from '$indexcards/schemas';
 
@@ -38,16 +37,14 @@
 
 </script>
 
+	<!-- invite/entries/[entryId]/sidebar.svelte: content for a WithSidebar sidebar snippet -->
 	{#if field.isSuccess}
-
-		<Sidebar>
-			<div class="sidenote">
-				<h4>Entries in {event.abbr}</h4>
-				<Select
-					items   = {selections}
-					options = {options}
-					startId = {selectedEntryId}
-				/>
-			</div>
-		</Sidebar>
+		<div class="sidenote">
+			<h4>Entries in {event.abbr}</h4>
+			<Select
+				items   = {selections}
+				options = {options}
+				startId = {selectedEntryId}
+			/>
+		</div>
 	{/if}

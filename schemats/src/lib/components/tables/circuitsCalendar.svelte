@@ -94,7 +94,7 @@
 	</script>
 
 	{#if tournsData && tournsData.length > 0}
-	<div class='px-3 overflow-x-scroll py-3 bg-back wg-full'>
+	<div class='px-3 overflow-x-scroll py-3 bg-surface wg-full'>
 		<SVGrid
 			columns={columns}
 			data={tournsData}

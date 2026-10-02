@@ -8,7 +8,7 @@
 	import { getContext } from 'svelte';
 
 	import Loading from '$lib/layouts/Loading.svelte';
-	import Sidebar from '$lib/layouts/Sidebar.svelte';
+	import WithSidebar from '$lib/layouts/WithSidebar.svelte';
 
 	import SVGrid from '$lib/layouts/grid/SVGrid.svelte';
 	import type { GridOptions, SchematColumn } from '$lib/layouts/grid/svgrid';
@@ -107,11 +107,10 @@
 
 </script>
 
-	<Loading tanstackJob={fieldReports} />
+	<WithSidebar>
+		<Loading tanstackJob={fieldReports} />
 
-	{#if fieldReports.status === 'success'}
-
-		<div class='main'>
+		{#if fieldReports.status === 'success'}
 			<div class='w-full px-0 overflow-x-scroll py-0'>
 				<SVGrid
 					columns = { columns }
@@ -119,19 +118,19 @@
 					options = { options }
 				/>
 			</div>
-		</div>
+		{/if}
 
-		<Sidebar>
+		{#snippet sidebar()}
 			<div class="sidenote min-h-[50dvh]">
 				{selectedEvent}
 
 				<a
 					class = '
-						blue full bg-back-100 text-xs
-						text-black
-						border-s-2 border-primary-800
-						border-y border-y-back-300
-						hover:bg-secondary-100
+						blue full bg-surface-alt text-xs
+						text-text
+						border-s-2 border-primary-deep
+						border-y border-y-border
+						hover:bg-accent-soft
 						mb-4
 					'
 					href  = {resolve('/invite/[tourn]/events', { tourn: tourn.webname })}
@@ -142,15 +141,13 @@
 					{#each events[eventType] as otherEvent (otherEvent.id) }
 						<a
 							class = '
-								text-black
 								blue w-[48%] text-xs
-								border-s-2 border-primary-800
+								border-s-2 border-primary-deep
 								me-[2%]
-								border-y border-y-back-300
-								hover:bg-secondary-100
+								border-y border-y-border
 								{selectedEvent === otherEvent.abbr
-									? 'bg-primary-700 text-secondary-200 hover:text-black hover:bg-secondary-300'
-									: 'bg-back-100 text-black'
+									? 'bg-primary-strong text-accent-soft hover:text-text hover:bg-accent'
+									: 'bg-surface-alt text-text hover:bg-accent-soft'
 								}'
 							href  = {resolve('/invite/[tourn]/events/[eventAbbr]/field', {
 								tourn     : tourn.webname,
@@ -161,5 +158,5 @@
 				{/each}
 
 			</div>
-		</Sidebar>
-	{/if}
+		{/snippet}
+	</WithSidebar>

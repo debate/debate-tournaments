@@ -1,7 +1,8 @@
 <script lang="ts">
 
     import { page } from '$app/state';
-    import Sidebar from './sidebar.svelte';
+    import WithSidebar from '$lib/layouts/WithSidebar.svelte';
+    import InviteSidebar from './sidebar.svelte';
 	import Loading from '$lib/layouts/Loading.svelte';
 
 	// This pattern leads to reactive data display in Svelte 5 & TanStack,
@@ -27,13 +28,13 @@
 
 </script>
 
-	<Loading tanstackJob={pageContent}></Loading>
+	<WithSidebar>
+		<Loading tanstackJob={pageContent}></Loading>
 
-	{#if pageContent.data}
-		<div class="main">
+		{#if pageContent.data}
 			{#if webPage}
 				<h5
-					class='border-b border-primary-500 mb-4'
+					class='border-b border-primary mb-4'
 				>{webPage.title || 'Main' }</h5>
 				{@html webPage.content}
 			{:else }
@@ -42,9 +43,13 @@
 					The page ID {slug} was not found in the tournament {tourn.name}
 				</p>
 			{/if}
-		</div>
+		{/if}
 
-		<Sidebar
-			tourn    = {pageContent.data}
-		/>
-	{/if}
+		{#snippet sidebar()}
+			{#if pageContent.data}
+				<InviteSidebar
+					tourn = {pageContent.data}
+				/>
+			{/if}
+		{/snippet}
+	</WithSidebar>

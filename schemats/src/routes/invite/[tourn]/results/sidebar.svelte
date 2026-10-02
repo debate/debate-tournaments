@@ -5,8 +5,6 @@
 
 	import { indexFetch } from '$lib/indexfetch';
 	import type { EventResultSets, PersonTournPresence } from '@tabroom/types';
-	import Sidebar from '$lib/layouts/Sidebar.svelte';
-	import Loading from '$lib/layouts/Loading.svelte';
 
 	import type { Tourn } from '$indexcards/schemas';
 
@@ -55,14 +53,11 @@
 
 </script>
 
-	<Loading tanstackJobs={ [myTourn, resultSets] } />
-
 	{#if myTourn.isFetched && resultSets.isFetched}
 
-	<!-- invite/resultSets/eventAbbr/sidebar.svelte-->
-	<Sidebar>
+	<!-- invite/results/sidebar.svelte: content for a WithSidebar sidebar snippet -->
 		<div class="sidenote">
-			<h5 class='my-0 border-b border-secondary-500 pb-0 leading-8 mb-2 pt-1'>
+			<h5 class='my-0 border-b border-accent pb-0 leading-8 mb-2 pt-1'>
 				Events
 			</h5>
 
@@ -72,16 +67,16 @@
 
 						<div class='flex flex-wrap'>
 							<button
-								class = 'blue w-full bg-back-100 text-sm
-									border-s-2 border-primary-400
-									border-y border-y-back-300
-									hover:bg-back-200
+								class = 'blue w-full bg-surface-alt text-sm
+									border-s-2 border-primary
+									border-y border-y-border
+									hover:bg-page
 									p-1
 									ps-2
 									text-[12px]
 									flex
 									mb-1
-									{selectedEvent === event.id ? 'selected bg-secondary-200 font-semibold' : '' }
+									{selectedEvent === event.id ? 'selected bg-accent-soft font-semibold' : '' }
 								'
 								onclick={ () => { selectedEvent = event.id; } }
 								type  ='button'
@@ -94,7 +89,7 @@
 										flex-col
 										justify-aresultSet
 										text-right pe-0.75
-										text-back-1000 text-xs
+										text-xs
 									'>
 										{event.abbr}
 								</span>
@@ -104,11 +99,11 @@
 								{#each event.ResultSets as resultSet (resultSet.id)}
 									<a
 										class = 'blue w-full
-											bg-back-100 text-xs
-											border-s-2 border-secondary-200
-											border-y border-y-back-300
-											hover:bg-secondary-200
-											{selectedResultSetId === resultSet.id ? 'selected bg-secondary-200 ' : '' }
+											bg-surface-alt text-xs
+											border-s-2 border-accent
+											border-y border-y-border
+											hover:bg-accent-soft
+											{selectedResultSetId === resultSet.id ? 'selected bg-accent-soft ' : '' }
 										'
 										href = {resolve('/invite/[tourn]/results/[resultSetId]', {
 											tourn       : tourn.webname,
@@ -122,6 +117,4 @@
 				{/each}
 			{/each}
 		</div>
-
-	</Sidebar>
 	{/if}

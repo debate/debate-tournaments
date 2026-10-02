@@ -1,8 +1,7 @@
 <script lang="ts">
 
 	import '../app.css';
-	import Header from '$lib/layouts/Header.svelte';
-	import Footer from '$lib/layouts/Footer.svelte';
+	import AppShell from '$lib/layouts/AppShell.svelte';
 	import ToastProvider from '$lib/components/ToastProvider.svelte';
 
 	import { browser } from '$app/env';
@@ -72,28 +71,9 @@
 	persistOptions = {{ persister }}
 >
 
-	<!-- Header called from top level layout.svelte -->
-	<Header logoutFn={logout} notificationCount={notificationCount} suEndFn={suEnd} />
-
-	<!-- Top level layout.svelte -->
-	<main class= 'bg-linear-to-b from-primary-800 to-primary-500 px-2 sm:px-6 min-h-full'>
-		<div class='
-			min-h-[80vh]
-			border-warning-500
-			border-x-2
-			border-t-2
-			rounded-t-md
-			bg-back-200
-		'>
-			<!-- making this flex on the front page leads to the Gradually
-			Growing bug that's driving me insane -- CLP -->
-
-			<div class='flex min-h-[80vh] w-full flex-col'>
-				{@render children()}
-			</div>
-		</div>
-	</main>
+	<AppShell logoutFn={logout} notificationCount={notificationCount} suEndFn={suEnd}>
+		{@render children()}
+	</AppShell>
 	<SvelteQueryDevtools />
 	<ToastProvider />
-	<Footer />
 </PersistQueryClientProvider>
