@@ -8,7 +8,7 @@
 
 	import {eventType} from '$lib/helpers/text';
 
-	import Sidebar from '$lib/layouts/Sidebar.svelte';
+	import WithSidebar from '$lib/layouts/WithSidebar.svelte';
 	import { resolve } from '$app/paths';
 
 	import type { Tourn } from '$indexcards/schemas';
@@ -35,7 +35,7 @@
 			</div>
 		{:else}
 
-			<div class="main">
+			<WithSidebar>
 
 			{#if eventPage.length === 1}
 				<h5
@@ -175,12 +175,11 @@
 				</div>
 			{/each}
 
-			</div>
-
-			<Sidebar>
+			{#snippet sidebar()}
 				<div class="sidenote min-h-[50dvh]">
 				</div>
-			</Sidebar>
+			{/snippet}
+			</WithSidebar>
 
 		{/if}
 	{/if}

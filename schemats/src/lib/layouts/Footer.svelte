@@ -19,10 +19,10 @@
 
 </script>
 
-<div class='min-h-[96px] bg-primary px-6 rounded-t-none'>
+<div>
 
 	<Footer
-		class="bg-primary-deep"
+		class="bg-primary-deep rounded-none shadow-none"
 		role="contentinfo"
 	>
 		<div class='items-center py- w-full block'>

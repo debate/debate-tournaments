@@ -9,7 +9,8 @@
 	import { indexFetch } from '$lib/indexfetch';
 	import type { ScheduleRound } from '@tabroom/types';
 	import { getContext } from 'svelte';
-	import Sidebar from '../sidebar.svelte';
+	import WithSidebar from '$lib/layouts/WithSidebar.svelte';
+	import RoundsSidebar from '../sidebar.svelte';
 
     import ShowDate from '$lib/layouts/ShowDate.svelte';
 
@@ -25,7 +26,7 @@
 
 </script>
 
-	<div class="main">
+	<WithSidebar>
 		{#if schedule.status === 'pending'}
 			<div class='text-success font-semibold'>
 				Data Loading...
@@ -92,6 +93,8 @@
 				{/each}
 			{/if}
 		{/if}
-	</div>
 
-	<Sidebar />
+		{#snippet sidebar()}
+			<RoundsSidebar />
+		{/snippet}
+	</WithSidebar>

@@ -4,9 +4,12 @@
 	let {
 		item,
 		href,
+		onselect,
 	}: {
 		item: ParadigmSearchResult;
 		href?: string;
+		// Called when the "View Paradigm" link is clicked.
+		onselect?: () => void;
 	} = $props();
 </script>
 
@@ -50,6 +53,7 @@
 				whitespace-nowrap
 				cursor-pointer"
 			href={href}
+			onclick={onselect}
 			title="View paradigm"
 		>
 			View Paradigm

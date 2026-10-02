@@ -9,8 +9,6 @@
 	import { indexFetch } from '$lib/indexfetch';
 	import type { PersonTournPresence, PublishedRound } from '@tabroom/types';
 	import { ucfirst } from '$lib/helpers/text';
-	import Sidebar from '$lib/layouts/Sidebar.svelte';
-	import Loading from '$lib/layouts/Loading.svelte';
 
 	const eventGroupKeys = ['your', 'school', 'other'] as const;
 	type EventGroupKey = typeof eventGroupKeys[number];
@@ -88,12 +86,9 @@
 
 </script>
 
-	<Loading tanstackJobs={ [myTourn, roundList] } />
-
 	{#if myTourn.isFetched && roundList.isFetched}
 
-	<!-- invite/rounds/eventAbbr/sidebar.svelte-->
-	<Sidebar>
+	<!-- invite/rounds/sidebar.svelte: content for a WithSidebar sidebar snippet -->
 		<div class="sidenote">
 			{#each eventGroupKeys as key (key) }
 
@@ -215,5 +210,4 @@
 				{/if}
 			{/each}
 		</div>
-	</Sidebar>
 	{/if}

@@ -10,6 +10,8 @@
 		searchTerm: string;
 		selectedHref: (id: number) => string;
 		paradigmsQuery: CreateInfiniteQueryResult<unknown, ProblemSchema>;
+		// Called when a result is picked, e.g. to close the mobile drawer.
+		onselect?: () => void;
 	};
 
 	const {
@@ -17,6 +19,7 @@
 		searchTerm,
 		selectedHref,
 		paradigmsQuery,
+		onselect,
 	}: Props = $props();
 </script>
 
@@ -24,7 +27,7 @@
 	{#if results.length > 0}
 		<div class="mx-auto flex w-full flex-col gap-3 overflow-y-auto">
 			{#each results as result (result.id)}
-				<ParadigmListItem href={selectedHref(result.id)} item={result} />
+				<ParadigmListItem href={selectedHref(result.id)} item={result} {onselect} />
 			{/each}
 		</div>
 	{:else}

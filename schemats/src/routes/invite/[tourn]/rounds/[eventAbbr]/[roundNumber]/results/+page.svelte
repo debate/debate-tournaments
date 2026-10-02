@@ -9,7 +9,8 @@
 	import Winloss from './Winloss.svelte';
 
 	import Loading from '$lib/layouts/Loading.svelte';
-	import Sidebar from '../../../sidebar.svelte';
+	import WithSidebar from '$lib/layouts/WithSidebar.svelte';
+	import RoundsSidebar from '../../../sidebar.svelte';
 
 	import type { Tourn } from '$indexcards/schemas';
 	const tourn:Tourn = getContext('webnameTourn');
@@ -26,11 +27,10 @@
 
 </script>
 
-	<Loading tanstackJobs={ [myTourn, results] }></Loading>
+	<WithSidebar>
+		<Loading tanstackJobs={ [myTourn, results] }></Loading>
 
-	{#if results.status === 'success'}
-
-		<div class="main">
+		{#if results.status === 'success'}
 			<div class="
 				flex
 				bt-0 mt-0
@@ -87,8 +87,9 @@
 					refresh!
 				</p>
 			{/if}
+		{/if}
 
-		</div>
-
-		<Sidebar parent='results' />
-	{/if}
+		{#snippet sidebar()}
+			<RoundsSidebar parent='results' />
+		{/snippet}
+	</WithSidebar>

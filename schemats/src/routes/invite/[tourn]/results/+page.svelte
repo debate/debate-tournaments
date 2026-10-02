@@ -4,12 +4,13 @@
 	import { getContext } from 'svelte';
 	import type { Tourn } from '$indexcards/schemas';
 
-	import Sidebar from './sidebar.svelte';
+	import WithSidebar from '$lib/layouts/WithSidebar.svelte';
+	import ResultsSidebar from './sidebar.svelte';
 	const tourn:Tourn = getContext('webnameTourn');
 	const resultSets = $derived(indexFetch<Record<number, EventResultSets>>(`/rest/tourns/${tourn.id}/results`));
 </script>
 
-	<div class="main">
+	<WithSidebar>
 		{#if resultSets.status === 'pending'}
 			<div class='text-success font-semibold'>
 				Data Loading...
@@ -26,6 +27,8 @@
 				<h5>Results Tables</h5>
 			{/if}
 		{/if}
-	</div>
 
-	<Sidebar />
+		{#snippet sidebar()}
+			<ResultsSidebar />
+		{/snippet}
+	</WithSidebar>

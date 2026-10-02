@@ -11,7 +11,8 @@
 	import Deadlines from './Deadlines.svelte';
 
 	import Loading from '$lib/layouts/Loading.svelte';
-	import Sidebar from '../../sidebar.svelte';
+	import WithSidebar from '$lib/layouts/WithSidebar.svelte';
+	import RoundsSidebar from '../../sidebar.svelte';
     import { ordinate } from '$lib/helpers/text';
 
 	import type { Tourn } from '$indexcards/schemas';
@@ -29,11 +30,10 @@
 
 </script>
 
-	<Loading tanstackJobs={ [myTourn, schematic] }></Loading>
+	<WithSidebar>
+		<Loading tanstackJobs={ [myTourn, schematic] }></Loading>
 
-	{#if schematic.status === 'success'}
-		<div class="main">
-
+		{#if schematic.status === 'success'}
 			<div class="
 				flex
 				bt-0 mt-0
@@ -103,8 +103,9 @@
 					tourn     = {tourn}
 				/>
 			{/if}
+		{/if}
 
-		</div>
-
-		<Sidebar />
-	{/if}
+		{#snippet sidebar()}
+			<RoundsSidebar />
+		{/snippet}
+	</WithSidebar>

@@ -230,7 +230,7 @@
 					<DatabaseOutline/>
 				</Button>
 				<Button
-					color="primary"
+					color="danger"
 					label="Print Portrait Mode"
 					onclick={() => printPortrait()}
 					variant="outline"

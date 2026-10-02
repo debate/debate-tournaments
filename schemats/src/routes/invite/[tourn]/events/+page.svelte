@@ -8,7 +8,7 @@
 
 	import {eventType} from '$lib/helpers/text';
 
-	import Sidebar from '$lib/layouts/Sidebar.svelte';
+	import WithSidebar from '$lib/layouts/WithSidebar.svelte';
 	import Loading from '$lib/layouts/Loading.svelte';
 	import { resolve } from '$app/paths';
 
@@ -28,9 +28,9 @@
 
 </script>
 
-	<Loading tanstackJob={pageContent} />
+	<WithSidebar>
+		<Loading tanstackJob={pageContent} />
 
-	<div class="main">
 		{#if eventPage}
 			<h5
 				class='border-b border-primary mb-4'
@@ -169,9 +169,8 @@
 			</div>
 		{/each}
 
-	</div>
-
-	<Sidebar>
-		<div class="sidenote min-h-[50dvh]">
-		</div>
-	</Sidebar>
+		{#snippet sidebar()}
+			<div class="sidenote min-h-[50dvh]">
+			</div>
+		{/snippet}
+	</WithSidebar>

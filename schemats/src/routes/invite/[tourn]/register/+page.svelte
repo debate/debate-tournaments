@@ -28,8 +28,6 @@
 
 </script>
 
-	<div class="main">
-
 		{#if (mySchools.status === 'pending' || myChapters.status == 'pending')}
 			<div class='text-success font-semibold'>
 				Data Loading...
@@ -166,6 +164,4 @@
 
 			{/if}
 		{/if}
-
-	</div>
 

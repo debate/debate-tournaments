@@ -5,7 +5,8 @@
 	import { indexFetch } from '$lib/indexfetch';
 	import { getContext } from 'svelte';
 
-	import Sidebar from './sidebar.svelte';
+	import WithSidebar from '$lib/layouts/WithSidebar.svelte';
+	import EntrySidebar from './sidebar.svelte';
 
 	import type { Tourn } from '$indexcards/schemas';
     import { page } from '$app/state';
@@ -22,9 +23,8 @@
 
 </script>
 
-	{#if entryResults.isSuccess}
-
-		<div class='main'>
+	<WithSidebar>
+		{#if entryResults.isSuccess}
 			<div class='flex w-full m-0 p-0'>
 				<span class='w-1/2 content-around'>
 					<h3
@@ -53,9 +53,11 @@
 					<Debate entry={ entry } />
 				{/if}
 			</div>
+		{/if}
 
-		</div>
-
-		<Sidebar event={entry.Event} />
-
-	{/if}
+		{#snippet sidebar()}
+			{#if entryResults.isSuccess}
+				<EntrySidebar event={entry.Event} />
+			{/if}
+		{/snippet}
+	</WithSidebar>

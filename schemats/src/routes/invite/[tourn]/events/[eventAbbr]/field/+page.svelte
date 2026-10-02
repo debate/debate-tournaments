@@ -8,7 +8,7 @@
 	import { getContext } from 'svelte';
 
 	import Loading from '$lib/layouts/Loading.svelte';
-	import Sidebar from '$lib/layouts/Sidebar.svelte';
+	import WithSidebar from '$lib/layouts/WithSidebar.svelte';
 
 	import SVGrid from '$lib/layouts/grid/SVGrid.svelte';
 	import type { GridOptions, SchematColumn } from '$lib/layouts/grid/svgrid';
@@ -107,11 +107,10 @@
 
 </script>
 
-	<Loading tanstackJob={fieldReports} />
+	<WithSidebar>
+		<Loading tanstackJob={fieldReports} />
 
-	{#if fieldReports.status === 'success'}
-
-		<div class='main'>
+		{#if fieldReports.status === 'success'}
 			<div class='w-full px-0 overflow-x-scroll py-0'>
 				<SVGrid
 					columns = { columns }
@@ -119,9 +118,9 @@
 					options = { options }
 				/>
 			</div>
-		</div>
+		{/if}
 
-		<Sidebar>
+		{#snippet sidebar()}
 			<div class="sidenote min-h-[50dvh]">
 				{selectedEvent}
 
@@ -159,5 +158,5 @@
 				{/each}
 
 			</div>
-		</Sidebar>
-	{/if}
+		{/snippet}
+	</WithSidebar>

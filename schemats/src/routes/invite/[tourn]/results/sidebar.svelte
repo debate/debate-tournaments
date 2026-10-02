@@ -5,8 +5,6 @@
 
 	import { indexFetch } from '$lib/indexfetch';
 	import type { EventResultSets, PersonTournPresence } from '@tabroom/types';
-	import Sidebar from '$lib/layouts/Sidebar.svelte';
-	import Loading from '$lib/layouts/Loading.svelte';
 
 	import type { Tourn } from '$indexcards/schemas';
 
@@ -55,12 +53,9 @@
 
 </script>
 
-	<Loading tanstackJobs={ [myTourn, resultSets] } />
-
 	{#if myTourn.isFetched && resultSets.isFetched}
 
-	<!-- invite/resultSets/eventAbbr/sidebar.svelte-->
-	<Sidebar>
+	<!-- invite/results/sidebar.svelte: content for a WithSidebar sidebar snippet -->
 		<div class="sidenote">
 			<h5 class='my-0 border-b border-accent pb-0 leading-8 mb-2 pt-1'>
 				Events
@@ -122,6 +117,4 @@
 				{/each}
 			{/each}
 		</div>
-
-	</Sidebar>
 	{/if}

@@ -61,12 +61,17 @@
 
 </script>
 
+<!--
+	Scrolls sideways when the tabs don't fit. Left to overflow, they'd widen
+	the whole page on phones, and the fixed sidebar drawer would end up off
+	screen past the right edge.
+-->
 <ul
-	class = 'flex space-x-2 rtl:space-x-reverse'
+	class = 'flex space-x-2 rtl:space-x-reverse overflow-x-auto'
 	role  = 'tablist'
 >
 	{#each processedTabs.sort((a, b) => (a.sort || 0) - (b.sort || 0)) as tab (tab.route)}
-		<li class='group focus-within:z-10' role='presentation'>
+		<li class='group shrink-0 focus-within:z-10' role='presentation'>
 			<a
 				class ='{ tab.tabClass }
 					inline-block p-2 px-4
