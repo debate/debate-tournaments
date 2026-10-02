@@ -1,6 +1,7 @@
 <script lang="ts">
 	import Header from '$lib/layouts/Header.svelte';
 	import Footer from '$lib/layouts/Footer.svelte';
+	import FeedbackBanner from '$lib/layouts/FeedbackBanner.svelte';
 	import type { Snippet } from 'svelte';
 
 	type Props = {
@@ -13,6 +14,7 @@
 	let { logoutFn, suEndFn, notificationCount = 0, children }: Props = $props();
 </script>
 
+<FeedbackBanner />
 <Header {logoutFn} {notificationCount} {suEndFn} />
 
 <main class= 'bg-linear-to-b from-primary-deep to-primary px-2 sm:px-6 min-h-full'>
