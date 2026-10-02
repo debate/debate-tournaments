@@ -36,6 +36,7 @@
 	},
 	"workspaces": [
 		"types",
+		"e2e",
 		"schemats",
 		"indexcards"
 	],

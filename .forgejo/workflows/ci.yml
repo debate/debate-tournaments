@@ -71,3 +71,15 @@ jobs:
       - name: Test Schemats (unit)
         run: |
             npm run test:ci:unit --workspace=schemats
+
+  e2e:
+    name: E2E
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: E2E Tests
+        run: |
+            npm run test --workspace=e2e
