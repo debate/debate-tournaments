@@ -1,7 +1,10 @@
 name: Build
 
 on:
+  # manual trigger for emergencies
   workflow_dispatch:
+  # called by ci.yml once all checks pass on main
+  workflow_call:
 
 jobs:
   build-indexcards:

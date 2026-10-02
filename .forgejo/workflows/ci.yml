@@ -60,7 +60,7 @@ jobs:
         run: |
             npm run typecheck
 
-  indexcards:
+  indexcards-unit:
     name: Indexcards Tests
     needs: [lint, typecheck]
     runs-on: ubuntu-latest
@@ -112,7 +112,7 @@ jobs:
         run: |
             npm run test:ci --workspace=indexcards
 
-  schemats:
+  schemats-unit:
     name: Schemats Unit Tests
     needs: [lint, typecheck]
     runs-on: ubuntu-latest
@@ -181,3 +181,24 @@ jobs:
       - name: E2E Tests
         run: |
             npm run test --workspace=e2e
+
+  build:
+    name: Build
+    needs: [indexcards-unit, schemats-unit, a11y, e2e]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    uses: ./.forgejo/workflows/build.yml
+    secrets: inherit
+
+  notify:
+    name: Notify
+    needs: [build]
+    # report every push to main, including when checks fail and the build is skipped
+    if: always() && github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Send slack notification
+        uses: https://git.speechanddebate.org/speechanddebate/action-slack-notify@master
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+          SLACK_ICON: ${{ needs.build.result == 'success' && ':white_check_mark:' || ':x:' }}
