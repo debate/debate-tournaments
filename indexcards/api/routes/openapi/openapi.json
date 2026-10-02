@@ -7056,6 +7056,10 @@
           "version": {
             "type": "string"
           },
+          "commit": {
+            "type": "string",
+            "description": "Commit hash of the current build"
+          },
           "webhost": {
             "type": "string"
           },
@@ -7091,6 +7095,7 @@
           "message",
           "name",
           "version",
+          "commit",
           "webhost",
           "server",
           "load",

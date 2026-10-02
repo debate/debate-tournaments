@@ -10,6 +10,18 @@ describe('GET /v1/status', () => {
 		expect(response.status).toBe(200);
 		expect(response.body).toMatchSchema(SystemStatusSchema);
 	});
+	it('returns the commit hash from GIT_COMMIT', async () => {
+		vi.stubEnv('GIT_COMMIT', 'abc1234');
+		const response = await request(app).get('/v1/status');
+		vi.unstubAllEnvs();
+		expect(response.body.commit).toBe('abc1234');
+	});
+	it('falls back to development when GIT_COMMIT is unset', async () => {
+		vi.stubEnv('GIT_COMMIT', '');
+		const response = await request(app).get('/v1/status');
+		vi.unstubAllEnvs();
+		expect(response.body.commit).toBe('development');
+	});
 });
 describe('GET /v1/status/barf', () => {
 	let adminSession!: string;

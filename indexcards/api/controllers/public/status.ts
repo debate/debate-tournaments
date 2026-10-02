@@ -8,6 +8,7 @@ export function systemStatus(req: Request, res: Response) {
 		message  : 'OK',
 		name     : packageData.name,
 		version  : packageData.version,
+		commit   : process.env.GIT_COMMIT || 'development',
 		webhost  : config.dockerhost ?? 'undefined',
 		server   : os.hostname(),
 		load     : os.loadavg(),

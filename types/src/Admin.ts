@@ -5,6 +5,9 @@ export const SystemStatusSchema = z.object({
 	message  : z.string(),
 	name     : z.string(),
 	version  : z.string(),
+	commit   : z.string().meta({
+		description: 'Commit hash of the current build',
+	}),
 	webhost  : z.string(),
 	server   : z.string(),
 	load     : z.array(z.number()),

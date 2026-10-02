@@ -65,6 +65,7 @@ function Labels(props = {}) {
 		app: 'indexcards',
 		host: os.hostname(),
 		container: config.dockerhost,
+		commit: process.env.GIT_COMMIT || undefined,
 		...props,
 	};
 }
