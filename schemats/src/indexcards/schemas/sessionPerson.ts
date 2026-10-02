@@ -17,4 +17,6 @@ export type SessionPerson = {
 	first: string;
 	last: string;
 	site_admin?: number | null;
+	/** @nullable */
+	tz?: string | null;
 };

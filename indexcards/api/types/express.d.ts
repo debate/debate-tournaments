@@ -13,6 +13,7 @@ type SessionPerson = {
 	last: string | null,
 	email: string,
 	site_admin: number | null,
+	tz?: string | null,
 };
 
 declare module 'express-serve-static-core' {

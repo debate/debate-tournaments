@@ -966,6 +966,13 @@ export const getUserSessionResponseMock = (
 				]),
 				undefined,
 			]),
+			tz: faker.helpers.arrayElement([
+				faker.helpers.arrayElement([
+					faker.string.alpha({ length: { min: 10, max: 20 } }),
+					null,
+				]),
+				undefined,
+			]),
 		},
 		null,
 	]),
@@ -980,6 +987,13 @@ export const getUserSessionResponseMock = (
 					min: -9007199254740991,
 					max: 9007199254740991,
 				}),
+				null,
+			]),
+			undefined,
+		]),
+		tz: faker.helpers.arrayElement([
+			faker.helpers.arrayElement([
+				faker.string.alpha({ length: { min: 10, max: 20 } }),
 				null,
 			]),
 			undefined,

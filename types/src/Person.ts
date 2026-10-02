@@ -34,6 +34,7 @@ export const SessionSchema = z.object({
 		first: true,
 		last: true,
 		site_admin: true,
+		tz: true,
 	}).nullable(),
 	Person: PersonSchema.pick({
 		id: true,
@@ -41,6 +42,7 @@ export const SessionSchema = z.object({
 		first: true,
 		last: true,
 		site_admin: true,
+		tz: true,
 	}),
 }).strict().meta({
 	id: 'Session',

@@ -8,7 +8,7 @@ describe('Session Router', () => {
 	let personId : number;
 	let userkey: string;
 	beforeAll(async () => {
-		({ id: personId } = await factories.person.create());
+		({ id: personId } = await factories.person.create({ tz: 'America/Chicago' }));
 		({ userkey } = await factories.session.create({ person: personId }));
 	});
 
@@ -26,6 +26,7 @@ describe('Session Router', () => {
 			expect(res.body).toMatchSchema(SessionSchema);
 			expect(res.body).toHaveProperty('id');
 			expect(res.body.Person).toHaveProperty('id', personId);
+			expect(res.body.Person).toHaveProperty('tz', 'America/Chicago');
 		});
 		it('Returns 401 if not authenticated', async () => {
 			const res = await request(server)
