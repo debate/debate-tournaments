@@ -1,4 +1,4 @@
-import z from 'zod';
+import { z } from 'zod';
 import * as utils from './utils.js';
 import type { ZodOpenApiSchemaObject } from 'zod-openapi';
 import { ChapterSchema } from './Chapter.js';

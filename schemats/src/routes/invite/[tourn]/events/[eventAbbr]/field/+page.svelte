@@ -70,11 +70,13 @@
 
 	const options:GridOptions = $derived.by( () => {
 		return {
-			title    : `Entry Field : ${ fieldReports.data.name }`,
+			title    : `Entry Field : ${ fieldReports.data?.name ?? '' }`,
 			reorder  : true,
 			noFilter : true,
 		};
 	});
+
+	type LinkableEvent = InviteEvent & { abbr: string };
 
 	let events = $derived.by( () => {
 
@@ -87,11 +89,12 @@
 			if (a.abbr !== b.abbr) return (a.abbr ?? '').localeCompare(b.abbr ?? '');
 			if (a.name !== b.name) return (a.name ?? '').localeCompare(b.name ?? '');
 			return a.id - b.id;
-		}).filter( (e:InviteEvent) => e.settings.fieldReport );
+		// events without an abbr can't be linked to
+		}).filter( (e:InviteEvent): e is LinkableEvent => !!e.settings.fieldReport && !!e.abbr );
 
-		const eventsByType: Record<string, InviteEvent[]> = {};
+		const eventsByType: Record<string, LinkableEvent[]> = {};
 
-		rawEvents.forEach( (event:InviteEvent) => {
+		rawEvents.forEach( (event:LinkableEvent) => {
 			if (!eventsByType[event.type]) eventsByType[event.type] = [];
 			eventsByType[event.type].push(event);
 		});

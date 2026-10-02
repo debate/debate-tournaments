@@ -28,7 +28,7 @@
 	<WithSidebar>
 		<Loading tanstackJobs={ [myTourn, resultSetFetch] }></Loading>
 
-		{#if resultSetFetch.status === 'success'}
+		{#if resultSet}
 			<div class="
 				flex
 				bt-0 mt-0
@@ -49,7 +49,7 @@
 				</span>
 			</div>
 
-			{#if resultSet.tag === 'bracket' || resultSet.tag.table }
+			{#if resultSet.tag === 'bracket' }
 
 				<p>I haven't done the {resultSet.tag} report on the beta; it's
 				kind of tricky code, if fun.  For now, look at Tabroom Classic.</p>
@@ -63,7 +63,7 @@
 		{/if}
 
 		{#snippet sidebar()}
-			{#if resultSetFetch.status === 'success'}
+			{#if resultSet}
 				<ResultsSidebar
 					selectedEventId = { resultSet.Event?.id }
 					selectedResultSetId = { resultSet.id }

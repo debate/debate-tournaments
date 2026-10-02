@@ -18,7 +18,7 @@
 	const tourn:Tourn = getContext('webnameTourn');
 
 	let schedule = indexFetch<ScheduleRound[]>(`/rest/tourns/${tourn.id}/schedule`);
-	let eventAbbr = $derived(page.params.eventAbbr);
+	let eventAbbr = $derived(page.params.eventAbbr ?? '');
 
 	const rounds = $derived(schedule.data?.filter(
 		(round:ScheduleRound) => round.Event?.abbr === eventAbbr
@@ -73,7 +73,7 @@
 							<a class='flexrow'
 								href= { resolve('/invite/[tourn]/rounds/[eventAbbr]/[roundNumber]', {
 									tourn       : tourn.webname,
-									eventAbbr   : round.Event.abbr,
+									eventAbbr   : eventAbbr,
 									roundNumber : String(round.name),
 								}) }
 							>
@@ -82,7 +82,7 @@
 							<a class='flexrow'
 								href= { resolve('/invite/[tourn]/rounds/[eventAbbr]/[roundNumber]/results', {
 									tourn       : tourn.webname,
-									eventAbbr   : round.Event.abbr,
+									eventAbbr   : eventAbbr,
 									roundNumber : String(round.name),
 								}) }
 							>

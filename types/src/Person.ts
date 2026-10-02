@@ -1,4 +1,4 @@
-import z from 'zod';
+import { z } from 'zod';
 import type { ZodOpenApiSchemaObject } from 'zod-openapi';
 import { QuizSchema } from './Quiz.js';
 import * as utils from './utils.js';

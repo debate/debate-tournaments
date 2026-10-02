@@ -1,6 +1,6 @@
 import type { ZodOpenApiSchemaObject } from 'zod-openapi';
 import * as utils from './utils.js'
-import z from "zod";
+import { z } from 'zod';
 
 export const ResultSetEventSchema = z.object({
 	id: utils.id,

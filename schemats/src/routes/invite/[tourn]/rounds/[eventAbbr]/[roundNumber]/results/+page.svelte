@@ -42,11 +42,6 @@
 						<h4 class='py-0 leading-8 pb-0.5'>
 							{ results.data.Event?.name }
 						</h4>
-						{#if results.data.message}
-							<p class="px-0 font-semibold italic text-md pt-1 pb-0 leading-3 text-danger">
-								{results.data.message}
-							</p>
-						{/if}
 					</div>
 				</span>
 
@@ -55,17 +50,6 @@
 				</span>
 			</div>
 
-			{#if results.data.motion}
-				<p class="
-					px-0 py-1 pb-3 mb-2
-					font-semibold italic text-md leading-3
-					text-primary-deep
-					text-center
-					border-b-2 border-border
-				">
-					MOTION: {results.data.motion}
-				</p>
-			{/if}
 
 			{#if results.data.Event?.Settings?.primaryScore === 'winloss' }
 				<Winloss
