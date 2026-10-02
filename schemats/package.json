@@ -32,8 +32,9 @@
     "test:storybook:desktop": "svelte-kit sync && STORYBOOK_VIEWPORT=desktop vitest --project storybook --run",
     "test:storybook:multi": "npm run test:storybook:mobile && npm run test:storybook:desktop",
     "test:e2e": "playwright test -c ./config/testing",
-    "lint": "oxlint . && eslint '**/*.svelte'",
-    "lint:fix": "oxlint --fix . && eslint '**/*.svelte' --fix",
+    "lint": "oxlint . && npm run lint:svelte",
+    "lint:fix": "oxlint --fix . && npm run lint:svelte -- --fix",
+    "lint:svelte": "eslint '**/*.svelte'",
     "orval": "orval --config ./config/orval.config.ts",
     "storybook": "storybook dev -p 6006"
   },
