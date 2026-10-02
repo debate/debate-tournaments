@@ -32,6 +32,7 @@ export const findByUserKey = async (
 		'p.last as personLast',
 		'p.email as personEmail',
 		'p.site_admin as personSiteAdmin',
+		'p.tz as personTz',
 		'ps.value as personBanned',
 	])
 	.select([
@@ -40,6 +41,7 @@ export const findByUserKey = async (
 		'su.last as suLast',
 		'su.email as suEmail',
 		'su.site_admin as suSiteAdmin',
+		'su.tz as suTz',
 	])
 	.executeTakeFirst();
 
@@ -59,6 +61,7 @@ export const findByUserKey = async (
 					last: session.personLast,
 					email: session.personEmail,
 					site_admin: session.personSiteAdmin ?? 0,
+					tz: session.personTz,
 					banned: session.personBanned ?? '0',
 		},
 		Su: session.suId
@@ -68,6 +71,7 @@ export const findByUserKey = async (
 					last: session.suLast,
 					email: session.suEmail as string,
 					site_admin: session.suSiteAdmin ?? 0,
+					tz: session.suTz,
 				}
 			: null,
 	};

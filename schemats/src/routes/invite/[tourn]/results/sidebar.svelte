@@ -41,6 +41,7 @@
 				if (a.level !== b.level) return b.level.localeCompare(a.level);
 				if (a.type !== b.type) return a.type.localeCompare(b.type);
 				if (a.abbr !== b.abbr) return a.abbr.localeCompare(b.abbr);
+				return a.id - b.id;
 			});
 
 			events.forEach( (event) => {

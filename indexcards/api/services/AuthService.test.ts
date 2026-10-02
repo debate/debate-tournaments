@@ -1,6 +1,5 @@
 
 import factories from '../../tests/factories/index.js';
-import { encrypt } from 'unixcrypt';
 import { ValidationError } from '../helpers/errors/errors.js';
 
 import AuthService,{ AUTH_INVALID }  from './AuthService.js';
@@ -11,7 +10,7 @@ describe('AuthService', () => {
 		it('authenticates a user with valid credentials', async () => {
 			const password = 'mypassword';
 			const Person = await factories.person.create({
-				password: encrypt(password),
+				password: password,
 			});
 
 			//Act
@@ -27,7 +26,7 @@ describe('AuthService', () => {
 		it('throws AUTH_INVALID for invalid credentials', async () => {
 			const password = 'mypassword';
 			const Person = await factories.person.create({
-				password: encrypt(password),
+				password: password,
 			});
 
 			await expect(AuthService.login(Person.email!, 'wrongpassword')).rejects.toBe(AUTH_INVALID);

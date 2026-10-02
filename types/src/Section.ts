@@ -1,4 +1,4 @@
-import z from 'zod';
+import { z } from 'zod';
 import type { ZodOpenApiSchemaObject } from 'zod-openapi';
 import { BallotSchema } from './Ballot.js';
 import { JudgeSchema } from './Judge.js';

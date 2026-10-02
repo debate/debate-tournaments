@@ -21,6 +21,8 @@ const storybookViewport =
 export default defineConfig({
 	plugins: [sveltekit(), svelteTesting()],
 	test: {
+		// CI runners are 2 vCPU running 2 jobs at once
+		maxWorkers: process.env.CI ? 1 : undefined,
 		projects: [
 			{
 				extends: true,

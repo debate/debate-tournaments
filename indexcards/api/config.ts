@@ -187,22 +187,20 @@ export const ConfigSchema = z.object({
 
 type RuntimeConfig = z.infer<typeof ConfigSchema>;
 
-// Load a config file from path
+// Load a config file from path. A missing file is fine (defaults apply), but a
+// file that exists and can't be read or parsed is fatal, e.g. a failed docker
+// bind mount leaves an empty directory at the path
 function loadConfigFile(filePath: string): Record<string, object> {
+  if (!fs.existsSync(filePath)) {
+    console.info(`Config not found at ${filePath}`);
+    return {};
+  }
   try {
-    if (!fs.existsSync(filePath)) {
-	console.info(`Config not found at ${filePath}`);
-	return {};
-    }
     const configText = fs.readFileSync(filePath, 'utf-8');
     return JSON.parse(configText);
   } catch (error) {
-    if (error instanceof SyntaxError) {
-      console.warn(`Invalid JSON in ${filePath}: ${error.message}`);
-    } else {
-      console.warn(`Error loading ${filePath}: ${error}`);
-    }
-    return {};
+    const reason = error instanceof Error ? error.message : String(error);
+    throw new Error(`Unable to load config at ${filePath}: ${reason}`, { cause: error });
   }
 }
 

@@ -1,10 +1,13 @@
 import { createContext } from 'svelte';
 import type { Session } from '$indexcards/schemas';
-import type { Person } from '@tabroom/types';
+import type { Session as SessionSchema } from '@tabroom/types';
+
+// a session carries only a subset of Person
+type SessionPerson = SessionSchema['Person'];
 
 type SessionState = {
-	Person: Person | null;
-	Su?: Person | null;
+	Person: SessionPerson | null;
+	Su?: SessionPerson | null;
 }
 
 const [getSessionState, setSessionState] = createContext<SessionState>();

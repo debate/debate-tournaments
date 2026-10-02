@@ -1,4 +1,4 @@
-import z from 'zod';
+import { z } from 'zod';
 import type { ZodOpenApiSchemaObject } from 'zod-openapi';
 import { QuizSchema } from './Quiz.js';
 import * as utils from './utils.js';
@@ -34,6 +34,7 @@ export const SessionSchema = z.object({
 		first: true,
 		last: true,
 		site_admin: true,
+		tz: true,
 	}).nullable(),
 	Person: PersonSchema.pick({
 		id: true,
@@ -41,6 +42,7 @@ export const SessionSchema = z.object({
 		first: true,
 		last: true,
 		site_admin: true,
+		tz: true,
 	}),
 }).strict().meta({
 	id: 'Session',

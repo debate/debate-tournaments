@@ -6772,6 +6772,12 @@
                         "type": "null"
                       }
                     ]
+                  },
+                  "tz": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
                   }
                 },
                 "required": [
@@ -6816,6 +6822,12 @@
                   {
                     "type": "null"
                   }
+                ]
+              },
+              "tz": {
+                "type": [
+                  "string",
+                  "null"
                 ]
               }
             },

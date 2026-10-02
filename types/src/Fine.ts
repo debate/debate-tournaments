@@ -1,5 +1,5 @@
 import type { ZodOpenApiSchemaObject } from 'zod-openapi';
-import z from 'zod';
+import { z } from 'zod';
 import * as utils from './utils.js';
 
 export const FineSchema = z.object({

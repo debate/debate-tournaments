@@ -1,5 +1,5 @@
 import * as utils from './utils.js';
-import * as z from 'zod';
+import { z } from 'zod';
 import type { ZodOpenApiSchemaObject } from 'zod-openapi';
 
 export const JudgeSchema = z.object({
