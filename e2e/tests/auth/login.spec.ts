@@ -56,6 +56,7 @@ test('a logged-out session no longer grants access', async ({ page, context, per
 	await page.getByRole('button', { name: 'Logout' }).click();
 	await expect.poll(() => getAuthCookie(context)).toBeUndefined();
 
+	await expect(page).toHaveURL(/\/user\/login\?redirect=%2Fuser%2Fhome&reason=auth$/);
 	// replay the old token to prove the session was deleted server-side, not just the cookie
 	await context.addCookies([token]);
 	await page.goto('/user/home');
