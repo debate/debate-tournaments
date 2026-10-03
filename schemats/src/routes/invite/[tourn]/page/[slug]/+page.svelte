@@ -36,7 +36,10 @@
 				<h5
 					class='border-b border-primary mb-4'
 				>{webPage.title || 'Main' }</h5>
-				{@html webPage.content}
+				<!-- wrap-anywhere: long emails and URLs in tournament HTML can't push the page wide -->
+				<div class='wrap-anywhere'>
+					{@html webPage.content}
+				</div>
 			{:else }
 				<h5>No Page Found</h5>
 				<p>

@@ -30,7 +30,10 @@
 				class='border-b border-primary mb-4'
 			>{ ucfirst(mainPages[0].title) || 'Invitation' }</h5>
 
-			{@html mainPages[0].content}
+			<!-- wrap-anywhere: long emails and URLs in tournament HTML can't push the page wide -->
+			<div class='wrap-anywhere'>
+				{@html mainPages[0].content}
+			</div>
 		{:else }
 			<h5>Welcome</h5>
 			<p>
