@@ -139,9 +139,16 @@ jobs:
             npm run test:ci:unit --workspace=schemats
 
   a11y:
-    name: A11y Tests
+    name: A11y Tests (${{ matrix.viewport }})
     needs: [lint, typecheck]
     runs-on: ubuntu-latest
+    # browsers come preinstalled. Tag must match playwright in schemats/package.json
+    container:
+      image: mcr.microsoft.com/playwright:v1.63.0-noble
+    strategy:
+      fail-fast: false
+      matrix:
+        viewport: [desktop, mobile]
 
     steps:
       - name: Checkout
@@ -160,14 +167,11 @@ jobs:
         run: |
             npm run build --workspace=types
 
-      # the storybook vitest project only runs chromium
-      - name: Install Playwright browsers
-        run: |
-            npm exec --workspace=schemats -- playwright install --with-deps chromium
-
       - name: Test Schemats (a11y)
+        env:
+          STORYBOOK_VIEWPORT: ${{ matrix.viewport }}
         run: |
-            npm run test:ci:a11y --workspace=schemats
+            npm run test:a11y --workspace=schemats
 
   e2e:
     name: E2E Tests

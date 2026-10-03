@@ -42,7 +42,7 @@ export default defineConfig({
 					}),
 				],
 				test: {
-					name: 'storybook',
+					name: 'a11y',
 					browser: {
 						enabled: true,
 						headless: true,

@@ -1,6 +1,6 @@
 <script lang="ts">
 
-	import { version } from '$app/environment';
+	import { version } from '$app/env';
 
 	import {
 		Footer,
@@ -75,7 +75,7 @@
 					rel   = "noopener noreferrer"
 					year  = {new Date().getFullYear()}
 				/>
-				<p class="text-primary-soft text-xs text-center pt-2 opacity-60">
+				<p class="text-primary-soft text-xs text-center pt-2">
 					build {version}
 				</p>
 			</div>
