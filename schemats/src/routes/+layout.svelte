@@ -11,8 +11,7 @@
 
 	import { initSessionContext } from '$lib/helpers/SessionContext.svelte';
 	import { createAuthLogout, createAuthSuEnd, createUserInboxUnread } from '$indexcards';
-	import { goto, invalidateAll } from '$app/navigation';
-	import { page } from '$app/state';
+	import { invalidateAll } from '$app/navigation';
 	import { handleOrval } from '$lib/helpers/query';
 
 	import type { LayoutProps } from './$types';
@@ -27,23 +26,20 @@
 
 	const logoutMutation = createAuthLogout(undefined,() => data.queryClient);
 	const logout = async () => {
-		await logoutMutation.mutateAsync();
-		data.queryClient.invalidateQueries();
-		goto(page.url, {
-			replaceState: true,
-			invalidateAll: true,
-		});
-		await invalidateAll(); // Force reload +layout.server.ts
+		try {
+			await logoutMutation.mutateAsync();
+		} finally {
+			// reload even when the request fails, e.g. the session already expired,
+			// so requireLogin in the server loads redirects off protected pages
+			data.queryClient.invalidateQueries();
+			await invalidateAll();
+		}
 	};
 
 	const suEndMutation = createAuthSuEnd(undefined, () => data.queryClient);
 	const suEnd = async () => {
 		await suEndMutation.mutateAsync();
 		data.queryClient.invalidateQueries();
-		goto(page.url, {
-			replaceState: true,
-			invalidateAll: true,
-		});
 		await invalidateAll(); // Force reload +layout.server.ts
 	};
 

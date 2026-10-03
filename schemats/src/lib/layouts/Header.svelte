@@ -1,7 +1,6 @@
 <script lang="ts">
 
 	import { resolve } from '$app/paths';
-	import { invalidateAll } from '$app/navigation';
 	import { slide } from 'svelte/transition';
 	import { page } from '$app/state';
 
@@ -44,16 +43,17 @@
 	const logout = async (event: Event) => {
 		loggingOut = true;
 		event?.preventDefault();
-		await logoutFn();
-		await invalidateAll(); // Force reload +layout.server.ts
-		loggingOut = false;
+		try {
+			await logoutFn();
+		} finally {
+			loggingOut = false;
+		}
 	};
 	let suEnding = $state(false);
 	const suEnd = async (event: Event) => {
 		suEnding = true;
 		event?.preventDefault();
 		await suEndFn();
-		await invalidateAll(); // Force reload +layout.server.ts
 		suEnding = false;
 	};
 

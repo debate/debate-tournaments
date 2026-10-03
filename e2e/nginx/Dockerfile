@@ -10,3 +10,5 @@ COPY gen-certs.sh /docker-entrypoint.d/05-gen-certs.sh
 RUN chmod +x /docker-entrypoint.d/05-gen-certs.sh
 
 COPY nginx.conf /etc/nginx/conf.d/default.conf
+# the default notice level logs every worker start in the test output
+RUN sed -i 's/^error_log\(.*\) notice;/error_log\1 warn;/' /etc/nginx/nginx.conf

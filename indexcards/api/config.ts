@@ -192,7 +192,7 @@ type RuntimeConfig = z.infer<typeof ConfigSchema>;
 // bind mount leaves an empty directory at the path
 function loadConfigFile(filePath: string): Record<string, object> {
   if (!fs.existsSync(filePath)) {
-    console.info(`Config not found at ${filePath}`);
+    if(process.env.NODE_ENV !== 'test') console.info(`Config not found at ${filePath}`);
     return {};
   }
   try {

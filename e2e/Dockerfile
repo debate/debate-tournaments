@@ -19,6 +19,8 @@ COPY e2e ./e2e
 
 ENV TZ="UTC"
 ENV CONFIG_DIR="/config"
+# quiets the config and logger output each worker prints when it loads the factories
+ENV NODE_ENV="test"
 
 WORKDIR /app/e2e
 
