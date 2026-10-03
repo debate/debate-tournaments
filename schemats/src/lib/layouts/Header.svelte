@@ -303,7 +303,7 @@
 				</DropdownItem>
 				<DropdownItem
 					class="{dropdownItemClasses} opacity-50 cursor-not-allowed"
-					disabled={true}
+					aria-disabled="true"
 					><LayoutDashboard class="w-4 h-4" />Dashboard</DropdownItem>
 				</DropdownGroup>
 				<DropdownGroup>

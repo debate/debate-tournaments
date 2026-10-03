@@ -43,6 +43,8 @@ export default defineConfig({
 				],
 				test: {
 					name: 'a11y',
+					// the first stories pay for vite's cold transforms, which overrun the 15s default on CI runners
+					testTimeout: process.env.CI ? 60_000 : undefined,
 					browser: {
 						enabled: true,
 						headless: true,

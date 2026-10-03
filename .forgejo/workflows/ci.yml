@@ -139,16 +139,12 @@ jobs:
             npm run test:ci:unit --workspace=schemats
 
   a11y:
-    name: A11y Tests (${{ matrix.viewport }})
+    name: A11y Tests
     needs: [lint, typecheck]
     runs-on: ubuntu-latest
     # browsers come preinstalled. Tag must match playwright in schemats/package.json
     container:
       image: mcr.microsoft.com/playwright:v1.63.0-noble
-    strategy:
-      fail-fast: false
-      matrix:
-        viewport: [desktop, mobile]
 
     steps:
       - name: Checkout
@@ -167,9 +163,18 @@ jobs:
         run: |
             npm run build --workspace=types
 
-      - name: Test Schemats (a11y)
+      # viewports run one after the other in a single job to keep load off the 2 vCPU runners
+      - name: Test Schemats (a11y desktop)
         env:
-          STORYBOOK_VIEWPORT: ${{ matrix.viewport }}
+          STORYBOOK_VIEWPORT: desktop
+        run: |
+            npm run test:a11y --workspace=schemats
+
+      # still runs when desktop fails so both results show
+      - name: Test Schemats (a11y mobile)
+        if: ${{ !cancelled() }}
+        env:
+          STORYBOOK_VIEWPORT: mobile
         run: |
             npm run test:a11y --workspace=schemats
 
