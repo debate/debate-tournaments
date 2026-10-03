@@ -19,15 +19,41 @@ configs:
           "pass": "tabroom",
           "database": "tabroom"
         },
+        "proxy": ["uniquelocal"],
         "cors": {
-          "origins": ["http://schemats:3000"]
+          "origins": ["https://e2e.tabroom.test"]
+        },
+        "cookie": {
+          "domain": ".e2e.tabroom.test"
         },
         "csrf": {
-          "trusted_origins": ["http://schemats:3000"]
+          "trusted_origins": ["https://e2e.tabroom.test"]
         }
       }
 
+volumes:
+  # CA and server cert, written by nginx on startup
+  certs:
+
 services:
+  # Like prod, the browser and schemats' server-side calls reach both apps over
+  # HTTPS on sibling subdomains, so the Secure auth cookie is shared between them.
+  nginx:
+    build:
+      context: ./nginx
+    volumes:
+      - certs:/certs
+    networks:
+      default:
+        aliases:
+          - e2e.tabroom.test
+          - api.e2e.tabroom.test
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1/healthz"]
+      interval: 2s
+      timeout: 3s
+      retries: 15
+
   tabroomdb-e2e:
     build:
       context: ../indexcards/tests
@@ -74,9 +100,11 @@ services:
       target: prod
     env_file:
       - ./config/schemats.env
-    ports:
-      - "9010:3000"
+    volumes:
+      - certs:/certs:ro
     depends_on:
+      nginx:
+        condition: service_healthy
       indexcards:
         condition: service_healthy
 
@@ -89,9 +117,12 @@ services:
       - source: indexcards
         target: /config/config.json
     environment:
-      BASE_URL: http://schemats:3000
+      BASE_URL: https://e2e.tabroom.test
+      API_URL: https://api.e2e.tabroom.test
       CI: ${CI:-}
     depends_on:
+      nginx:
+        condition: service_healthy
       indexcards:
         condition: service_healthy
       schemats:

@@ -13,7 +13,9 @@ export default defineConfig({
 	/* never serve the report, it would block the container from exiting */
 	reporter: [['list'], ['html', { open: 'never' }]],
 	use: {
-		baseURL: process.env.BASE_URL ?? 'http://localhost:9010',
+		baseURL: process.env.BASE_URL ?? 'https://e2e.tabroom.test',
+		/* nginx serves a cert from a throwaway CA the browsers don't trust */
+		ignoreHTTPSErrors: true,
 		trace: 'on-first-retry',
 	},
 	projects: [
