@@ -10,19 +10,19 @@
 	import { getContext } from 'svelte';
 
 	import MainTitle from '$lib/layouts/MainTitle.svelte';
-	import TabLinks from '$lib/layouts/TabLinks.svelte';
+	import { Tabs, TabItem } from '$lib/components/Tabs';
 
+	import { isAuthenticated } from '$lib/helpers/SessionContext.svelte';
 	import { ucfirst } from '$lib/helpers/text';
 	import { showDateRange, shortZone } from '$lib/helpers/dt';
 
 	import type { Tourn } from '$indexcards/schemas';
-	import type { TabLink } from '$lib/layouts/TabLinks.svelte';
 
 	const tourn:Tourn = getContext('webnameTourn');
 	const pageContent = $derived(indexFetch<TournInvite>(`/rest/tourns/${tourn.id}/invite`));
-	let sort = 0;
+	const loggedIn = $derived(isAuthenticated());
 
-	const tabs:TabLink[] = $derived.by( () => {
+	const tabs = $derived.by( () => {
 		const params = { tourn: tourn.webname };
 		const routes = {
 			main     : resolve('/invite/[tourn]', params),
@@ -48,12 +48,18 @@
 				matchPatterns.push(`/invite/${tourn.id}/rounds/`);
 			}
 
-			sort++;
+			// Rounds and results need a logged in user
+			const disabled = (pageKey === 'rounds' || pageKey === 'results') && !loggedIn;
+
 			return	{
 				route,
-				label : ucfirst(pageKey) || '',
-				sort,
+				label   : ucfirst(pageKey) || '',
 				matchPatterns,
+				// Every invite page sits under main's route, so main only
+				// matches exactly (or by its matchPatterns).
+				exact   : pageKey === 'main',
+				disabled,
+				tooltip : disabled ? `Log in to see ${pageKey}` : undefined,
 			};
 		});
 	});
@@ -82,7 +88,7 @@
 
 </script>
 
-	<div class="invite-header border-b-2 border-accent">
+	<div class="invite-header">
 		<!-- svelte-ignore attribute_quoted -->
 		<MainTitle
 			subtitle   = '{tournLocation}'
@@ -91,5 +97,16 @@
 		>
 		</MainTitle>
 
-		<TabLinks tabs={tabs} />
+		<Tabs label='Tournament'>
+			{#each tabs as tab (tab.route)}
+				<TabItem
+					disabled      = {tab.disabled}
+					exact         = {tab.exact}
+					href          = {tab.route}
+					matchPatterns = {tab.matchPatterns}
+					title         = {tab.label}
+					tooltip       = {tab.tooltip}
+				/>
+			{/each}
+		</Tabs>
 	</div>

@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { TabItem, Tabs, Skeleton } from 'flowbite-svelte';
+	import { Skeleton } from 'flowbite-svelte';
+	import { Tabs, TabItem } from '$lib/components/Tabs';
 	import { showDateTime } from '$lib/helpers/dt';
 	import Quiz from './Quiz.svelte';
 	import type { ParadigmDetailsSchema } from '$indexcards/schemas';

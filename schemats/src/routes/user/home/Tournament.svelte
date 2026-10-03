@@ -1,6 +1,5 @@
 <script lang="ts">
-    import TabItem from '$lib/layouts/TabItem.svelte';
-    import Tabs from '$lib/layouts/Tabs.svelte';
+    import { Tabs, TabItem } from '$lib/components/Tabs';
 	import { showDateRange } from '$lib/helpers/dt';
     import Button from '$lib/components/Button.svelte';
     import { FileText } from '@lucide/svelte';

@@ -354,7 +354,7 @@
 		}
 
 		/* Page content links: everything but the sidebar and the title/tabs */
-		a:not(.sidebar a, .invite-header a) {
+		a:not(.sidebar a, .invite-header a, .tabs a) {
 			display               : inline-block;
 			text-decoration       : underline dotted;
 			text-decoration-color : var(--color-primary-strong);
@@ -364,7 +364,7 @@
 			padding-right         : 2px;
 		}
 
-		a:not(.sidebar a, .invite-header a):hover {
+		a:not(.sidebar a, .invite-header a, .tabs a):hover {
 			background-color      : var(--color-accent-soft);
 			text-decoration-color : var(--color-primary-deep);
 			color                 : var(--color-primary-deep);
