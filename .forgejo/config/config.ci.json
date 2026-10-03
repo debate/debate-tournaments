@@ -1,4 +1,7 @@
 {
+	"logging": {
+		"level": "error"
+	},
 	"db": {
 		"host": "mariadb",
 		"port": 3306,
