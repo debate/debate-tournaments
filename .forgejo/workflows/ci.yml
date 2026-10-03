@@ -194,7 +194,9 @@ jobs:
   build:
     name: Build
     needs: [indexcards-unit, schemats-unit, a11y, e2e]
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    # no event_name check: forgejo re-evaluates this `if` on the expanded build.yml jobs, where
+    # event_name is 'workflow_call', so they'd all be skipped. PR runs have a refs/pull/* ref anyway.
+    if: github.ref == 'refs/heads/main'
     uses: ./.forgejo/workflows/build.yml
     secrets: inherit
 
