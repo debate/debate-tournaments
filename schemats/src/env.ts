@@ -28,6 +28,10 @@ export const variables = defineEnvVars({
 		schema: z.string().default('TabroomToken'),
 		description: 'The name of the authentication cookie. default: TabroomToken',
 	},
+	HIDE_DEV_PAGES: {
+		schema: z.stringbool().default(true),
+		description: 'Whether pages still in development return a 404. default: true',
+	},
 	// LOGGING
 	LOG_LEVEL: {
 		schema: z.enum(['error', 'warn', 'info', 'debug']).default('info'),
