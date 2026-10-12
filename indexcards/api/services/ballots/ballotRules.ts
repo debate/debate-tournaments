@@ -229,6 +229,7 @@ export function ballotRules(input: BallotRulesInput): BallotRules {
 		scoring: {
 			winloss: winlossScoring(input),
 			points: pointsScoring(input),
+			ranks: ranksScoring(input),
 			feedback: feedbackScoring(input),
 		},
 		Entries: ballotEntries(input),
@@ -291,7 +292,8 @@ export function ballotEntries(input: Pick<BallotRulesInput, 'tourn' | 'event' | 
 				entry: entry.id,
 				code: entry.code,
 				side: ballot.side,
-				notes: isOn(entry.settings?.ballot_notes) ? String(entry.settings?.ballot_notes) : null,
+				// Saved from a textarea through save_editor.mas, which can leave tags and entities
+				notes: isOn(entry.settings?.ballot_notes) ? plainText(String(entry.settings?.ballot_notes)).trim() || null : null,
 				doubled: new Set(doubled.filter(pair => pair.entry === entry.id).map(pair => pair.other)).size,
 				comments: scores.find(score => score.ballot === ballot.id && score.tag === 'comments')?.content ?? null,
 				points: team ? points[0]?.value ?? null : null,
@@ -301,6 +303,7 @@ export function ballotEntries(input: Pick<BallotRulesInput, 'tourn' | 'event' | 
 					.map(student => ({
 						id: student.id,
 						first: student.first,
+						middle: student.middle,
 						last: student.last,
 						pronoun: !hidePronouns && isOn(student.pronoun) ? student.pronoun : null,
 						points: team ? null : points.find(score => score.student === student.id)?.value ?? null,
@@ -372,6 +375,22 @@ export function ballotTimers({ event }: Pick<BallotRulesInput, 'event'>): Ballot
 }
 
 /**
+ * Converts text saved through classic's save_editor.mas to plain text: tags removed,
+ * entities decoded, and <p>, <br> and line breaks kept as line breaks. */
+export function plainText(html: string): string {
+	return convert(html.replace(/\r\n|\r|\n/g, '<br>'), {
+		wordwrap: false,
+		selectors: [
+			{ selector: 'p', options: { leadingLineBreaks: 1, trailingLineBreaks: 1 } },
+			// Classic's editor cleanup removed links, so only their text showed
+			{ selector: 'a', options: { ignoreHref: true } },
+		],
+	})
+		// &nbsp; decodes to a non-breaking space
+		.replace(/ /g, ' ');
+}
+
+/**
  * Splits an editor setting like point_scale or speech_times into its lines of text, each
  * split on the first "..." into [before, after], or [null, line] when it has none.
  * Classic split on raw line breaks and stripped tags and non-ASCII characters; this breaks
@@ -379,18 +398,8 @@ export function ballotTimers({ event }: Pick<BallotRulesInput, 'event'>): Ballot
 export function settingLines(html: Settings[string] | undefined): [string | null, string][] {
 	if (!isOn(html)) return [];
 
-	const text = convert(String(html).replace(/\r\n|\r|\n/g, '<br>'), {
-		wordwrap: false,
-		selectors: [
-			{ selector: 'p', options: { leadingLineBreaks: 1, trailingLineBreaks: 1 } },
-			// Classic's editor cleanup removed links, so only their text showed
-			{ selector: 'a', options: { ignoreHref: true } },
-		],
-	});
-
-	return text.split('\n')
-		// &nbsp; decodes to a non-breaking space
-		.map(line => line.replace(/ /g, ' ').trim())
+	return plainText(String(html)).split('\n')
+		.map(line => line.trim())
 		.filter(line => line !== '')
 		.map(line => {
 			const [before, ...after] = line.split('...');
@@ -501,8 +510,8 @@ export function roundLabel({ round }: Pick<BallotRulesInput, 'round'>): string |
 
 /**
  * Returns the points block when the round's protocol counts points, else undefined.
- * The range defaults to 0-30, like the classic debate ballot, and an unset point_increments
- * means whole points. */
+ * The range defaults to 0-6 for Congress, 0-100 for speech and 0-30 otherwise, like
+ * ballot.mhtml, and an unset point_increments means whole points. */
 export function pointsScoring({ event, tbTypes }: Pick<BallotRulesInput, 'event' | 'tbTypes'>): BallotScoring['points'] {
 	const STEPS: Record<string, number> = {
 		whole: 1,
@@ -523,11 +532,18 @@ export function pointsScoring({ event, tbTypes }: Pick<BallotRulesInput, 'event'
 
 	return {
 		min: numberOr(settings.min_points, 0),
-		max: numberOr(settings.max_points, 30),
+		max: numberOr(settings.max_points, event.type === 'congress' ? 6 : event.type === 'speech' ? 100 : 30),
 		step: STEPS[String(settings.point_increments)] ?? 1,
 		ties: isOn(settings.point_ties),
 		team: isOn(settings.team_points),
+		ranksAgree: Boolean(tbTypes.rank)
+			&& !((event.type === 'speech' || event.type === 'congress') && isOn(settings.allow_lowpoints)),
 	};
+}
+
+/** Returns the ranks block when the round's protocol counts ranks, else undefined. */
+export function ranksScoring({ tbTypes }: Pick<BallotRulesInput, 'tbTypes'>): BallotScoring['ranks'] {
+	return tbTypes.rank ? {} : undefined;
 }
 
 /**

@@ -64,6 +64,7 @@ async function getEntryStudents(db: Database, entryIds: number[]) {
 			'entry_student.entry',
 			'student.id',
 			'student.first',
+			'student.middle',
 			'student.last',
 			'person.pronoun',
 		])

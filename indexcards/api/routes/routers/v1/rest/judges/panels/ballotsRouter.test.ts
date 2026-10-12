@@ -45,8 +45,8 @@ const createBallot = async (eventType: 'debate' | 'speech', eventSettings: Recor
 	const panel = await factories.panel.create({ round: round.id, room: room.id, flight: '2' });
 	const judge = await factories.judge.create({ person: person.id, category: category.id, code: 'A1', first: 'Jane', middle: null, last: 'Doe' });
 
-	const ana = await factories.student.create({ first: 'Ana', last: 'Adams' });
-	const ben = await factories.student.create({ first: 'Ben', last: 'Brown' });
+	const ana = await factories.student.create({ first: 'Ana', middle: null, last: 'Adams' });
+	const ben = await factories.student.create({ first: 'Ben', middle: null, last: 'Brown' });
 	const aff = await factories.entry.create({ event: event.id, code: 'AFF1', students: [ana.id] });
 	const neg = await factories.entry.create({ event: event.id, code: 'NEG2', students: [ben.id] });
 	const affBallot = await factories.ballot.create({ judge: judge.id, panel: panel.id, entry: aff.id, side: 1 });
@@ -80,9 +80,8 @@ describe('GET /rest/judges/:judgeId/panels/:panelId/ballots', () => {
 			tz: 'America/Chicago',
 			Tourn: { id: tourn.id },
 			Event: { abbr: 'LD' },
-			Round: { id: round.id, name: 3, label: null },
+			Round: { id: round.id, name: 3, label: null, notes: 'Bring timers' },
 			flight: 2,
-			roundNotes: 'Bring timers',
 			Room: { name: '101', url: null },
 			Judge: { code: 'A1', first: 'Jane', middle: null, last: 'Doe' },
 			ballotHeader: '<p>Own</p>',
@@ -91,7 +90,7 @@ describe('GET /rest/judges/:judgeId/panels/:panelId/ballots', () => {
 			onlineMode: null,
 			scoring: {
 				winloss: { lpw: 'confirm' },
-				points: { min: 0, max: 30, step: 1, ties: false, team: false },
+				points: { min: 0, max: 30, step: 1, ties: false, team: false, ranksAgree: false },
 				feedback: {
 					rfd: '<p>Aff won the framework.</p>',
 					minWords: { rfd: 50, comments: 25 },
@@ -101,11 +100,11 @@ describe('GET /rest/judges/:judgeId/panels/:panelId/ballots', () => {
 			Entries: [
 				{
 					ballot: affBallot.id, entry: aff.id, code: 'AFF1', side: 1, notes: null, doubled: 0, comments: null, points: null,
-					Students: [{ id: ana.id, first: 'Ana', last: 'Adams', pronoun: null, points: 28 }],
+					Students: [{ id: ana.id, first: 'Ana', middle: null, last: 'Adams', pronoun: null, points: 28 }],
 				},
 				{
 					ballot: negBallot.id, entry: neg.id, code: 'NEG2', side: 2, notes: null, doubled: 0, comments: '<p>Slow down.</p>', points: null,
-					Students: [{ id: ben.id, first: 'Ben', last: 'Brown', pronoun: null, points: null }],
+					Students: [{ id: ben.id, first: 'Ben', middle: null, last: 'Brown', pronoun: null, points: null }],
 				},
 			],
 			otherJudges: [],

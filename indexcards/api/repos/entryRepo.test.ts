@@ -36,8 +36,8 @@ describe('entryRepo', () => {
 		it('returns each entry\'s students with their person\'s pronoun', async () => {
 			const person = await factories.person.create();
 			await db.updateTable('person').set({ pronoun: 'they/them' }).where('id', '=', person.id).execute();
-			const withPerson = await factories.student.create({ first: 'Ana', last: 'Adams', person: person.id });
-			const withoutPerson = await factories.student.create({ first: 'Ben', last: 'Brown' });
+			const withPerson = await factories.student.create({ first: 'Ana', middle: 'Q', last: 'Adams', person: person.id });
+			const withoutPerson = await factories.student.create({ first: 'Ben', middle: null, last: 'Brown' });
 			const entry = await factories.entry.create({ students: [withPerson.id, withoutPerson.id] });
 			await factories.entry.create({ students: [withoutPerson.id] });
 
@@ -45,8 +45,8 @@ describe('entryRepo', () => {
 
 			expect(students).toHaveLength(2);
 			expect(students).toEqual(expect.arrayContaining([
-				{ entry: entry.id, id: withPerson.id, first: 'Ana', last: 'Adams', pronoun: 'they/them' },
-				{ entry: entry.id, id: withoutPerson.id, first: 'Ben', last: 'Brown', pronoun: null },
+				{ entry: entry.id, id: withPerson.id, first: 'Ana', middle: 'Q', last: 'Adams', pronoun: 'they/them' },
+				{ entry: entry.id, id: withoutPerson.id, first: 'Ben', middle: null, last: 'Brown', pronoun: null },
 			]));
 		});
 	});

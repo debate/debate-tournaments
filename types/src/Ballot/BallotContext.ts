@@ -25,7 +25,10 @@ export const BallotScoringSchema = z.object({
 		step: z.number().positive().meta({ description: 'Points must be a multiple of this' }),
 		ties: z.boolean().meta({ description: 'Whether two speakers on the ballot may get the same points' }),
 		team: z.boolean().meta({ description: 'One score per entry instead of per speaker' }),
+		ranksAgree: z.boolean().meta({ description: 'Whether points must agree with ranks, a better rank getting more points. false when there are no ranks' }),
+		rubric: z.object({}).strict().optional().meta({ description: 'Present when the judge gives points through a rubric' }),
 	}).strict().optional().meta({ description: 'Present when the judge gives points' }),
+	ranks: z.object({}).strict().optional().meta({ description: 'Present when the judge gives ranks' }),
 	feedback: z.object({
 		rfd: z.string().nullable().meta({ description: 'Saved reason for decision, for everyone in the round (HTML)' }),
 		minWords: z.object({
@@ -42,6 +45,7 @@ export type BallotScoring = z.infer<typeof BallotScoringSchema>;
 export const BallotStudentSchema = z.object({
 	id: StudentSchema.shape.id,
 	first: StudentSchema.shape.first,
+	middle: StudentSchema.shape.middle,
 	last: StudentSchema.shape.last,
 	pronoun: z.string().nullable().meta({ description: 'null when unknown or the tournament hides it' }),
 	points: z.number().nullable().meta({ description: 'Saved speaker points' }),
@@ -96,9 +100,9 @@ const BallotBaseSchema = z.object({
 		id: RoundSchema.shape.id,
 		name: RoundSchema.shape.name.meta({ description: 'The round number' }),
 		label: z.string().nullable().meta({ description: 'The round\'s label, e.g. Quarterfinals. null when it has none or it repeats the round number' }),
+		notes: z.string().nullable().meta({ description: 'Notes from tab for this round (plain text)' }),
 	}).strict(),
 	flight: z.int().positive().nullable().meta({ description: 'The panel\'s flight. null when the round is not flighted' }),
-	roundNotes: z.string().nullable().meta({ description: 'Notes from tab for this round' }),
 	Room: z.object({
 		name: RoomSchema.shape.name,
 		url: RoomSchema.shape.url,

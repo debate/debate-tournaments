@@ -2,7 +2,7 @@ import type { MockInstance } from 'vitest';
 import factories from '../../../tests/factories/index.js';
 import logger from '../../helpers/logger.js';
 import type { Settings } from '../../repos/utils/index.js';
-import { ballotEntries, ballotTimers, otherJudges, settingLines, feedbackScoring, ballotHeader, ballotRules, ballotStatus, ballotTopic, chairLabel, decisionDeadline, isChair, isOn, pointsScoring, roundLabel, roundStart, rulesText, savedWinner, sideLock, winlossScoring, type BallotRulesInput } from './ballotRules.js';
+import { ballotEntries, ballotTimers, otherJudges, settingLines, feedbackScoring, ballotHeader, ballotRules, ballotStatus, ballotTopic, chairLabel, decisionDeadline, isChair, isOn, pointsScoring, ranksScoring, roundLabel, roundStart, rulesText, savedWinner, sideLock, winlossScoring, type BallotRulesInput } from './ballotRules.js';
 
 const recent = new Date('2026-10-01T00:00:00Z');
 const old = new Date('2020-10-01T00:00:00Z');
@@ -41,7 +41,7 @@ const score = (tag: string, overrides: { ballot?: number, student?: number, valu
 });
 
 // A student row as entryRepo.getEntryStudents returns it
-const student = (entry: number, id: number, first: string, last: string, pronoun: string | null = null) => ({ entry, id, first, last, pronoun });
+const student = (entry: number, id: number, first: string, last: string, pronoun: string | null = null) => ({ entry, id, first, middle: null, last, pronoun });
 
 // A 14:00 debate prelim in a 13:00 timeslot, flight 1, with no settings, counting wins and
 // speaker points, on an unopened ballot: entry 1 (AFF1) on Aff on ballot 11, entry 2 (NEG2)
@@ -469,15 +469,15 @@ describe('ballotEntries', () => {
 			{
 				ballot: 11, entry: 1, code: 'AFF1', side: 1, notes: null, doubled: 0, comments: null, points: null,
 				Students: [
-					{ id: 101, first: 'Ana', last: 'Adams', pronoun: null, points: null },
-					{ id: 102, first: 'Ben', last: 'Brown', pronoun: null, points: null },
+					{ id: 101, first: 'Ana', middle: null, last: 'Adams', pronoun: null, points: null },
+					{ id: 102, first: 'Ben', middle: null, last: 'Brown', pronoun: null, points: null },
 				],
 			},
 			{
 				ballot: 12, entry: 2, code: 'NEG2', side: 2, notes: null, doubled: 0, comments: null, points: null,
 				Students: [
-					{ id: 201, first: 'Cai', last: 'Chen', pronoun: null, points: null },
-					{ id: 202, first: 'Dee', last: 'Diaz', pronoun: null, points: null },
+					{ id: 201, first: 'Cai', middle: null, last: 'Chen', pronoun: null, points: null },
+					{ id: 202, first: 'Dee', middle: null, last: 'Diaz', pronoun: null, points: null },
 				],
 			},
 		]);
@@ -497,6 +497,23 @@ describe('ballotEntries', () => {
 		const entries = ballotEntries(input({ entries: [{ id: 1, code: 'AFF1', settings: { ballot_notes: 'Needs a ramp' } }] }));
 
 		expect(entries[0].notes).toBe('Needs a ramp');
+	});
+
+	it.each([
+		['keeps line breaks', 'Extra prep\r\nMay sit while speaking', 'Extra prep\nMay sit while speaking'],
+		['decodes entities', 'Smith &amp; Jones may sit', 'Smith & Jones may sit'],
+		['removes tags', '<p>May use a <b>laptop</b></p>', 'May use a laptop'],
+		['turns <br> into line breaks', 'Extra prep<br>Sits', 'Extra prep\nSits'],
+	])('%s in the accommodations note', (_label, saved, notes) => {
+		const entries = ballotEntries(input({ entries: [{ id: 1, code: 'AFF1', settings: { ballot_notes: saved } }] }));
+
+		expect(entries[0].notes).toBe(notes);
+	});
+
+	it('is null when the note is only tags', () => {
+		const entries = ballotEntries(input({ entries: [{ id: 1, code: 'AFF1', settings: { ballot_notes: '<p>&nbsp;</p>' } }] }));
+
+		expect(entries[0].notes).toBeNull();
 	});
 
 	it('counts the distinct other entries an entry is doubled with', () => {
@@ -877,7 +894,7 @@ describe('roundNotes', () => {
 
 describe('pointsScoring', () => {
 	const scored = { winloss: true, point: true };
-	const defaults = { min: 0, max: 30, step: 1, ties: false, team: false };
+	const defaults = { min: 0, max: 30, step: 1, ties: false, team: false, ranksAgree: false };
 
 	it('is included in the rules\' scoring', () => {
 		expect(ballotRules(input()).scoring.points).toEqual(defaults);
@@ -889,6 +906,18 @@ describe('pointsScoring', () => {
 
 	it('defaults to whole points from 0 to 30', () => {
 		expect(pointsScoring({ event: event({}), tbTypes: scored })).toEqual(defaults);
+	});
+
+	it.each([
+		['congress', 6],
+		['speech', 100],
+		['mock_trial', 30],
+	] as const)('defaults %s to a range of 0 to %d', (type, max) => {
+		expect(pointsScoring({ event: factories.event.mock({ type, settings: {} }), tbTypes: scored })).toMatchObject({ min: 0, max });
+	});
+
+	it('uses the event\'s max over the Congress default', () => {
+		expect(pointsScoring({ event: factories.event.mock({ type: 'congress', settings: { max_points: '8' } }), tbTypes: scored })?.max).toBe(8);
 	});
 
 	it('reads the event\'s range', () => {
@@ -926,6 +955,40 @@ describe('pointsScoring', () => {
 
 	it('scores entries instead of speakers with team_points', () => {
 		expect(pointsScoring({ event: event({ team_points: '1' }), tbTypes: scored })?.team).toBe(true);
+	});
+
+	describe('ranksAgree', () => {
+		const ranked = { point: true, rank: true };
+
+		it('is false without ranks', () => {
+			expect(pointsScoring({ event: factories.event.mock({ type: 'speech', settings: {} }), tbTypes: scored })?.ranksAgree).toBe(false);
+		});
+
+		it.each(['debate', 'speech', 'congress'] as const)('is true for %s with ranks', (type) => {
+			expect(pointsScoring({ event: factories.event.mock({ type, settings: {} }), tbTypes: ranked })?.ranksAgree).toBe(true);
+		});
+
+		it.each(['speech', 'congress'] as const)('is false for %s with allow_lowpoints', (type) => {
+			expect(pointsScoring({ event: factories.event.mock({ type, settings: { allow_lowpoints: '1' } }), tbTypes: ranked })?.ranksAgree).toBe(false);
+		});
+
+		it('ignores allow_lowpoints for debate speaker ranks', () => {
+			expect(pointsScoring({ event: event({ allow_lowpoints: '1' }), tbTypes: ranked })?.ranksAgree).toBe(true);
+		});
+	});
+});
+
+describe('ranksScoring', () => {
+	it('is included in the rules\' scoring', () => {
+		expect(ballotRules(input()).scoring.ranks).toBeUndefined();
+	});
+
+	it('is present when the protocol counts ranks', () => {
+		expect(ranksScoring({ tbTypes: { rank: true } })).toEqual({});
+	});
+
+	it('is undefined when the protocol doesn\'t count ranks', () => {
+		expect(ranksScoring({ tbTypes: { point: true } })).toBeUndefined();
 	});
 });
 

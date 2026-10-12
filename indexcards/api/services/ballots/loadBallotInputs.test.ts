@@ -67,7 +67,7 @@ describe('loadBallotInputs', () => {
 
 	it('loads the judge\'s ballots with their entries, students and scores', async () => {
 		const { event, panel, judge } = await createBallotPanel();
-		const ana = await factories.student.create({ first: 'Ana', last: 'Adams' });
+		const ana = await factories.student.create({ first: 'Ana', middle: null, last: 'Adams' });
 		const entry = await factories.entry.create({ event: event.id, code: 'AFF1', students: [ana.id], settings: { ballot_notes: 'Needs a ramp' } });
 		const ballot = await factories.ballot.create({ judge: judge.id, panel: panel.id, entry: entry.id, side: 1 });
 		await factories.score.create({ ballot: ballot.id, student: ana.id, tag: 'point', value: 28 });
@@ -76,7 +76,7 @@ describe('loadBallotInputs', () => {
 
 		expect(inputs?.ballots.map(b => b.id)).toEqual([ballot.id]);
 		expect(inputs?.entries).toEqual([expect.objectContaining({ id: entry.id, code: 'AFF1', settings: { ballot_notes: 'Needs a ramp' } })]);
-		expect(inputs?.students).toEqual([{ entry: entry.id, id: ana.id, first: 'Ana', last: 'Adams', pronoun: null }]);
+		expect(inputs?.students).toEqual([{ entry: entry.id, id: ana.id, first: 'Ana', middle: null, last: 'Adams', pronoun: null }]);
 		expect(inputs?.scores).toEqual([expect.objectContaining({ ballot: ballot.id, student: ana.id, tag: 'point', value: 28 })]);
 		expect(inputs?.doubled).toEqual([]);
 	});

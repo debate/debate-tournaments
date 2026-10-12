@@ -43,9 +43,8 @@ export async function getBallotContext(req: ValidatedRequest, res: Response) {
 			tz: tourn.tz ?? 'UTC',
 			Tourn: { id: tourn.id },
 			Event: { abbr: event.abbr },
-			Round: { id: round.id, name: round.name, label: rules.roundLabel },
+			Round: { id: round.id, name: round.name, label: rules.roundLabel, notes: rules.roundNotes },
 			flight: rules.flight,
-			roundNotes: rules.roundNotes,
 			// Most rooms store an empty url, which classic treats as none
 			Room: room ? { name: room.name, url: room.url || null } : null,
 			Judge: { code: judge.code, first: judge.first, middle: judge.middle, last: judge.last },

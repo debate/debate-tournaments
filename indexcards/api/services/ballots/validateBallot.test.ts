@@ -20,7 +20,7 @@ const entry = (ballot: number, id: number, side: number, students: number[]): Ba
 const rules = (overrides: { scoring?: Partial<ValidateBallotRules['scoring']>, Entries?: BallotEntry[] } = {}): ValidateBallotRules => ({
 	scoring: {
 		winloss: { lpw: 'confirm' },
-		points: { min: 20, max: 30, step: 0.5, ties: false, team: false },
+		points: { min: 20, max: 30, step: 0.5, ties: false, team: false, ranksAgree: false },
 		feedback: { rfd: null, minWords: { rfd: null, comments: null }, editableUntil: null },
 		...overrides.scoring,
 	},
@@ -137,7 +137,7 @@ describe('validateBallot', () => {
 			[0.25, 28.75],
 			[1, 28],
 		])('accepts steps of %s like %s despite float rounding', (step, value) => {
-			const scoring = { points: { min: 20, max: 30, step, ties: false, team: false } };
+			const scoring = { points: { min: 20, max: 30, step, ties: false, team: false, ranksAgree: false } };
 
 			expect(validateBallot(rules({ scoring }), submission({ points: points(value, 27) }))).toEqual([]);
 		});
@@ -151,7 +151,7 @@ describe('validateBallot', () => {
 		});
 
 		it('allows tied points when the event allows them', () => {
-			const scoring = { points: { min: 20, max: 30, step: 0.5, ties: true, team: false } };
+			const scoring = { points: { min: 20, max: 30, step: 0.5, ties: true, team: false, ranksAgree: false } };
 
 			expect(validateBallot(rules({ scoring }), submission({ points: points(28, 28) }))).toEqual([]);
 		});
@@ -192,7 +192,7 @@ describe('validateBallot', () => {
 		});
 
 		it('accepts equal points either way', () => {
-			const scoring = { points: { min: 20, max: 30, step: 0.5, ties: true, team: false } };
+			const scoring = { points: { min: 20, max: 30, step: 0.5, ties: true, team: false, ranksAgree: false } };
 
 			expect(validateBallot(rules({ scoring }), submission({ points: points(28, 28) }))).toEqual([]);
 			expect(validateBallot(rules({ scoring }), submission({ points: points(28, 28), lowPointWin: true }))).toEqual([]);
