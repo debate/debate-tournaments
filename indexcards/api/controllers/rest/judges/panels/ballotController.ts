@@ -35,6 +35,7 @@ export async function getBallotContext(req: ValidatedRequest, res: Response) {
 		: {
 			eventType: 'debate',
 			status: rules.status,
+			chair: rules.chair,
 			chairLabel: rules.chairLabel,
 			topic: rules.topic,
 			rules: rules.rules,

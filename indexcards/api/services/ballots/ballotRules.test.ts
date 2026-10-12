@@ -2,7 +2,7 @@ import type { MockInstance } from 'vitest';
 import factories from '../../../tests/factories/index.js';
 import logger from '../../helpers/logger.js';
 import type { Settings } from '../../repos/utils/index.js';
-import { ballotEntries, ballotTimers, otherJudges, settingLines, feedbackScoring, ballotHeader, ballotRules, ballotStatus, ballotTopic, chairLabel, decisionDeadline, isOn, pointsScoring, roundLabel, roundStart, rulesText, savedWinner, sideLock, winlossScoring, type BallotRulesInput } from './ballotRules.js';
+import { ballotEntries, ballotTimers, otherJudges, settingLines, feedbackScoring, ballotHeader, ballotRules, ballotStatus, ballotTopic, chairLabel, decisionDeadline, isChair, isOn, pointsScoring, roundLabel, roundStart, rulesText, savedWinner, sideLock, winlossScoring, type BallotRulesInput } from './ballotRules.js';
 
 const recent = new Date('2026-10-01T00:00:00Z');
 const old = new Date('2020-10-01T00:00:00Z');
@@ -280,27 +280,31 @@ describe('ballotStatus', () => {
 	});
 });
 
-describe('chairLabel', () => {
-	const chair = [ballot({ chair: 1 }), ballot({ chair: 1 })];
-
-	it('is null when the judge isn\'t chair', () => {
-		expect(chairLabel({ ballots: [ballot(), ballot()], event: event({ chair_label: 'Judge' }) })).toBeNull();
+describe('isChair', () => {
+	it('is false when the judge isn\'t chair', () => {
+		expect(isChair({ ballots: [ballot(), ballot()] })).toBe(false);
 	});
 
-	it('is CHAIR JUDGE by default', () => {
-		expect(chairLabel({ ballots: chair, event: event({}) })).toBe('CHAIR JUDGE');
-	});
-
-	it('is the event\'s chair_label in capitals', () => {
-		expect(chairLabel({ ballots: chair, event: event({ chair_label: 'Chief Justice' }) })).toBe('CHIEF JUSTICE');
-	});
-
-	it('is PARLIAMENTARIAN for Congress', () => {
-		expect(chairLabel({ ballots: chair, event: factories.event.mock({ type: 'congress' }) })).toBe('PARLIAMENTARIAN');
+	it('is true when all of their ballot rows are chair', () => {
+		expect(isChair({ ballots: [ballot({ chair: 1 }), ballot({ chair: 1 })] })).toBe(true);
 	});
 
 	it('counts the judge as chair when any of their ballot rows is', () => {
-		expect(chairLabel({ ballots: [ballot({ chair: 1 }), ballot()], event: event({}) })).toBe('CHAIR JUDGE');
+		expect(isChair({ ballots: [ballot({ chair: 1 }), ballot()] })).toBe(true);
+	});
+});
+
+describe('chairLabel', () => {
+	it('is null when the event has no chair_label', () => {
+		expect(chairLabel({ event: event({}) })).toBeNull();
+	});
+
+	it('is the event\'s chair_label as entered', () => {
+		expect(chairLabel({ event: event({ chair_label: 'Chief Justice' }) })).toBe('Chief Justice');
+	});
+
+	it('has no defaults', () => {
+		expect(chairLabel({ event: factories.event.mock({ type: 'congress' }) })).toBeNull();
 	});
 });
 

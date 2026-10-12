@@ -83,7 +83,8 @@ export type BallotProgress = z.infer<typeof BallotProgressSchema>;
 const BallotBaseSchema = z.object({
 	eventType: EventSchema.shape.type.meta({ description: 'The type of event for this ballot' }),
 	status: BallotStatusSchema,
-	chairLabel: z.string().nullable().meta({ description: 'Shown when the judge chairs the panel. null when they don\'t' }),
+	chair: z.boolean().meta({ description: 'Whether the judge chairs the panel' }),
+	chairLabel: z.string().nullable().meta({ description: 'The event\'s own name for the chair, e.g. Chief Justice. null when it has none' }),
 	tz: TournSchema.shape.tz.meta({ description: 'The tournament time zone, for showing times' }),
 	Tourn: z.object({
 		id: TournSchema.shape.id,
@@ -168,6 +169,13 @@ export const MockTrialBallotContextSchema = BallotBaseSchema.extend({
 }) satisfies ZodOpenApiSchemaObject;
 export type MockTrialBallotContext = z.infer<typeof MockTrialBallotContextSchema>;
 
+export const CongressBallotContextSchema = BallotBaseSchema.extend({
+	eventType: z.literal('congress'),
+}).strict().meta({
+	id: 'CongressBallotContext',
+}) satisfies ZodOpenApiSchemaObject;
+export type CongressBallotContext = z.infer<typeof CongressBallotContextSchema>;
+
 // Any ballot the beta can't render yet. Carries only what's needed to send
 // the judge to the classic ballot.
 export const OtherBallotContextSchema = z.object({
@@ -184,6 +192,7 @@ export type OtherBallotContext = z.infer<typeof OtherBallotContextSchema>;
 export const BallotContextSchema = z.discriminatedUnion('eventType', [
 	DebateBallotContextSchema,
 	MockTrialBallotContextSchema,
+	CongressBallotContextSchema,
 	OtherBallotContextSchema,
 ]).meta({
 	id: 'BallotContext',

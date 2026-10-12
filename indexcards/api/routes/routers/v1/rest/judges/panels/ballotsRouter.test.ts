@@ -73,6 +73,7 @@ describe('GET /rest/judges/:judgeId/panels/:panelId/ballots', () => {
 		expect(res.body).toEqual({
 			eventType: 'debate',
 			status: 'scored',
+			chair: false,
 			chairLabel: null,
 			topic: { label: 'Resolution', text: 'Resolved: tests are good.' },
 			rules: ['No tied points.'],

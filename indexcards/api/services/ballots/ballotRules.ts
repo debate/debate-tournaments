@@ -54,6 +54,7 @@ export type BallotRulesInput = {
 
 export type BallotRules = {
 	status: DebateBallotContext['status'];
+	chair: boolean;
 	chairLabel: string | null;
 	topic: DebateBallotContext['topic'];
 	rules: string[];
@@ -214,6 +215,7 @@ export function ballotRules(input: BallotRulesInput): BallotRules {
 
 	return {
 		status: ballotStatus(input),
+		chair: isChair(input),
 		chairLabel: chairLabel(input),
 		topic: ballotTopic(input),
 		rules: rulesText(input),
@@ -438,13 +440,16 @@ export function ballotStatus({ ballots, scores }: Pick<BallotRulesInput, 'ballot
 	return 'not_started';
 }
 
+/** Returns whether the judge chairs the panel: any of their ballot rows is marked chair. */
+export function isChair({ ballots }: Pick<BallotRulesInput, 'ballots'>): boolean {
+	return ballots.some(ballot => ballot.chair);
+}
+
 /**
- * Returns the label shown when the judge chairs the panel, or null if they don't:
- * the event's chair_label in capitals, else PARLIAMENTARIAN for Congress or CHAIR JUDGE. */
-export function chairLabel({ ballots, event }: Pick<BallotRulesInput, 'ballots' | 'event'>): string | null {
-	if (!ballots.some(ballot => ballot.chair)) return null;
-	if (isOn(event.settings?.chair_label)) return String(event.settings?.chair_label).toUpperCase();
-	return event.type === 'congress' ? 'PARLIAMENTARIAN' : 'CHAIR JUDGE';
+ * Returns the event's own name for the chair, or null when it has none. The client falls
+ * back to Parliamentarian for Congress or Chair Judge, so the words can be translated. */
+export function chairLabel({ event }: Pick<BallotRulesInput, 'event'>): string | null {
+	return isOn(event.settings?.chair_label) ? String(event.settings?.chair_label) : null;
 }
 
 /**
