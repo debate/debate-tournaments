@@ -93,8 +93,9 @@ const BallotBaseSchema = z.object({
 	}).strict(),
 	Round: z.object({
 		id: RoundSchema.shape.id,
+		name: RoundSchema.shape.name.meta({ description: 'The round number' }),
+		label: z.string().nullable().meta({ description: 'The round\'s label, e.g. Quarterfinals. null when it has none or it repeats the round number' }),
 	}).strict(),
-	roundName: z.string().meta({ description: 'The name of the round shown on the ballot' }),
 	flight: z.int().positive().nullable().meta({ description: 'The panel\'s flight. null when the round is not flighted' }),
 	roundNotes: z.string().nullable().meta({ description: 'Notes from tab for this round' }),
 	Room: z.object({
@@ -160,6 +161,13 @@ export const DebateBallotContextSchema = BallotBaseSchema.extend({
 }) satisfies ZodOpenApiSchemaObject;
 export type DebateBallotContext = z.infer<typeof DebateBallotContextSchema>;
 
+export const MockTrialBallotContextSchema = BallotBaseSchema.extend({
+	eventType: z.literal('mock_trial'),
+}).strict().meta({
+	id: 'MockTrialBallotContext',
+}) satisfies ZodOpenApiSchemaObject;
+export type MockTrialBallotContext = z.infer<typeof MockTrialBallotContextSchema>;
+
 // Any ballot the beta can't render yet. Carries only what's needed to send
 // the judge to the classic ballot.
 export const OtherBallotContextSchema = z.object({
@@ -175,6 +183,7 @@ export type OtherBallotContext = z.infer<typeof OtherBallotContextSchema>;
 
 export const BallotContextSchema = z.discriminatedUnion('eventType', [
 	DebateBallotContextSchema,
+	MockTrialBallotContextSchema,
 	OtherBallotContextSchema,
 ]).meta({
 	id: 'BallotContext',

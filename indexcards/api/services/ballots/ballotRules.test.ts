@@ -2,7 +2,7 @@ import type { MockInstance } from 'vitest';
 import factories from '../../../tests/factories/index.js';
 import logger from '../../helpers/logger.js';
 import type { Settings } from '../../repos/utils/index.js';
-import { ballotEntries, ballotTimers, otherJudges, settingLines, feedbackScoring, ballotHeader, ballotRules, ballotStatus, ballotTopic, chairLabel, decisionDeadline, isOn, pointsScoring, roundName, roundStart, rulesText, savedWinner, sideLock, winlossScoring, type BallotRulesInput } from './ballotRules.js';
+import { ballotEntries, ballotTimers, otherJudges, settingLines, feedbackScoring, ballotHeader, ballotRules, ballotStatus, ballotTopic, chairLabel, decisionDeadline, isOn, pointsScoring, roundLabel, roundStart, rulesText, savedWinner, sideLock, winlossScoring, type BallotRulesInput } from './ballotRules.js';
 
 const recent = new Date('2026-10-01T00:00:00Z');
 const old = new Date('2020-10-01T00:00:00Z');
@@ -819,25 +819,21 @@ describe('online mode support', () => {
 	});
 });
 
-describe('roundName', () => {
-	it('is "Round" and the number', () => {
-		expect(roundName({ round: round({ name: 3, label: null }), event: event({}) })).toBe('Round 3');
+describe('roundLabel', () => {
+	it('is null when the round has no label', () => {
+		expect(roundLabel({ round: round({ name: 3, label: null }) })).toBeNull();
 	});
 
 	it('is the label when there is one', () => {
-		expect(roundName({ round: round({ name: 6, label: 'Quarters' }), event: event({}) })).toBe('Quarters');
+		expect(roundLabel({ round: round({ name: 6, label: 'Quarters' }) })).toBe('Quarters');
 	});
 
 	it('ignores a label that is just the number', () => {
-		expect(roundName({ round: round({ name: 3, label: '3' }), event: event({}) })).toBe('Round 3');
+		expect(roundLabel({ round: round({ name: 3, label: '3' }) })).toBeNull();
 	});
 
 	it('ignores an empty label', () => {
-		expect(roundName({ round: round({ name: 3, label: '' }), event: event({}) })).toBe('Round 3');
-	});
-
-	it('is "Session" and the number for Congress', () => {
-		expect(roundName({ round: round({ name: 2, label: null }), event: factories.event.mock({ type: 'congress' }) })).toBe('Session 2');
+		expect(roundLabel({ round: round({ name: 3, label: '' }) })).toBeNull();
 	});
 });
 

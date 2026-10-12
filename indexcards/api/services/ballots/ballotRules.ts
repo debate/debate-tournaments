@@ -58,7 +58,7 @@ export type BallotRules = {
 	topic: DebateBallotContext['topic'];
 	rules: string[];
 	ballotHeader: string | null;
-	roundName: string;
+	roundLabel: string | null;
 	flight: number | null;
 	roundNotes: string | null;
 	roundStart: Date;
@@ -218,7 +218,7 @@ export function ballotRules(input: BallotRulesInput): BallotRules {
 		topic: ballotTopic(input),
 		rules: rulesText(input),
 		ballotHeader: ballotHeader(input),
-		roundName: roundName(input),
+		roundLabel: roundLabel(input),
 		flight: (round.flighted ?? 0) > 1 ? Number(panel.flight) || null : null,
 		roundNotes: isOn(round.settings?.notes) ? String(round.settings?.notes) : null,
 		roundStart: roundStart(input),
@@ -487,11 +487,11 @@ export function rulesText({ ballots, event }: Pick<BallotRulesInput, 'ballots' |
 }
 
 /**
- * Returns the round's display name (Tab::Round realname): its label when it has one that
- * differs from its number, else "Session N" for Congress or "Round N". */
-export function roundName({ round, event }: Pick<BallotRulesInput, 'round' | 'event'>): string {
-	if (round.label && round.label !== String(round.name)) return round.label;
-	return `${event.type === 'congress' ? 'Session' : 'Round'} ${round.name ?? ''}`.trim();
+ * Returns the round's label, or null when it has none or the label just repeats its number
+ * (Tab::Round realname). The client shows "Round N" or "Session N" when this is null, so
+ * the words can be translated. */
+export function roundLabel({ round }: Pick<BallotRulesInput, 'round'>): string | null {
+	return round.label && round.label !== String(round.name) ? round.label : null;
 }
 
 /**
