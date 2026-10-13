@@ -285,7 +285,10 @@ describe('validateBallot', () => {
 				feedback: {
 					showRfd: true,
 					rfd: null,
-					Entries: [{ ballot: 11, comments: affComments }, { ballot: 12, comments: negComments }],
+					Entries: [
+						{ ballot: 11, comments: affComments, entryLabel: 'AFF1' },
+						{ ballot: 12, comments: negComments, entryLabel: 'NEG2' },
+					],
 					minWords: { rfd: null, comments: min },
 				},
 			},

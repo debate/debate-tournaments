@@ -18,4 +18,6 @@ export interface BallotFeedbackEntry {
 	 * @nullable
 	 */
 	comments: string | null;
+	/** Who the entry's comments go to: the entry code, plus the school, entry name and student first names when the tournament shows them */
+	entryLabel: string;
 }

@@ -63,7 +63,9 @@ export async function saveBallot(
 			feedback: {
 				...rules.scoring.feedback,
 				rfd: cleanText(feedback.rfd),
-				Entries: feedback.Entries.map(entry => ({ ballot: entry.ballot, comments: cleanText(entry.comments) })),
+				Entries: rules.scoring.feedback.Entries
+					.filter(entry => openIds.has(entry.ballot))
+					.map(entry => ({ ...entry, comments: cleanText(comments.get(entry.ballot)) })),
 			},
 		}
 		: rules.scoring;

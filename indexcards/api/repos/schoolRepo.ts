@@ -4,6 +4,7 @@ import type { Database } from '../data/database.js';
 import type { School } from '../data/schema.js';
 
 type queryOpts = {
+	ids?: number[];
 	tourn?: number;
 	chapter?: number;
 	region?: number;
@@ -18,6 +19,9 @@ function buildSchoolQuery(db: Database, opts: queryOpts = {}){
 			settings: opts.settings!
 		}))
 	)
+	if (opts.ids) {
+		query = query.where('id', 'in', opts.ids);
+	}
 	if (opts.tourn) {
 		query = query.where('tourn', '=', opts.tourn);
 	}

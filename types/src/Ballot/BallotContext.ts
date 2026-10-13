@@ -19,6 +19,7 @@ import { StudentSchema } from '../Student.js';
 export const BallotFeedbackEntrySchema = z.object({
 	ballot: utils.id.meta({ description: 'The judge\'s ballot row for the entry' }),
 	comments: z.string().nullable().meta({ description: 'Comments for only this entry and its coaches (HTML)' }),
+	entryLabel: z.string().meta({ description: 'Who the entry\'s comments go to: the entry code, plus the school, entry name and student first names when the tournament shows them' }),
 }).strict().meta({
 	id: 'BallotFeedbackEntry',
 }) satisfies ZodOpenApiSchemaObject;

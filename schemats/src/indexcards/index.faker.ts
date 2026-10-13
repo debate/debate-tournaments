@@ -333,6 +333,9 @@ export const getRestJudgesBallotContextResponseDebateBallotContextMock = (
 							}),
 							null,
 						]),
+						entryLabel: faker.string.alpha({
+							length: { min: 10, max: 20 },
+						}),
 					})),
 					minWords: {
 						rfd: faker.helpers.arrayElement([
@@ -657,6 +660,9 @@ export const getRestJudgesBallotContextResponseMockTrialBallotContextMock = (
 							}),
 							null,
 						]),
+						entryLabel: faker.string.alpha({
+							length: { min: 10, max: 20 },
+						}),
 					})),
 					minWords: {
 						rfd: faker.helpers.arrayElement([
@@ -959,6 +965,9 @@ export const getRestJudgesBallotContextResponseCongressBallotContextMock = (
 							}),
 							null,
 						]),
+						entryLabel: faker.string.alpha({
+							length: { min: 10, max: 20 },
+						}),
 					})),
 					minWords: {
 						rfd: faker.helpers.arrayElement([
@@ -1247,6 +1256,10 @@ export const getRestJudgesBallotFeedbackResponseMock = (
 			comments: faker.helpers.arrayElement([
 				faker.string.alpha({ length: { min: 10, max: 20 } }),
 				null,
+			]),
+			entryLabel: faker.helpers.arrayElement([
+				faker.string.alpha({ length: { min: 10, max: 20 } }),
+				undefined,
 			]),
 		})),
 		undefined,

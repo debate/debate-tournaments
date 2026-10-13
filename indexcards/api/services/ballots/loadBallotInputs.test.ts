@@ -65,6 +65,18 @@ describe('loadBallotInputs', () => {
 		expect(inputs?.panel.settings).toMatchObject({ show_async: '1' });
 	});
 
+	it('loads each entry\'s name, school and title for the comments\' labels', async () => {
+		const { tourn, event, panel, judge } = await createBallotPanel();
+		const school = await factories.school.create({ tourn: tourn.id, code: 'LHS', name: 'Lincoln' });
+		const entry = await factories.entry.create({ event: event.id, school: school.id, code: 'AFF1', name: 'Adams & Brown', settings: { title: 'Hamlet' } });
+		await factories.ballot.create({ judge: judge.id, panel: panel.id, entry: entry.id, side: 1 });
+
+		const inputs = await loadBallotInputs(db, judge.id, panel.id);
+
+		expect(inputs?.entries).toEqual([expect.objectContaining({ name: 'Adams & Brown', school: school.id, settings: { title: 'Hamlet' } })]);
+		expect(inputs?.schools).toEqual([expect.objectContaining({ id: school.id, code: 'LHS', name: 'Lincoln' })]);
+	});
+
 	it('loads the judge\'s ballots with their entries, students and scores', async () => {
 		const { event, panel, judge } = await createBallotPanel();
 		const ana = await factories.student.create({ first: 'Ana', middle: null, last: 'Adams' });

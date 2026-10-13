@@ -7,9 +7,11 @@ import { StudentSchema } from '../Student.js';
 import { ProblemSchema } from '../Problem.js';
 import { BallotFeedbackEntrySchema } from './BallotContext.js';
 
-// The judge's feedback, shaped like scoring.feedback.rfd and scoring.feedback.Entries in the context
+// The judge's feedback, shaped like scoring.feedback.rfd and scoring.feedback.Entries in the context.
+// entryLabel may be sent back with the entries but is ignored
 const RfdSchema = z.string().nullable().meta({ description: 'Reason for decision, shared with everyone in the round (HTML)' });
-const FeedbackEntriesSchema = z.array(BallotFeedbackEntrySchema).meta({ description: 'Comments for each entry' });
+const FeedbackEntriesSchema = z.array(BallotFeedbackEntrySchema.partial({ entryLabel: true }))
+	.meta({ description: 'Comments for each entry. entryLabel is ignored, so the entries from the context can be sent back as they are' });
 
 // Feedback drafts, autosaved through PUT .../ballots/feedback so the judge doesn't lose work.
 // In the body, a field left out stays as it is and null or empty text deletes it. The

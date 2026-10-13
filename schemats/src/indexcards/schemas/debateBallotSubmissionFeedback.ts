@@ -5,7 +5,7 @@
  * Tabroom.com data & operational API
  * OpenAPI spec version: 1.2.0
  */
-import type { BallotFeedbackEntry } from './ballotFeedbackEntry';
+import type { DebateBallotSubmissionFeedbackEntriesItem } from './debateBallotSubmissionFeedbackEntriesItem';
 
 /**
  * All of the judge's feedback, which replaces the autosaved drafts. An entry left out has no comments
@@ -16,6 +16,6 @@ export type DebateBallotSubmissionFeedback = {
 	 * @nullable
 	 */
 	rfd: string | null;
-	/** Comments for each entry */
-	Entries: BallotFeedbackEntry[];
+	/** Comments for each entry. entryLabel is ignored, so the entries from the context can be sent back as they are */
+	Entries: DebateBallotSubmissionFeedbackEntriesItem[];
 };

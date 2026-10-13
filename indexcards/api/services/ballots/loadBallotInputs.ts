@@ -16,6 +16,7 @@ import scoreRepo from '../../repos/scoreRepo.js';
 import topicRepo from '../../repos/topicRepo.js';
 import { getCategory } from '../../repos/categoryRepo.js';
 import entryRepo from '../../repos/entryRepo.js';
+import schoolRepo from '../../repos/schoolRepo.js';
 import { tiebreakTypes } from '../results/tiebreakTypes.js';
 import { dueAff } from '../rounds/dueAff.js';
 import { SITE_SETTING_TAGS, type BallotRulesInput, type SiteSettings } from './ballotRules.js';
@@ -38,11 +39,15 @@ export async function loadBallotInputs(db: Database, judgeId: number, panelId: n
 
 	const [scores, entries, students, doubled, panelJudges] = await Promise.all([
 		scoreRepo.getScores(db, { ballots: ballots.map(ballot => ballot.id) }),
-		entryRepo.getEntries(db, { ids: entryIds, settings: ['ballot_notes', 'positions'] }),
+		entryRepo.getEntries(db, { ids: entryIds, settings: ['ballot_notes', 'positions', 'title'] }),
 		entryRepo.getEntryStudents(db, entryIds),
 		panelRepo.getDoubledEntries(db, panelId),
 		panelRepo.getPanelJudges(db, panelId),
 	]);
+
+	// For the school code and name on the comments' entry labels
+	const schoolIds = [...new Set(entries.map(entry => entry.school).filter((school): school is number => school !== null && school > 0))];
+	const schools = schoolIds.length > 0 ? await schoolRepo.getSchools(db, { ids: schoolIds }) : [];
 
 	// Ballots can be entered before the round is published or the tourn is public
 	const round = panel.round ? await getRound(db, panel.round, { settings: true, unpublished: true }) : undefined;
@@ -76,7 +81,7 @@ export async function loadBallotInputs(db: Database, judgeId: number, panelId: n
 	const site: SiteSettings = Object.fromEntries(siteRows.map(row => [row.tag, row.value_text]));
 
 	const inputs = {
-		tourn, category, event, round, timeslot, panel, judge, panelJudges, ballots, scores, entries, students, doubled, site, tbTypes,
+		tourn, category, event, round, timeslot, panel, judge, panelJudges, ballots, scores, entries, students, schools, doubled, site, tbTypes,
 		topic: topic ?? null,
 		dueAff: dueAff(meetings, round.name),
 	} satisfies BallotRulesInput;

@@ -5,7 +5,7 @@
  * Tabroom.com data & operational API
  * OpenAPI spec version: 1.2.0
  */
-import type { BallotFeedbackEntry } from './ballotFeedbackEntry';
+import type { BallotFeedbackEntriesItem } from './ballotFeedbackEntriesItem';
 
 export interface BallotFeedback {
 	/**
@@ -13,6 +13,6 @@ export interface BallotFeedback {
 	 * @nullable
 	 */
 	rfd?: string | null;
-	/** Comments for each entry */
-	Entries?: BallotFeedbackEntry[];
+	/** Comments for each entry. entryLabel is ignored, so the entries from the context can be sent back as they are */
+	Entries?: BallotFeedbackEntriesItem[];
 }

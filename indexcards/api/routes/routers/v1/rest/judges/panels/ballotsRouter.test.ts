@@ -95,8 +95,8 @@ describe('GET /rest/judges/:judgeId/panels/:panelId/ballots', () => {
 					showRfd: true,
 					rfd: '<p>Aff won the framework.</p>',
 					Entries: [
-						{ ballot: affBallot.id, comments: null },
-						{ ballot: negBallot.id, comments: '<p>Slow down.</p>' },
+						{ ballot: affBallot.id, comments: null, entryLabel: 'AFF1' },
+						{ ballot: negBallot.id, comments: '<p>Slow down.</p>', entryLabel: 'NEG2' },
 					],
 					minWords: { rfd: 50, comments: 25 },
 				},
@@ -347,6 +347,18 @@ describe('PUT /rest/judges/:judgeId/panels/:panelId/ballots/feedback', () => {
 				{ ballot: ballot.negBallot.id, comments: '<p>Slow down.</p>' },
 			],
 		});
+	});
+
+	it('ignores entryLabel, so the context\'s entries can be sent back', async () => {
+		const ballot = await createBallot('debate');
+		await openTourn(ballot);
+
+		const res = await request(server).put(`${url(ballot.judge.id, ballot.panel.id)}/feedback`)
+			.send({ Entries: [{ ballot: ballot.affBallot.id, comments: '<p>Extend your cards.</p>', entryLabel: 'Anything' }] })
+			.asPerson(ballot.userkey);
+
+		expect(res.status).toBe(200);
+		expect(res.body.Entries).toContainEqual({ ballot: ballot.affBallot.id, comments: '<p>Extend your cards.</p>' });
 	});
 
 	it('returns a 422 for comments on another judge\'s ballot', async () => {

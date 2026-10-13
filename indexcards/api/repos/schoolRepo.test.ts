@@ -27,6 +27,16 @@ describe('getSchools', () => {
 			})
 		);
 	});
+	it('returns only the schools with the given ids', async () => {
+		const Tourn = await factories.tourn.create();
+		const first = await factories.school.create({ tourn: Tourn.id });
+		const second = await factories.school.create({ tourn: Tourn.id });
+		await factories.school.create({ tourn: Tourn.id });
+
+		const schools = await schoolRepo.getSchools(db, { ids: [first.id, second.id] });
+
+		expect(schools.map(school => school.id).sort()).toEqual([first.id, second.id].sort());
+	});
 	it('applies scope filters from opts', async () => {
 		const Chapter = await factories.chapter.create();
 		const Tourn = await factories.tourn.create();

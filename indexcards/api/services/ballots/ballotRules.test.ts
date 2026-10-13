@@ -2,7 +2,7 @@ import type { MockInstance } from 'vitest';
 import factories from '../../../tests/factories/index.js';
 import logger from '../../helpers/logger.js';
 import type { Settings } from '../../repos/utils/index.js';
-import { ballotEntries, ballotTimers, bestPOScoring, otherJudges, settingLines, feedbackScoring, ballotHeader, ballotRules, ballotStatus, ballotTopic, chairLabel, decisionDeadline, flipStatus, isChair, isOn, pointsScoring, ranksScoring, roundLabel, roundStart, rulesText, savedWinner, sideLock, winlossScoring, type BallotRulesInput } from './ballotRules.js';
+import { ballotEntries, ballotTimers, bestPOScoring, otherJudges, settingLines, entryLabel, feedbackScoring, ballotHeader, ballotRules, ballotStatus, ballotTopic, chairLabel, decisionDeadline, flipStatus, isChair, isOn, pointsScoring, ranksScoring, roundLabel, roundStart, rulesText, savedWinner, sideLock, winlossScoring, type BallotRulesInput } from './ballotRules.js';
 
 const recent = new Date('2026-10-01T00:00:00Z');
 const old = new Date('2020-10-01T00:00:00Z');
@@ -40,6 +40,16 @@ const score = (tag: string, overrides: { ballot?: number, student?: number, valu
 	...overrides,
 });
 
+// An entry row as entryRepo.getEntries returns it, with no name, school or settings
+const entryRow = (id: number, code: string, overrides: Partial<BallotRulesInput['entries'][number]> = {}) => ({
+	id,
+	code,
+	name: null,
+	school: null,
+	settings: {},
+	...overrides,
+});
+
 // A student row as entryRepo.getEntryStudents returns it
 const student = (entry: number, id: number, first: string, last: string, pronoun: string | null = null) => ({ entry, id, first, middle: null, last, pronoun });
 
@@ -57,8 +67,8 @@ const input = (overrides: Partial<BallotRulesInput> = {}): BallotRulesInput => (
 	ballots: [ballot(), ballot({ id: 12, entry: 2, side: 2 })],
 	scores: [],
 	entries: [
-		{ id: 1, code: 'AFF1', settings: {} },
-		{ id: 2, code: 'NEG2', settings: {} },
+		entryRow(1, 'AFF1'),
+		entryRow(2, 'NEG2'),
 	],
 	students: [
 		student(1, 101, 'Ana', 'Adams'),
@@ -66,6 +76,7 @@ const input = (overrides: Partial<BallotRulesInput> = {}): BallotRulesInput => (
 		student(2, 201, 'Cai', 'Chen'),
 		student(2, 202, 'Dee', 'Diaz'),
 	],
+	schools: [],
 	doubled: [],
 	panelJudges: [],
 	topic: null,
@@ -550,7 +561,7 @@ describe('ballotEntries', () => {
 	});
 
 	it('includes the entry\'s accommodations note', () => {
-		const entries = ballotEntries(input({ entries: [{ id: 1, code: 'AFF1', settings: { ballot_notes: 'Needs a ramp' } }] }));
+		const entries = ballotEntries(input({ entries: [entryRow(1, 'AFF1', { settings: { ballot_notes: 'Needs a ramp' } })] }));
 
 		expect(entries[0].notes).toBe('Needs a ramp');
 	});
@@ -561,13 +572,13 @@ describe('ballotEntries', () => {
 		['removes tags', '<p>May use a <b>laptop</b></p>', 'May use a laptop'],
 		['turns <br> into line breaks', 'Extra prep<br>Sits', 'Extra prep\nSits'],
 	])('%s in the accommodations note', (_label, saved, notes) => {
-		const entries = ballotEntries(input({ entries: [{ id: 1, code: 'AFF1', settings: { ballot_notes: saved } }] }));
+		const entries = ballotEntries(input({ entries: [entryRow(1, 'AFF1', { settings: { ballot_notes: saved } })] }));
 
 		expect(entries[0].notes).toBe(notes);
 	});
 
 	it('is null when the note is only tags', () => {
-		const entries = ballotEntries(input({ entries: [{ id: 1, code: 'AFF1', settings: { ballot_notes: '<p>&nbsp;</p>' } }] }));
+		const entries = ballotEntries(input({ entries: [entryRow(1, 'AFF1', { settings: { ballot_notes: '<p>&nbsp;</p>' } })] }));
 
 		expect(entries[0].notes).toBeNull();
 	});
@@ -588,7 +599,7 @@ describe('ballotEntries', () => {
 		// Three students: 1S, 2A (second speaker on Aff, first on Neg), and one with no position
 		const trio = [student(1, 101, 'Ana', 'Adams'), student(1, 102, 'Ben', 'Brown'), student(1, 103, 'Cy', 'Cole')];
 		const positions = { 101: '2A', 102: '1S' };
-		const entries = [{ id: 1, code: 'AFF1', settings: { positions } }];
+		const entries = [entryRow(1, 'AFF1', { settings: { positions } })];
 
 		it('orders debate entries with more than two students by position, unset first', () => {
 			const onAff = ballotEntries(input({ students: trio, entries, ballots: [ballot({ side: 1 })] }));
@@ -664,7 +675,7 @@ describe('feedbackScoring', () => {
 		expect(feedbackScoring(input())).toEqual({
 			showRfd: true,
 			rfd: null,
-			Entries: [{ ballot: 11, comments: null }, { ballot: 12, comments: null }],
+			Entries: [{ ballot: 11, comments: null, entryLabel: 'AFF1' }, { ballot: 12, comments: null, entryLabel: 'NEG2' }],
 			minWords: { rfd: null, comments: null },
 		});
 	});
@@ -686,8 +697,8 @@ describe('feedbackScoring', () => {
 		const scores = [score('comments', { ballot: 12, content: '<p>Slow down.</p>' })];
 
 		expect(feedbackScoring(input({ ballots, scores }))?.Entries).toEqual([
-			{ ballot: 11, comments: null },
-			{ ballot: 12, comments: '<p>Slow down.</p>' },
+			{ ballot: 11, comments: null, entryLabel: 'AFF1' },
+			{ ballot: 12, comments: '<p>Slow down.</p>', entryLabel: 'NEG2' },
 		]);
 	});
 
@@ -743,6 +754,75 @@ describe('feedbackScoring', () => {
 
 	it('is present for speech', () => {
 		expect(feedbackScoring(input({ event: factories.event.mock({ type: 'speech' }) }))?.showRfd).toBe(true);
+	});
+});
+
+describe('entryLabel', () => {
+	// AFF1 from Lincoln (LHS) with the name "Adams & Brown", title "Hamlet", and students Ana and Ben
+	const aff = entryRow(1, 'AFF1', { name: 'Adams & Brown', school: 7, settings: { title: 'Hamlet' } });
+	const labelFor = (type: BallotRulesInput['event']['type'], category: Record<string, string> = {}, eventSettings: Record<string, string> = {}, entry = aff) => entryLabel({
+		...input(),
+		category: factories.category.mock({ settings: category }),
+		event: factories.event.mock({ type, settings: eventSettings }),
+		schools: [{ id: 7, code: 'LHS', name: 'Lincoln' }],
+	}, entry);
+
+	it('is the entry code by default', () => {
+		expect(labelFor('speech')).toBe('AFF1');
+	});
+
+	it.each([
+		['ballot_school_codes', 'AFF1 - LHS'],
+		['ballot_school_names', 'AFF1 - Lincoln'],
+		['ballot_entry_names', 'AFF1 - Adams & Brown'],
+		['ballot_entry_titles', 'AFF1 - Hamlet'],
+		['ballot_entry_first_names', 'AFF1 - Ana - Ben'],
+	])('adds the category\'s %s', (tag, label) => {
+		expect(labelFor('speech', { [tag]: '1' })).toBe(label);
+	});
+
+	it.each([
+		['ballot_names', 'AFF1 - Adams & Brown'],
+		['ballot_first_names', 'AFF1 - Ana - Ben'],
+	])('adds the event\'s %s', (tag, label) => {
+		expect(labelFor('speech', {}, { [tag]: '1' })).toBe(label);
+	});
+
+	it('puts every part in classic\'s order', () => {
+		const category = { ballot_school_codes: '1', ballot_school_names: '1', ballot_entry_names: '1', ballot_entry_titles: '1', ballot_entry_first_names: '1' };
+
+		expect(labelFor('speech', category)).toBe('AFF1 - LHS - Lincoln - Adams & Brown - Hamlet - Ana - Ben');
+	});
+
+	it('ignores the category\'s school name, entry name and first names for debate', () => {
+		const category = { ballot_school_names: '1', ballot_entry_names: '1', ballot_entry_first_names: '1' };
+
+		expect(labelFor('debate', category)).toBe('AFF1');
+	});
+
+	it('still shows the school code and the event\'s names for debate', () => {
+		expect(labelFor('debate', { ballot_school_codes: '1' }, { ballot_names: '1', ballot_first_names: '1' }))
+			.toBe('AFF1 - LHS - Adams & Brown - Ana - Ben');
+	});
+
+	it.each(['debate', 'congress', 'mock_trial'] as const)('shows titles only for speech, not %s', (type) => {
+		expect(labelFor(type, { ballot_entry_titles: '1' })).toBe('AFF1');
+	});
+
+	it('has no school parts for an entry with no school', () => {
+		expect(labelFor('speech', { ballot_school_codes: '1', ballot_school_names: '1' }, {}, { ...aff, school: 0 })).toBe('AFF1');
+	});
+
+	it('leaves out empty parts', () => {
+		const unnamed = { ...aff, name: '', settings: {} };
+
+		expect(labelFor('speech', { ballot_entry_names: '1', ballot_entry_titles: '1' }, {}, unnamed)).toBe('AFF1');
+	});
+
+	it('is on each feedback entry', () => {
+		const feedback = feedbackScoring({ ...input(), event: factories.event.mock({ type: 'debate', settings: { ballot_first_names: '1' } }) });
+
+		expect(feedback?.Entries.map(entry => entry.entryLabel)).toEqual(['AFF1 - Ana - Ben', 'NEG2 - Cai - Dee']);
 	});
 });
 

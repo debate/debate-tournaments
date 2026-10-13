@@ -5,7 +5,7 @@
 
 import type { BallotScoring, DebateBallotContext } from '@tabroom/types';
 import type { Selectable } from 'kysely';
-import type { Ballot, Category, Entry, Event, Judge, Panel, Round, Score, Timeslot, Topic, Tourn } from '../../data/schema.js';
+import type { Ballot, Category, Entry, Event, Judge, Panel, Round, School, Score, Timeslot, Topic, Tourn } from '../../data/schema.js';
 import type entryRepo from '../../repos/entryRepo.js';
 import type panelRepo from '../../repos/panelRepo.js';
 import type { Settings } from '../../repos/utils/index.js';
@@ -37,8 +37,10 @@ export type BallotRulesInput = {
 	ballots: Pick<Selectable<Ballot>, 'id' | 'entry' | 'side' | 'audit' | 'chair' | 'judge_started'>[];
 	scores: Pick<Selectable<Score>, 'ballot' | 'student' | 'tag' | 'value' | 'content'>[];
 	// The entries on those ballots with their settings, and their students
-	entries: (Pick<Selectable<Entry>, 'id' | 'code'> & { settings?: Settings | null })[];
+	entries: (Pick<Selectable<Entry>, 'id' | 'code' | 'name' | 'school'> & { settings?: Settings | null })[];
 	students: Awaited<ReturnType<typeof entryRepo.getEntryStudents>>;
+	// The entries' schools
+	schools: Pick<Selectable<School>, 'id' | 'code' | 'name'>[];
 	// Pairs of an entry on this panel and another entry it's doubled with
 	doubled: Awaited<ReturnType<typeof panelRepo.getDoubledEntries>>;
 	// The topic the event's topic setting points to, if any
@@ -313,7 +315,7 @@ export function ballotEntries(input: Pick<BallotRulesInput, 'tourn' | 'event' | 
  * them has it. The Congress chair writes comments for each entry but no reason for decision
  * (congress_feedback.mas); other Congress judges comment on each speech instead. Undefined for
  * them, and for mock trial unless the event sets mock_trial_feedback (ballot.mhtml). */
-export function feedbackScoring(input: Pick<BallotRulesInput, 'event' | 'ballots' | 'scores' | 'entries'>): BallotRules['scoring']['feedback'] {
+export function feedbackScoring(input: Pick<BallotRulesInput, 'category' | 'event' | 'ballots' | 'scores' | 'entries' | 'students' | 'schools'>): BallotRules['scoring']['feedback'] {
 	const { event, ballots, scores, entries } = input;
 
 	const words = (value: Settings[string] | undefined) => {
@@ -329,17 +331,49 @@ export function feedbackScoring(input: Pick<BallotRulesInput, 'event' | 'ballots
 		rfd: scores.find(score => score.tag === 'rfd' && score.content)?.content ?? null,
 		// In side order, like the context's Entries
 		Entries: ballots
-			.filter(ballot => entries.some(entry => entry.id === ballot.entry))
-			.sort((a, b) => a.side - b.side)
-			.map(ballot => ({
+			.flatMap(ballot => {
+				const entry = entries.find(entry => entry.id === ballot.entry);
+				return entry ? [{ ballot, entry }] : [];
+			})
+			.sort((a, b) => a.ballot.side - b.ballot.side)
+			.map(({ ballot, entry }) => ({
 				ballot: ballot.id,
 				comments: scores.find(score => score.ballot === ballot.id && score.tag === 'comments')?.content ?? null,
+				entryLabel: entryLabel(input, entry),
 			})),
 		minWords: {
 			rfd: words(event.settings?.rfd_plz),
 			comments: words(event.settings?.comments_plz),
 		},
 	};
+}
+
+/**
+ * Returns who an entry's comments go to, as ballot.mhtml builds it: the entry code, then the
+ * school code and school name, entry name, title and each student's first name when the
+ * category or event shows them. Debate ignores the category's school name, entry name and
+ * first name settings, and only speech shows titles. Classic adds the separator even when a
+ * part is empty (e.g. no title); empty parts are left out here. */
+export function entryLabel(
+	{ category, event, students, schools }: Pick<BallotRulesInput, 'category' | 'event' | 'students' | 'schools'>,
+	entry: BallotRulesInput['entries'][number],
+): string {
+	const debate = event.type === 'debate';
+	const categoryOn = (tag: string) => isOn(category.settings?.[tag]);
+	const school = entry.school ? schools.find(school => school.id === entry.school) : undefined;
+
+	const parts = [
+		entry.code,
+		categoryOn('ballot_school_codes') ? school?.code : null,
+		!debate && categoryOn('ballot_school_names') ? school?.name : null,
+		(!debate && categoryOn('ballot_entry_names')) || isOn(event.settings?.ballot_names) ? entry.name : null,
+		event.type === 'speech' && categoryOn('ballot_entry_titles') ? entry.settings?.title : null,
+		...((!debate && categoryOn('ballot_entry_first_names')) || isOn(event.settings?.ballot_first_names)
+			? students.filter(student => student.entry === entry.id).map(student => student.first)
+			: []),
+	];
+
+	return parts.map(part => String(part ?? '').trim()).filter(part => part !== '').join(' - ');
 }
 
 /**

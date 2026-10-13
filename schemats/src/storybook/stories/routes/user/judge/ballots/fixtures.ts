@@ -10,11 +10,12 @@ export const hoursFromNow = (hours: number) =>
 
 type Feedback = NonNullable<BallotBase['scoring']['feedback']>;
 
-// A feedback block with a reason for decision, nothing saved and an empty comments box for each entry
-export const feedbackFor = (Entries: { ballot: number }[], overrides: Partial<Feedback> = {}): Feedback => ({
+// A feedback block with a reason for decision, nothing saved and an empty comments box for each
+// entry, labelled with its code
+export const feedbackFor = (Entries: { ballot: number, code: string | null }[], overrides: Partial<Feedback> = {}): Feedback => ({
 	showRfd: true,
 	rfd: null,
-	Entries: Entries.map(({ ballot }) => ({ ballot, comments: null })),
+	Entries: Entries.map(({ ballot, code }) => ({ ballot, comments: null, entryLabel: code ?? '' })),
 	minWords: { rfd: null, comments: null },
 	...overrides,
 });
