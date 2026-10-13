@@ -51,6 +51,7 @@
     "@tanstack/svelte-table": "^9.0.0-alpha.32",
     "@tiptap/core": "^3.26.1",
     "@tiptap/extension-text-align": "^3.26.1",
+    "@tiptap/extensions": "^3.26.1",
     "@tiptap/starter-kit": "^3.26.1",
     "dotenv": "^17.4.2",
     "luxon": "^3.7.2",

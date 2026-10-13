@@ -9,6 +9,8 @@
 		label?        : string,
 		class?        : string,
 		contentClass? : string,
+		// Panel tabs: called with the newly selected tab's title when the user picks another
+		onchange?     : (title: string) => void,
 	};
 
 	let {
@@ -16,9 +18,21 @@
 		label        = 'Tabs',
 		class        : className = '',
 		contentClass = 'mt-0 rounded',
+		onchange,
 	}: Props = $props();
 
 	let items: TabEntry[] = $state.raw([]);
+
+	// The selected panel tab's id, which flowbite sets
+	let selected: string | undefined = $state();
+
+	// Flowbite's first selection on mount isn't a change
+	const select = (id: string | undefined) => {
+		const changed = selected !== undefined && id !== undefined && id !== selected;
+		selected = id;
+		const title = items.find( (item) => item.id === id)?.title;
+		if (changed && title !== undefined) onchange?.(title);
+	};
 
 	setTabsContext({
 		register: (entry) => {
@@ -127,6 +141,7 @@
 			aria-label = {label}
 			classes    = {{ content: contentClass }}
 			divider    = {false}
+			bind:selected = {() => selected, select}
 		>
 			{#each items as item (item.id)}
 				<FlowbiteTabItem

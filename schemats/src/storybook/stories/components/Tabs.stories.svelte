@@ -1,5 +1,6 @@
 <script lang="ts" module>
 	import { defineMeta } from '@storybook/addon-svelte-csf';
+	import { expect, fn, userEvent, within } from 'storybook/test';
 	import { Tabs, TabItem } from '../../../lib/components/Tabs';
 
 	// Story children are passed to Tabs as its children, so each story lists
@@ -15,6 +16,21 @@
 	<TabItem open title="Tab 2">Tab 2 content</TabItem>
 	<TabItem title="Tab 3">Tab 3 content</TabItem>
 	<TabItem disabled title="Tab 4" tooltip="Tab 4 tooltip">Tab 4 content</TabItem>
+</Story>
+
+<!-- onchange fires when the user picks another tab, not for the first selection -->
+<Story
+	name = "Panels On Change"
+	args = {{ label: 'Tournament details', onchange: fn() }}
+	play = {async ({ canvasElement, args }) => {
+		const canvas = within(canvasElement);
+		await expect(args.onchange).not.toHaveBeenCalled();
+		await userEvent.click(canvas.getByRole('tab', { name: 'Tab 2' }));
+		await expect(args.onchange).toHaveBeenCalledWith('Tab 2');
+	}}
+>
+	<TabItem title="Tab 1">Tab 1 content</TabItem>
+	<TabItem title="Tab 2">Tab 2 content</TabItem>
 </Story>
 
 <Story

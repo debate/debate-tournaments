@@ -3,6 +3,7 @@
 	import { Editor } from '@tiptap/core';
 	import StarterKit from '@tiptap/starter-kit';
 	import TextAlign from '@tiptap/extension-text-align';
+	import { Placeholder } from '@tiptap/extensions';
 	import {
 		Undo,
 		Redo,
@@ -20,10 +21,16 @@
 		content = $bindable(''),
 		autoSaveFn = () => {},
 		autoSaveDelay = 5000,
+		label = 'Rich Text Editor',
+		placeholder = '',
 	}: {
 		content?: string,
 		autoSaveFn?: (content: string) => void,
-		autoSaveDelay?: number
+		autoSaveDelay?: number,
+		// Accessible name for the editor, e.g. what the text is for
+		label?: string,
+		// Shown while the editor is empty
+		placeholder?: string,
 	} = $props();
 
 	let editorElement: HTMLDivElement;
@@ -31,19 +38,25 @@
 	let autoSaveTimeout: ReturnType<typeof setTimeout> | null = null;
 
 	onMount(() => {
-		editorState.editor = new Editor({
+		// Built before assigning: extensions like Placeholder dispatch a transaction while the
+		// editor is constructed, and onTransaction replaces editorState, so assigning straight
+		// to editorState.editor would set it on the replaced object and the toolbar never shows
+		const editor = new Editor({
 			element: editorElement,
 			extensions: [
 				StarterKit,
 				TextAlign.configure({
 					types: ['heading', 'paragraph'],
 				}),
+				// Read through a function so a changed placeholder shows on the next render
+				Placeholder.configure({
+					placeholder: () => placeholder,
+				}),
 			],
 			content,
 			editorProps: {
 				attributes: {
-					// Make sure the editor is announced as a rich text editor
-					'aria-label': 'Rich Text Editor',
+					'aria-label': label,
 					// editor accepts multiline input
 					'aria-multiline': 'true',
 					'aria-readonly': 'false',
@@ -66,6 +79,7 @@
 				}, autoSaveDelay);
 			},
 		});
+		editorState.editor = editor;
 	});
 	onDestroy(() => {
 		if (autoSaveTimeout) {
@@ -91,6 +105,7 @@
 			disabled={!editorState.editor?.can().undo()}
 			onclick={() => editorState.editor?.commands.undo()}
 			title="Undo"
+			type="button"
 		>
 			<Undo size="16" />
 		</button>
@@ -98,6 +113,7 @@
 			disabled={!editorState.editor?.can().redo()}
 			onclick={() => editorState.editor?.commands.redo()}
 			title="Redo"
+			type="button"
 		>
 			<Redo size="16" />
 		</button>
@@ -108,6 +124,7 @@
 			class:active={editorState.editor?.isActive('bold')}
 			onclick={() => editorState.editor?.chain().focus().toggleBold().run()}
 			title="Bold"
+			type="button"
 		>
 			<Bold size="16" />
 		</button>
@@ -116,6 +133,7 @@
 			class:active={editorState.editor?.isActive('italic')}
 			onclick={() => editorState.editor?.chain().focus().toggleItalic().run()}
 			title="Italic"
+			type="button"
 		>
 			<Italic size="16" />
 		</button>
@@ -124,6 +142,7 @@
 			class:active={editorState.editor?.isActive('strike')}
 			onclick={() => editorState.editor?.chain().focus().toggleStrike().run()}
 			title="Strikethrough"
+			type="button"
 		>
 			<Strikethrough size="16" />
 		</button>
@@ -132,6 +151,7 @@
 			class:active={editorState.editor?.isActive('underline')}
 			onclick={() => editorState.editor?.chain().focus().toggleUnderline().run()}
 			title="Underline"
+			type="button"
 		>
 			<Underline size="16" />
 		</button>
@@ -142,6 +162,7 @@
 			class:active={editorState.editor?.isActive({ textAlign: 'left' })}
 			onclick={() => editorState.editor?.chain().focus().setTextAlign('left').run()}
 			title="Align Left"
+			type="button"
 		>
 			<TextAlignStart size="16" />
 		</button>
@@ -150,6 +171,7 @@
 			class:active={editorState.editor?.isActive({ textAlign: 'center' })}
 			onclick={() => editorState.editor?.chain().focus().setTextAlign('center').run()}
 			title="Align Center"
+			type="button"
 		>
 			<TextAlignCenter size="16" />
 		</button>
@@ -157,11 +179,12 @@
 			class:active={editorState.editor?.isActive({ textAlign: 'right' })}
 			onclick={() => editorState.editor?.chain().focus().setTextAlign('right').run()}
 			title="Align Right"
+			type="button"
 		>
 			<TextAlignEnd size="16" />
 		</button>
 		<div class="divider"></div>
-		<button onclick={clearFormatting} title="Clear formatting">
+		<button onclick={clearFormatting} title="Clear formatting" type="button">
 			<RemoveFormatting size="16" />
 		</button>
 	</div>
@@ -224,6 +247,15 @@
 	:global(.ProseMirror) {
 		outline: none;
 		min-height: 300px;
+	}
+
+	/* The Placeholder extension marks the empty first paragraph and puts the text in data-placeholder */
+	:global(.ProseMirror p.is-editor-empty:first-child::before) {
+		content: attr(data-placeholder);
+		float: left;
+		height: 0;
+		pointer-events: none;
+		color: var(--color-muted);
 	}
 
 	:global(.ProseMirror img) {
