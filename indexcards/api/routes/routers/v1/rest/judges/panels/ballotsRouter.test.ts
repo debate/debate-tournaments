@@ -114,7 +114,7 @@ describe('GET /rest/judges/:judgeId/panels/:panelId/ballots', () => {
 			ballotTopics: null,
 			docShare: null,
 			logo: null,
-			debate: { affLabel: 'Aff', negLabel: 'Neg', sides: 'locked', winner: affBallot.id },
+			debate: { affLabel: 'Aff', negLabel: 'Neg', sides: 'locked', flipStatus: null, winner: affBallot.id },
 		});
 	});
 
@@ -239,7 +239,7 @@ describe('POST /rest/judges/:judgeId/panels/:panelId/ballots/start', () => {
 
 		expect(res.status).toBe(200);
 		expect(res.body).toMatchSchema(BallotProgressSchema);
-		expect(res.body).toEqual({ status: 'started' });
+		expect(res.body).toMatchObject({ status: 'started' });
 
 		const rows = await started(ballot.panel.id);
 		expect(rows.map(row => row.started_by)).toEqual([ballot.judge.person, ballot.judge.person]);
@@ -281,7 +281,14 @@ describe('GET /rest/judges/:judgeId/panels/:panelId/ballots/status', () => {
 
 		expect(res.status).toBe(200);
 		expect(res.body).toMatchSchema(BallotProgressSchema);
-		expect(res.body).toEqual({ status: 'scored' });
+		expect(res.body).toEqual({
+			status: 'scored',
+			Entries: [
+				{ ballot: ballot.affBallot.id, side: 1 },
+				{ ballot: ballot.negBallot.id, side: 2 },
+			],
+			flipStatus: null,
+		});
 	});
 
 	it('notices a ballot confirmed elsewhere', async () => {
@@ -290,7 +297,26 @@ describe('GET /rest/judges/:judgeId/panels/:panelId/ballots/status', () => {
 
 		const res = await request(server).get(`${url(ballot.judge.id, ballot.panel.id)}/status`).asPerson(ballot.userkey);
 
-		expect(res.body).toEqual({ status: 'confirmed' });
+		expect(res.body).toMatchObject({ status: 'confirmed' });
+	});
+
+	it('notices a coin flip moved the sides', async () => {
+		const ballot = await createBallot('debate', { flip_online: '1' });
+		// Through side 3, like flip_save.mhtml, since the ballot_sideorder key won't hold two Negs
+		await db.updateTable('ballot').set({ side: 3 }).where('id', '=', ballot.affBallot.id).execute();
+		await db.updateTable('ballot').set({ side: 1 }).where('id', '=', ballot.negBallot.id).execute();
+		await db.updateTable('ballot').set({ side: 2 }).where('id', '=', ballot.affBallot.id).execute();
+		await db.insertInto('panel_setting').values({ panel: ballot.panel.id, tag: 'flip_status', value: 'done' }).execute();
+
+		const res = await request(server).get(`${url(ballot.judge.id, ballot.panel.id)}/status`).asPerson(ballot.userkey);
+
+		expect(res.body).toMatchObject({
+			Entries: [
+				{ ballot: ballot.negBallot.id, side: 1 },
+				{ ballot: ballot.affBallot.id, side: 2 },
+			],
+			flipStatus: 'done',
+		});
 	});
 });
 

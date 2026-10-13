@@ -125,8 +125,6 @@ export function ballotRules(input: BallotRulesInput): BallotRules {
 		'lower_rules',
 		'dumb_signature_line',
 		'team_total_line',
-		// Online coin flips: flip status, polling for flipped sides
-		'flip_online',
 		// The judge picks sides every round, and speaker order
 		'no_side_constraints',
 		// Performance video links on each entry
@@ -201,9 +199,10 @@ export function ballotRules(input: BallotRulesInput): BallotRules {
 	}
 
 	const lock = sideLock(input);
+	const sides = debateSides(lock, event);
 
 	// The judge picks sides, which needs side swaps and the side disagreement check from ballot_save.mhtml
-	if (lock === 'pick') {
+	if (sides === 'pick') {
 		unsupported.push('side choice');
 	}
 
@@ -245,7 +244,8 @@ export function ballotRules(input: BallotRulesInput): BallotRules {
 		debate: {
 			affLabel: isOn(event.settings?.aff_label) ? String(event.settings?.aff_label) : 'Aff',
 			negLabel: isOn(event.settings?.neg_label) ? String(event.settings?.neg_label) : 'Neg',
-			sides: lock === 'pick' ? 'pick' : 'locked',
+			sides,
+			flipStatus: sides === 'flip' ? flipStatus(panel) : null,
 			winner: savedWinner(input),
 		},
 		unsupported,
@@ -432,6 +432,25 @@ export function sideLock({ event, round, dueAff }: Pick<BallotRulesInput, 'event
 	if (isOn(settings.sidelock_elims)) return 'tab';
 	if (isOn(settings.no_elim_sidelocks)) return 'pick';
 	return dueAff === null ? 'pick' : 'history';
+}
+
+/**
+ * Returns how the debate ballot shows the sides. Sides tab or pairing set are locked, even
+ * with flip_online (ballot.mhtml $locked wins over the flip header). Otherwise flip_online
+ * means the entries pick them in a coin flip (user/enter/flip.mhtml), so the judge doesn't. */
+export function debateSides(lock: ReturnType<typeof sideLock>, event: Pick<BallotRulesInput['event'], 'settings'>): DebateBallotContext['debate']['sides'] {
+	if (lock !== 'pick') return 'locked';
+	return isOn(event.settings?.flip_online) ? 'flip' : 'pick';
+}
+
+/**
+ * Returns the panel's flip_status, which the coin flip moves from winner to loser to anyone
+ * to done (api/flip_monitor.mhtml). null before the flip starts or for a value it doesn't write. */
+export function flipStatus(panel: Pick<BallotRulesInput['panel'], 'settings'>): DebateBallotContext['debate']['flipStatus'] {
+	const FLIP_STATUSES = ['winner', 'loser', 'anyone', 'done'] as const;
+	const status = panel.settings?.flip_status;
+
+	return FLIP_STATUSES.find(value => value === status) ?? null;
 }
 
 /**

@@ -78,6 +78,11 @@ export type BallotStatus = z.infer<typeof BallotStatusSchema>;
 // What the ballot page polls while it's open
 export const BallotProgressSchema = z.object({
 	status: BallotStatusSchema,
+	Entries: z.array(z.object({
+		ballot: BallotEntrySchema.shape.ballot,
+		side: BallotEntrySchema.shape.side,
+	}).strict()).meta({ description: 'The side of each entry on the judge\'s ballot, to notice a coin flip changed them' }),
+	flipStatus: z.enum(['winner', 'loser', 'anyone', 'done']).nullable().meta({ description: 'Where the panel\'s online coin flip is: winner, loser or anyone is choosing, or done. null when there is none or it hasn\'t started' }),
 }).strict().meta({
 	id: 'BallotProgress',
 }) satisfies ZodOpenApiSchemaObject;
@@ -151,7 +156,8 @@ const BallotBaseSchema = z.object({
 export const DebateDetailsSchema = z.object({
 	affLabel: z.string().meta({ description: 'What side 1 is called, e.g. Aff or Pro' }),
 	negLabel: z.string().meta({ description: 'What side 2 is called, e.g. Neg or Con' }),
-	sides: z.enum(['locked', 'pick']).meta({ description: 'locked: the sides are set. pick: the judge picks them' }),
+	sides: z.enum(['locked', 'pick', 'flip']).meta({ description: 'locked: the sides are set. pick: the judge picks them. flip: the entries pick them in an online coin flip, so they can change while the ballot is open' }),
+	flipStatus: z.enum(['winner', 'loser', 'anyone', 'done']).nullable().meta({ description: 'Where the online coin flip is: winner, loser or anyone is choosing, or done. null when sides isn\'t flip or the flip hasn\'t started' }),
 	winner: utils.id.nullable().meta({ description: 'The saved winner\'s ballot. null before a winner is saved' }),
 }).strict().meta({
 	id: 'DebateDetails',

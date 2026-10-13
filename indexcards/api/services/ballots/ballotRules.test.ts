@@ -2,7 +2,7 @@ import type { MockInstance } from 'vitest';
 import factories from '../../../tests/factories/index.js';
 import logger from '../../helpers/logger.js';
 import type { Settings } from '../../repos/utils/index.js';
-import { ballotEntries, ballotTimers, otherJudges, settingLines, feedbackScoring, ballotHeader, ballotRules, ballotStatus, ballotTopic, chairLabel, decisionDeadline, isChair, isOn, pointsScoring, ranksScoring, roundLabel, roundStart, rulesText, savedWinner, sideLock, winlossScoring, type BallotRulesInput } from './ballotRules.js';
+import { ballotEntries, ballotTimers, otherJudges, settingLines, feedbackScoring, ballotHeader, ballotRules, ballotStatus, ballotTopic, chairLabel, decisionDeadline, flipStatus, isChair, isOn, pointsScoring, ranksScoring, roundLabel, roundStart, rulesText, savedWinner, sideLock, winlossScoring, type BallotRulesInput } from './ballotRules.js';
 
 const recent = new Date('2026-10-01T00:00:00Z');
 const old = new Date('2020-10-01T00:00:00Z');
@@ -138,7 +138,6 @@ describe('ballotRules', () => {
 		'lower_rules',
 		'dumb_signature_line',
 		'team_total_line',
-		'flip_online',
 		'show_async_links',
 		'online_prep',
 		'team_points',
@@ -159,6 +158,10 @@ describe('ballotRules', () => {
 
 	it('supports elims where the sides are locked', () => {
 		expect(ballotRules(input({ round: round({ type: 'elim' }), dueAff: 1 })).unsupported).toEqual([]);
+	});
+
+	it('supports elims where the entries flip for sides online', () => {
+		expect(ballotRules(input({ event: event({ flip_online: '1' }), round: round({ type: 'elim' }) })).unsupported).toEqual([]);
 	});
 
 	it.each([
@@ -419,7 +422,7 @@ describe('sideLock', () => {
 
 describe('debate details', () => {
 	it('labels the sides Aff and Neg by default', () => {
-		expect(ballotRules(input()).debate).toEqual({ affLabel: 'Aff', negLabel: 'Neg', sides: 'locked', winner: null });
+		expect(ballotRules(input()).debate).toEqual({ affLabel: 'Aff', negLabel: 'Neg', sides: 'locked', flipStatus: null, winner: null });
 	});
 
 	it('uses the event\'s side labels', () => {
@@ -434,6 +437,35 @@ describe('debate details', () => {
 
 	it('locks sides in an elim where an entry is due Aff', () => {
 		expect(ballotRules(input({ round: round({ type: 'elim' }), dueAff: 1 })).debate.sides).toBe('locked');
+	});
+
+	describe('online coin flips', () => {
+		const flipEvent = event({ flip_online: '1' });
+		const elim = round({ type: 'elim' });
+
+		it('has the entries flip for sides in an elim where no entry is due Aff', () => {
+			expect(ballotRules(input({ event: flipEvent, round: elim })).debate.sides).toBe('flip');
+		});
+
+		it('locks sides tab set, with no flip status', () => {
+			const rules = ballotRules(input({ event: flipEvent, panel: factories.panel.mock({ settings: { flip_status: 'done' } }) }));
+
+			expect(rules.debate).toMatchObject({ sides: 'locked', flipStatus: null });
+		});
+
+		it('locks sides in an elim where an entry is due Aff', () => {
+			expect(ballotRules(input({ event: flipEvent, round: elim, dueAff: 1 })).debate.sides).toBe('locked');
+		});
+
+		it('ignores flip_online set to "0"', () => {
+			expect(ballotRules(input({ event: event({ flip_online: '0' }), round: elim })).debate.sides).toBe('pick');
+		});
+
+		it('includes the panel\'s flip status', () => {
+			const rules = ballotRules(input({ event: flipEvent, round: elim, panel: factories.panel.mock({ settings: { flip_status: 'loser' } }) }));
+
+			expect(rules.debate.flipStatus).toBe('loser');
+		});
 	});
 
 	describe('due Aff check', () => {
@@ -460,6 +492,21 @@ describe('debate details', () => {
 
 			expect(warn).not.toHaveBeenCalled();
 		});
+	});
+});
+
+describe('flipStatus', () => {
+	it.each(['winner', 'loser', 'anyone', 'done'])('is %s when the panel is at that step', (status) => {
+		expect(flipStatus({ settings: { flip_status: status } })).toBe(status);
+	});
+
+	it('is null before the flip starts', () => {
+		expect(flipStatus({ settings: {} })).toBeNull();
+		expect(flipStatus({ settings: null })).toBeNull();
+	});
+
+	it('is null for a value the flip doesn\'t write', () => {
+		expect(flipStatus({ settings: { flip_status: 'second' } })).toBeNull();
 	});
 });
 

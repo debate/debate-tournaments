@@ -1,14 +1,15 @@
 import { Conflict, NotFound, UnprocessableEntity } from '../../../../helpers/problem.js';
 import type { Response } from 'express';
-import type { BallotContext, BallotFeedback, BallotSubmission } from '@tabroom/types';
+import type { BallotContext, BallotFeedback, BallotProgress, BallotSubmission } from '@tabroom/types';
 import type { ValidatedRequest } from '../../../../middleware/validation.js';
 import { getPerson } from '../../../../middleware/auth/authorization.js';
-import { db } from '../../../../data/database.js';
-import { ballotRules, ballotStatus } from '../../../../services/ballots/ballotRules.js';
+import { db, type Database } from '../../../../data/database.js';
+import { ballotRules, ballotStatus, flipStatus } from '../../../../services/ballots/ballotRules.js';
 import { loadBallotInputs } from '../../../../services/ballots/loadBallotInputs.js';
 import { saveBallot, saveBallotFeedback } from '../../../../services/ballots/saveBallot.js';
 import ballotRepo from '../../../../repos/ballotRepo.js';
 import judgeRepo from '../../../../repos/judgeRepo.js';
+import panelRepo from '../../../../repos/panelRepo.js';
 import scoreRepo from '../../../../repos/scoreRepo.js';
 
 // Returns the BallotContext: everything needed to render this judge's ballot
@@ -115,10 +116,7 @@ export async function startBallot(req: ValidatedRequest, res: Response) {
 		await ballotRepo.markBallotsStarted(req.db, { judge: judgeId, panel: panelId, person: person.id });
 	}
 
-	const ballots = await ballotRepo.getBallots(req.db, { judge: judgeId, panel: panelId });
-	const scores = await scoreRepo.getScores(req.db, { ballots: ballots.map(ballot => ballot.id) });
-
-	return res.status(200).json({ status: ballotStatus({ ballots, scores }) });
+	return res.status(200).json(await ballotProgress(req.db, judgeId, panelId));
 }
 
 // Polled while the ballot is open, so the page notices a ballot confirmed elsewhere.
@@ -127,10 +125,26 @@ export async function getBallotStatus(req: ValidatedRequest, res: Response) {
 	const judgeId = Number(req.params.judgeId);
 	const panelId = Number(req.params.panelId);
 
-	const ballots = await ballotRepo.getBallots(db, { judge: judgeId, panel: panelId });
-	const scores = await scoreRepo.getScores(db, { ballots: ballots.map(ballot => ballot.id) });
+	return res.status(200).json(await ballotProgress(db, judgeId, panelId));
+}
 
-	return res.status(200).json({ status: ballotStatus({ ballots, scores }) });
+// The judge's status, plus the sides and flip status, which replace classic getBallotSides:
+// the page reloads the context when a coin flip moves the sides
+async function ballotProgress(database: Database, judgeId: number, panelId: number): Promise<BallotProgress> {
+	const [ballots, panel] = await Promise.all([
+		ballotRepo.getBallots(database, { judge: judgeId, panel: panelId }),
+		panelRepo.getPanel(database, panelId, { settings: ['flip_status'] }),
+	]);
+	const scores = await scoreRepo.getScores(database, { ballots: ballots.map(ballot => ballot.id) });
+
+	return {
+		status: ballotStatus({ ballots, scores }),
+		Entries: ballots
+			.filter(ballot => ballot.entry)
+			.sort((a, b) => a.side - b.side)
+			.map(ballot => ({ ballot: ballot.id, side: ballot.side })),
+		flipStatus: panel ? flipStatus(panel) : null,
+	};
 }
 
 // Saves the RFD and per-entry comments as drafts. Returns them as saved

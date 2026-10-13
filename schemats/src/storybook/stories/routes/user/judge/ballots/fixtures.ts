@@ -99,7 +99,7 @@ export function debateContext(overrides: Partial<DebateBallotContext> = {}): Deb
 			{ speech: 'Rebuttals', time: '5 min' },
 			{ speech: 'Prep time', time: '8 min each' },
 		],
-		debate: { affLabel: 'Aff', negLabel: 'Neg', sides: 'locked', winner: null },
+		debate: { affLabel: 'Aff', negLabel: 'Neg', sides: 'locked', flipStatus: null, winner: null },
 		...overrides,
 	};
 }

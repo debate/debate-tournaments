@@ -126,11 +126,12 @@ router.route('/start').post(requireAccess('ballot', 'write', ballot), ValidateRe
 	},
 };
 
-// Light poll every 1-2 minutes while on the ballot, to notice it was confirmed elsewhere.
-// Losing access shows up as a 403 or 404 from the guards
+// Light poll every 1-2 minutes while on the ballot, to notice it was confirmed elsewhere or
+// a coin flip moved the sides (classic getBallotSides). Losing access shows up as a 403 or
+// 404 from the guards
 router.route('/status').get(requireAccess('ballot', 'read', ballot), ValidateRequest, getBallotStatus).openapi = {
 	summary: 'Get ballot status',
-	description: 'Polled while the ballot is open, to notice it was confirmed elsewhere. Lost access returns 403 or 404',
+	description: 'Polled while the ballot is open, to notice it was confirmed elsewhere or a coin flip moved the sides. Lost access returns 403 or 404',
 	path: '/rest/judges/{judgeId}/panels/{panelId}/ballots/status',
 	operationId: 'RestJudgesBallotStatus',
 	tags: ['Orval', 'Judges'],

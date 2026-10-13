@@ -5,6 +5,7 @@ export default defineConfig({
 	jsPlugins: [
 		'eslint-plugin-storybook',
 	],
+	ignorePatterns: ['schemats/src/indexcards/**'],
 	overrides: [
 		{
 			// oxlint does not recognize element binds
