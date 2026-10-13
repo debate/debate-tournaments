@@ -426,6 +426,7 @@ async function getCurrentBallots(db: Database, personId: number, tournId: number
 							type: row.eventType,
 							settings: {
 								online_mode: row.onlineMode,
+								online_ballots: row.onlineBallots === '1',
 								start_button: row.startButton,
 								start_button_text: row.startButtonText,
 								flight_offset: row.flightOffset,

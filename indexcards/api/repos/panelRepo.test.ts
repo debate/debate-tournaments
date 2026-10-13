@@ -218,5 +218,19 @@ describe('panelRepo', () => {
 			expect(ballot).toBeDefined();
 			expect(ballot.Judge.id).toBe(data.Judge.id);
 		});
+
+		it('includes the event online_ballots setting', async () => {
+			const data = await factories.person.createBallot();
+
+			const [before] = await panelRepo.getCurrentBallots(db, data.Person.id, data.Tourn.id);
+			expect(before.Judge.Category.Event.settings.online_ballots).toBe(false);
+
+			await db.insertInto('event_setting')
+				.values({ event: before.Judge.Category.Event.id, tag: 'online_ballots', value: '1' })
+				.execute();
+
+			const [after] = await panelRepo.getCurrentBallots(db, data.Person.id, data.Tourn.id);
+			expect(after.Judge.Category.Event.settings.online_ballots).toBe(true);
+		});
 	});
 });
