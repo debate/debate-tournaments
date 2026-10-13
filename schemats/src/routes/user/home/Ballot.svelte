@@ -1,5 +1,6 @@
 <script lang="ts">
     import type { CurrentBallot } from '$indexcards/schemas';
+	import { resolve } from '$app/paths';
 	import { showTime } from '$lib/helpers/dt';
 
     const { ballot }: {
@@ -115,7 +116,9 @@
 					</div>
 				{:else}
 					<a class="w-full {startButtonColor} text-center text-white font-semibold py-3 px-4 rounded cursor-pointer"
-						href="https://tabroom.com/user/judge/{ballot.legion ? 'legion_' : ''}ballot.mhtml?panel_id=${ballot.id}&judge_id=${ballot.JudgeId}$">
+						href={ballot.legion
+							? `https://tabroom.com/user/judge/legion_ballot.mhtml?panel_id=${ballot.id}&judge_id=${ballot.JudgeId}`
+							: `${resolve('/user/judge/ballot')}?judgeId=${ballot.JudgeId}&panelId=${ballot.id}`}>
 						{#if ballot.status === 'scored'}
 								CONFIRM RESULT
 						{:else if ballot.chair && ballot.eventType === 'congress' && ballot.audited}
