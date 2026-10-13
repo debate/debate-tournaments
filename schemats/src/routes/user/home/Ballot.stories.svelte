@@ -61,7 +61,7 @@
 		</div>
 	{/snippet}
 </Story>
-<Story name="PF" args={{ ballot: { ...debateBallot(), flipStatus: 'second',
+<Story name="PF" args={{ ballot: { ...debateBallot(), flipStatus: 'loser',
 	eventType: 'debate',
 	Entries: [
 		{

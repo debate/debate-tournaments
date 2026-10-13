@@ -13,7 +13,7 @@ export const CurrentBallotSchema = z.object({
 	id: utils.id,
 	name: RoundSchema.shape.name,
 	label: RoundSchema.shape.label,
-	flipStatus: z.enum(['done','winner','second','anyone']).nullable(),
+	flipStatus: z.enum(['done','winner','loser','anyone']).nullable(),
 	flight: z.int().positive().nullable().meta({ description: "null if not flighted. otherwise flight num."}),
 	show_async: z.boolean(),
 	onlineBallots: z.boolean().meta({ description: 'true if the tournament uses online ballots'}),

@@ -134,6 +134,19 @@
 		{/if}
 
 		<section aria-label='Scoring'>
+			<!-- The heading over the debate sides column (ballot.mhtml 1674-1686) -->
+			{#if context.eventType === 'debate'}
+				<div class='text-center text-sm font-semibold'>
+					{#if context.debate.sides === 'flip'}
+						{context.debate.flipStatus === 'done' ? 'FLIP COMPLETE' : 'FLIP INCOMPLETE'}
+					{:else if context.debate.sides === 'pick'}
+						Select Side
+					{:else}
+						Sides Set
+					{/if}
+				</div>
+			{/if}
+
 			{#if scoring}
 				{@render scoring()}
 			{:else}

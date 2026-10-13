@@ -13,6 +13,6 @@ export type CurrentBallotFlipStatus =
 export const CurrentBallotFlipStatus = {
 	done: 'done',
 	winner: 'winner',
-	second: 'second',
+	loser: 'loser',
 	anyone: 'anyone',
 } as const;

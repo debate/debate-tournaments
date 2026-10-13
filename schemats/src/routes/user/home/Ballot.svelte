@@ -78,7 +78,7 @@
 		{#if ballot.eventType !== 'congress' && !ballot.legion}
 			<div class="order-2 lg:flex-2 lg:border-l border-t lg:border-t-0 lg:pl-4 pt-4 lg:pt-0">
 				<div class="text-sm font-semibold mb-2">Entries
-				{#if ballot.flipStatus && ballot.flipStatus !== 'done'}i
+				{#if ballot.flipStatus && ballot.flipStatus !== 'done'}
 						<span class="text-sm text-muted italic">Flip for sides not complete</span>
 				{/if}
 				</div>

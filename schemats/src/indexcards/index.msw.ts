@@ -1752,7 +1752,7 @@ export const getUserTournsBallotsResponseMock = (): CurrentBallot[] =>
 			faker.helpers.arrayElement([
 				'done',
 				'winner',
-				'second',
+				'loser',
 				'anyone',
 			] as const),
 			null,
@@ -1858,7 +1858,7 @@ export const getUserTournsBallotsCurrentResponseMock = (): CurrentBallot[] =>
 			faker.helpers.arrayElement([
 				'done',
 				'winner',
-				'second',
+				'loser',
 				'anyone',
 			] as const),
 			null,

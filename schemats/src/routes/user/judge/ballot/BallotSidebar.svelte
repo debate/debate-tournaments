@@ -159,6 +159,15 @@
 			</div>
 		{/if}
 
+		{#if context.eventType === 'debate' && context.debate.sides === 'flip'}
+			<div class='flex gap-1 px-1 py-1'>
+				{@render row('Coin Flips')}
+				<dd class='font-semibold {context.debate.flipStatus === 'done' ? 'text-success' : 'text-warning'}'>
+					{context.debate.flipStatus === 'done' ? 'Complete' : 'Incomplete'}
+				</dd>
+			</div>
+		{/if}
+
 		{#if context.decisionDeadline}
 			<div
 				class='flex gap-1 px-1 py-1'
