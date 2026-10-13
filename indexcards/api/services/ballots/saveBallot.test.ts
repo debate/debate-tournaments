@@ -6,14 +6,15 @@ import factories from '../../../tests/factories/index.js';
 import { loadBallotInputs } from './loadBallotInputs.js';
 import { saveBallot, saveBallotFeedback } from './saveBallot.js';
 
-// An unscored LD prelim counting wins and points: AFF1 (Ana Adams) on Aff, NEG2 (Ben Brown) on Neg
-const createPanel = async (opts: { eventType?: string, eventSettings?: Record<string, string> } = {}) => {
+// An unscored LD prelim counting wins and points: AFF1 (Ana Adams) on Aff, NEG2 (Ben Brown) on Neg.
+// opts.tiebreaks replaces the protocol's tiebreaks, and opts.chair makes the judge chair
+const createPanel = async (opts: { eventType?: string, eventSettings?: Record<string, string>, tiebreaks?: string[], chair?: boolean } = {}) => {
 	const person = await factories.person.create();
 	const tourn = await factories.tourn.create();
 	const category = await factories.category.create({ tourn: tourn.id });
 	const event = await factories.event.create({ tourn: tourn.id, category: category.id, type: opts.eventType ?? 'debate', settings: opts.eventSettings ?? {} });
 	const timeslot = await factories.timeslot.create({ tourn: tourn.id });
-	const protocol = await factories.protocol.create({ tourn: tourn.id, tiebreaks: ['winloss', 'points'] });
+	const protocol = await factories.protocol.create({ tourn: tourn.id, tiebreaks: opts.tiebreaks ?? ['winloss', 'points'] });
 	const round = await factories.round.create({ event: event.id, timeslot: timeslot.id, protocol: protocol.id, type: 'prelim' });
 	const panel = await factories.panel.create({ round: round.id });
 	const judge = await factories.judge.create({ person: person.id, category: category.id, last: 'Doe' });
@@ -22,8 +23,9 @@ const createPanel = async (opts: { eventType?: string, eventSettings?: Record<st
 	const ben = await factories.student.create({ first: 'Ben', last: 'Brown' });
 	const aff = await factories.entry.create({ event: event.id, code: 'AFF1', students: [ana.id] });
 	const neg = await factories.entry.create({ event: event.id, code: 'NEG2', students: [ben.id] });
-	const affBallot = await factories.ballot.create({ judge: judge.id, panel: panel.id, entry: aff.id, side: 1 });
-	const negBallot = await factories.ballot.create({ judge: judge.id, panel: panel.id, entry: neg.id, side: 2 });
+	const chair = opts.chair ? 1 : 0;
+	const affBallot = await factories.ballot.create({ judge: judge.id, panel: panel.id, entry: aff.id, side: 1, chair });
+	const negBallot = await factories.ballot.create({ judge: judge.id, panel: panel.id, entry: neg.id, side: 2, chair });
 
 	return { person, judge, panel, aff, neg, ana, ben, affBallot, negBallot };
 };
@@ -73,6 +75,7 @@ describe('saveBallot', () => {
 				saved: true,
 				winner: panel.affBallot.id,
 				lowPointWin: false,
+				bestPO: null,
 				Entries: [
 					{
 						ballot: panel.affBallot.id, entry: panel.aff.id, code: 'AFF1', sideLabel: 'Aff',
@@ -200,6 +203,60 @@ describe('saveBallot', () => {
 
 			await save(panel, submission(panel, { ...overrides, feedback: { rfd: '<p>Framework</p>', Entries: [] } }), dryRun);
 
+			expect(await scores(panel)).toEqual([]);
+		});
+	});
+
+	describe('Best PO', () => {
+		const bestPOScores = async (panel: Panel) => (await scores(panel)).filter(score => score.tag === 'best_po');
+
+		it('writes the chair\'s pick', async () => {
+			const panel = await createPanel({ tiebreaks: ['winloss', 'points', 'best_po'], chair: true });
+
+			const saved = await save(panel, submission(panel, { bestPO: panel.negBallot.id }));
+
+			expect(saved).toMatchObject({ result: 'saved', review: { bestPO: panel.negBallot.id } });
+			expect(await bestPOScores(panel)).toEqual([
+				{ ballot: panel.negBallot.id, student: 0, tag: 'best_po', value: 1, content: null },
+			]);
+		});
+
+		it('replaces the pick on a resubmit', async () => {
+			const panel = await createPanel({ tiebreaks: ['winloss', 'points', 'best_po'], chair: true });
+
+			await save(panel, submission(panel, { bestPO: panel.negBallot.id }));
+			await save(panel, submission(panel, { bestPO: panel.affBallot.id }));
+
+			expect(await bestPOScores(panel)).toEqual([
+				{ ballot: panel.affBallot.id, student: 0, tag: 'best_po', value: 1, content: null },
+			]);
+		});
+
+		it('clears the pick when the chair leaves it blank', async () => {
+			const panel = await createPanel({ tiebreaks: ['winloss', 'points', 'best_po'], chair: true });
+
+			await save(panel, submission(panel, { bestPO: panel.negBallot.id }));
+			const saved = await save(panel, submission(panel, { bestPO: null }));
+
+			expect(saved).toMatchObject({ result: 'saved', review: { bestPO: null } });
+			expect(await bestPOScores(panel)).toEqual([]);
+		});
+
+		it('ignores a pick from a judge who isn\'t chair', async () => {
+			const panel = await createPanel({ tiebreaks: ['winloss', 'points', 'best_po'] });
+
+			const saved = await save(panel, submission(panel, { bestPO: panel.negBallot.id }));
+
+			expect(saved).toMatchObject({ result: 'saved', review: { bestPO: null } });
+			expect(await bestPOScores(panel)).toEqual([]);
+		});
+
+		it('rejects a pick that isn\'t on the ballot, and writes nothing', async () => {
+			const panel = await createPanel({ tiebreaks: ['winloss', 'points', 'best_po'], chair: true });
+
+			const saved = await save(panel, submission(panel, { bestPO: panel.negBallot.id + 1000 }));
+
+			expect(saved).toEqual({ result: 'invalid', errors: [{ field: 'bestPO', message: 'That Best PO isn\'t on your ballot.' }] });
 			expect(await scores(panel)).toEqual([]);
 		});
 	});

@@ -95,9 +95,6 @@ export function ballotRules(input: BallotRulesInput): BallotRules {
 	// Scores the beta ballot can't take yet. A protocol counting any of them sends the ballot to classic
 	const UNSUPPORTED_TB_TYPES: (keyof Counted)[] = [
 		'rank',
-		'entryWinloss',
-		'entryRank',
-		'bestPO',
 		'refute',
 		'tv',
 	];
@@ -229,6 +226,7 @@ export function ballotRules(input: BallotRulesInput): BallotRules {
 			winloss: winlossScoring(input),
 			points: pointsScoring(input),
 			ranks: ranksScoring(input),
+			bestPO: bestPOScoring(input),
 			feedback: feedbackScoring(input),
 		},
 		Entries: ballotEntries(input),
@@ -563,6 +561,21 @@ export function pointsScoring({ event, tbTypes }: Pick<BallotRulesInput, 'event'
 /** Returns the ranks block when the round's protocol counts ranks, else undefined. */
 export function ranksScoring({ tbTypes }: Pick<BallotRulesInput, 'tbTypes'>): BallotScoring['ranks'] {
 	return tbTypes.rank ? {} : undefined;
+}
+
+/**
+ * Returns the Best PO block when the round's protocol counts best_po and the judge chairs the
+ * panel, else undefined. Only the chair picks one (ballot.mhtml). Classic never clears an old
+ * pick, so the judge's ballots can carry more than one best_po score; the first in side order wins. */
+export function bestPOScoring(input: Pick<BallotRulesInput, 'ballots' | 'scores' | 'tbTypes'>): BallotScoring['bestPO'] {
+	const { ballots, scores, tbTypes } = input;
+	if (!tbTypes.bestPO || !isChair(input)) return undefined;
+
+	const picked = [...ballots]
+		.sort((a, b) => a.side - b.side)
+		.find(ballot => scores.some(score => score.ballot === ballot.id && score.tag === 'best_po'));
+
+	return { ballot: picked?.id ?? null };
 }
 
 /**

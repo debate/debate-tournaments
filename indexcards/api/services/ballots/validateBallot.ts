@@ -27,7 +27,7 @@ export function countWords(html: string | null): number {
 
 /** Returns the reasons the submission can't be saved. Empty means it's valid. */
 export function validateBallot(rules: ValidateBallotRules, submission: DebateBallotSubmission): BallotError[] {
-	const { winloss, points, feedback } = rules.scoring;
+	const { winloss, points, bestPO, feedback } = rules.scoring;
 	const errors: BallotError[] = [];
 
 	const winner = winloss ? validateWinner(rules, submission, errors) : undefined;
@@ -37,6 +37,11 @@ export function validateBallot(rules: ValidateBallotRules, submission: DebateBal
 	const studentCounts = new Set(rules.Entries.map(entry => entry.Students.length));
 	if (winloss?.lpw && winner && pointsValid && studentCounts.size === 1) {
 		validateLowPointWin(rules, submission, winner, winloss.lpw, errors);
+	}
+
+	// Picking a Best PO is optional, as in classic. A pick when the judge doesn't pick one is ignored
+	if (bestPO && submission.bestPO && !rules.Entries.some(entry => entry.ballot === submission.bestPO)) {
+		errors.push({ field: 'bestPO', message: 'That Best PO isn\'t on your ballot.' });
 	}
 
 	if (feedback?.minWords.rfd) {

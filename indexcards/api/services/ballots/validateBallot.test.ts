@@ -229,6 +229,29 @@ describe('validateBallot', () => {
 		});
 	});
 
+	describe('Best PO', () => {
+		const picking = rules({ scoring: { bestPO: { ballot: null } } });
+
+		it('accepts a pick on the judge\'s ballot', () => {
+			expect(validateBallot(picking, submission({ bestPO: 12 }))).toEqual([]);
+		});
+
+		it('doesn\'t require a pick', () => {
+			expect(validateBallot(picking, submission({ bestPO: null }))).toEqual([]);
+			expect(validateBallot(picking, submission())).toEqual([]);
+		});
+
+		it('rejects a pick that isn\'t one of the judge\'s ballots', () => {
+			expect(validateBallot(picking, submission({ bestPO: 99 }))).toEqual([
+				{ field: 'bestPO', message: 'That Best PO isn\'t on your ballot.' },
+			]);
+		});
+
+		it('ignores the pick when the judge doesn\'t pick Best PO', () => {
+			expect(validateBallot(rules(), submission({ bestPO: 99 }))).toEqual([]);
+		});
+	});
+
 	describe('reason for decision', () => {
 		const rfdRules = (rfd: string | null, min = 5) => rules({
 			scoring: { feedback: { rfd, minWords: { rfd: min, comments: null }, editableUntil: null } },

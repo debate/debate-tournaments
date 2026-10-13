@@ -29,6 +29,9 @@ export const BallotScoringSchema = z.object({
 		rubric: z.object({}).strict().optional().meta({ description: 'Present when the judge gives points through a rubric' }),
 	}).strict().optional().meta({ description: 'Present when the judge gives points' }),
 	ranks: z.object({}).strict().optional().meta({ description: 'Present when the judge gives ranks' }),
+	bestPO: z.object({
+		ballot: utils.id.nullable().meta({ description: 'The saved Best PO entry\'s ballot row. null before one is saved' }),
+	}).strict().optional().meta({ description: 'Present when the judge picks the best presiding officer' }),
 	feedback: z.object({
 		rfd: z.string().nullable().meta({ description: 'Saved reason for decision, for everyone in the round (HTML)' }),
 		minWords: z.object({

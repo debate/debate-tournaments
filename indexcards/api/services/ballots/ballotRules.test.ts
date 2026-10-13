@@ -2,7 +2,7 @@ import type { MockInstance } from 'vitest';
 import factories from '../../../tests/factories/index.js';
 import logger from '../../helpers/logger.js';
 import type { Settings } from '../../repos/utils/index.js';
-import { ballotEntries, ballotTimers, otherJudges, settingLines, feedbackScoring, ballotHeader, ballotRules, ballotStatus, ballotTopic, chairLabel, decisionDeadline, flipStatus, isChair, isOn, pointsScoring, ranksScoring, roundLabel, roundStart, rulesText, savedWinner, sideLock, winlossScoring, type BallotRulesInput } from './ballotRules.js';
+import { ballotEntries, ballotTimers, bestPOScoring, otherJudges, settingLines, feedbackScoring, ballotHeader, ballotRules, ballotStatus, ballotTopic, chairLabel, decisionDeadline, flipStatus, isChair, isOn, pointsScoring, ranksScoring, roundLabel, roundStart, rulesText, savedWinner, sideLock, winlossScoring, type BallotRulesInput } from './ballotRules.js';
 
 const recent = new Date('2026-10-01T00:00:00Z');
 const old = new Date('2020-10-01T00:00:00Z');
@@ -100,15 +100,24 @@ describe('ballotRules', () => {
 
 	it.each([
 		'rank',
-		'entryWinloss',
-		'entryRank',
-		'bestPO',
 		'refute',
 		'tv',
 	] as const)('flags protocols that count %s', (type) => {
 		const rules = ballotRules(input({ tbTypes: { winloss: true, point: true, [type]: true } }));
 
 		expect(rules.unsupported).toEqual([`tiebreak type ${type}`]);
+	});
+
+	// Entry votes are cast by students on their own page, so the judge ballot doesn't change.
+	// Best PO is scoring.bestPO
+	it.each([
+		'entryWinloss',
+		'entryRank',
+		'bestPO',
+	] as const)('allows protocols that count %s', (type) => {
+		const rules = ballotRules(input({ tbTypes: { winloss: true, point: true, [type]: true } }));
+
+		expect(rules.unsupported).toEqual([]);
 	});
 
 	it('flags rounds with no protocol', () => {
@@ -1036,6 +1045,39 @@ describe('ranksScoring', () => {
 
 	it('is undefined when the protocol doesn\'t count ranks', () => {
 		expect(ranksScoring({ tbTypes: { point: true } })).toBeUndefined();
+	});
+});
+
+describe('bestPOScoring', () => {
+	const chaired = [ballot({ chair: 1 }), ballot({ id: 12, entry: 2, side: 2, chair: 1 })];
+	const counted = { winloss: true, bestPO: true };
+
+	it('is included in the rules\' scoring', () => {
+		expect(ballotRules(input()).scoring.bestPO).toBeUndefined();
+		expect(ballotRules(input({ ballots: chaired, tbTypes: counted })).scoring.bestPO).toEqual({ ballot: null });
+	});
+
+	it('is undefined when the protocol doesn\'t count best_po', () => {
+		expect(bestPOScoring({ ballots: chaired, scores: [], tbTypes: { winloss: true } })).toBeUndefined();
+	});
+
+	it('is undefined when the judge isn\'t chair', () => {
+		expect(bestPOScoring({ ballots: input().ballots, scores: [], tbTypes: counted })).toBeUndefined();
+	});
+
+	it('has the saved pick', () => {
+		expect(bestPOScoring({ ballots: chaired, scores: [score('best_po', { ballot: 12 })], tbTypes: counted })).toEqual({ ballot: 12 });
+	});
+
+	it('ignores other scores', () => {
+		expect(bestPOScoring({ ballots: chaired, scores: [score('winloss', { ballot: 12 })], tbTypes: counted })).toEqual({ ballot: null });
+	});
+
+	it('takes the first pick in side order when classic left more than one', () => {
+		const ballots = [ballot({ id: 12, entry: 2, side: 2, chair: 1 }), ballot({ chair: 1 })];
+		const scores = [score('best_po', { ballot: 12 }), score('best_po', { ballot: 11 })];
+
+		expect(bestPOScoring({ ballots, scores, tbTypes: counted })).toEqual({ ballot: 11 });
 	});
 });
 

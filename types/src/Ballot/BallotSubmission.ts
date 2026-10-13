@@ -2,6 +2,7 @@ import { z } from 'zod';
 import type { ZodOpenApiSchemaObject } from 'zod-openapi';
 import * as utils from '../utils.js';
 import { EntrySchema } from '../Entry.js';
+import { EventSchema } from '../Event.js';
 import { StudentSchema } from '../Student.js';
 import { ProblemSchema } from '../Problem.js';
 import { BallotEntrySchema } from './BallotContext.js';
@@ -28,22 +29,37 @@ export type BallotFeedback = z.infer<typeof BallotFeedbackSchema>;
 // discriminated on eventType like BallotContext.
 // Values a judge can leave blank are nullable, so a blank gets a ballot error, not a 400.
 
-export const DebateBallotSubmissionSchema = z.object({
-	eventType: z.literal('debate'),
+// Shared by every event type's submission. Like the context's scoring, the round's scoring
+// blocks decide which of these count, not the event type (ballot_save.mhtml)
+const BallotSubmissionBaseSchema = z.object({
+	eventType: EventSchema.shape.type.meta({ description: 'The type of event for this ballot' }),
 	winner: utils.id.nullable().meta({ description: 'The winning entry\'s ballot row. null when the judge hasn\'t picked one' }),
 	lowPointWin: z.boolean().meta({ description: 'The judge confirms the winner has fewer points' }),
 	points: z.array(z.object({
 		student: StudentSchema.shape.id,
 		points: z.number().nullable().meta({ description: 'null when left blank' }),
 	}).strict()).meta({ description: 'Speaker points for every student on the ballot. Empty when the round has no points' }),
+	bestPO: utils.id.nullable().optional().meta({ description: 'The Best PO entry\'s ballot row. null or left out when the chair hasn\'t picked one or the judge doesn\'t pick Best PO' }),
 	feedback: z.object({
 		rfd: RfdSchema,
 		Entries: FeedbackEntriesSchema,
 	}).strict().meta({ description: 'All of the judge\'s feedback, which replaces the autosaved drafts. An entry left out has no comments' }),
+});
+
+export const DebateBallotSubmissionSchema = BallotSubmissionBaseSchema.extend({
+	eventType: z.literal('debate'),
 }).strict().meta({
 	id: 'DebateBallotSubmission',
 }) satisfies ZodOpenApiSchemaObject;
 export type DebateBallotSubmission = z.infer<typeof DebateBallotSubmissionSchema>;
+
+// Not in BallotSubmissionSchema until the beta can save Congress ballots
+export const CongressBallotSubmissionSchema = BallotSubmissionBaseSchema.extend({
+	eventType: z.literal('congress'),
+}).strict().meta({
+	id: 'CongressBallotSubmission',
+}) satisfies ZodOpenApiSchemaObject;
+export type CongressBallotSubmission = z.infer<typeof CongressBallotSubmissionSchema>;
 
 export const BallotSubmissionSchema = z.discriminatedUnion('eventType', [
 	DebateBallotSubmissionSchema,
@@ -52,12 +68,18 @@ export const BallotSubmissionSchema = z.discriminatedUnion('eventType', [
 }) satisfies ZodOpenApiSchemaObject;
 export type BallotSubmission = z.infer<typeof BallotSubmissionSchema>;
 
-// The ballot as it was saved, for the judge to check before confirming
-export const DebateBallotReviewSchema = z.object({
-	eventType: z.literal('debate'),
+// The ballot as it was saved, for the judge to check before confirming.
+// Shared by every event type's review, like BallotSubmissionBaseSchema
+const BallotReviewBaseSchema = z.object({
+	eventType: EventSchema.shape.type.meta({ description: 'The type of event for this ballot' }),
 	saved: z.boolean().meta({ description: 'false for a dry run, which only validates' }),
 	winner: utils.id.nullable().meta({ description: 'The winning entry\'s ballot row. null when the round doesn\'t count wins' }),
 	lowPointWin: z.boolean().meta({ description: 'Whether the winner has fewer points than another entry' }),
+	bestPO: utils.id.nullable().meta({ description: 'The Best PO entry\'s ballot row. null when the chair didn\'t pick one or the judge doesn\'t pick Best PO' }),
+});
+
+export const DebateBallotReviewSchema = BallotReviewBaseSchema.extend({
+	eventType: z.literal('debate'),
 	Entries: z.array(z.object({
 		ballot: utils.id.meta({ description: 'The judge\'s ballot row for this entry' }),
 		entry: EntrySchema.shape.id,
@@ -84,7 +106,7 @@ export type BallotReview = z.infer<typeof BallotReviewSchema>;
 
 // One reason a submission can't be saved
 export const BallotErrorSchema = z.object({
-	field: z.enum(['winner', 'points', 'lowPointWin', 'rfd', 'comments']).meta({ description: 'The part of the ballot the error is about' }),
+	field: z.enum(['winner', 'points', 'lowPointWin', 'bestPO', 'rfd', 'comments']).meta({ description: 'The part of the ballot the error is about' }),
 	ballot: utils.id.optional().meta({ description: 'The ballot row the error is about, when it\'s about one entry' }),
 	student: StudentSchema.shape.id.optional().meta({ description: 'The student the error is about, when it\'s about one student\'s points' }),
 	message: z.string().meta({ description: 'Shown to the judge' }),

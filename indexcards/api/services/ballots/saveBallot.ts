@@ -69,6 +69,7 @@ export async function saveBallot(
 	if (errors.length > 0) return { result: 'invalid', errors };
 
 	const winner = rules.scoring.winloss ? submission.winner : null;
+	const bestPO = rules.scoring.bestPO ? submission.bestPO ?? null : null;
 	const points = new Map(submission.points.map(({ student, points }) => [student, points]));
 	const sideLabel = (side: number) => side === 2 ? rules.debate.negLabel : rules.debate.affLabel;
 	const winningEntry = Entries.find(entry => entry.ballot === winner);
@@ -79,6 +80,7 @@ export async function saveBallot(
 		winner,
 		lowPointWin: Boolean(rules.scoring.points && winningEntry && Entries.some(entry =>
 			entryPoints(winningEntry, submission) < entryPoints(entry, submission))),
+		bestPO,
 		Entries: Entries.map(entry => ({
 			ballot: entry.ballot,
 			entry: entry.entry,
@@ -104,8 +106,12 @@ export async function saveBallot(
 		await ballotRepo.deleteBallots(trx, empty.map(ballot => ballot.id));
 		await ballotRepo.updateBallots(trx, inactive.map(ballot => ballot.id), { audit: 1 });
 
-		// Every score the judge gives is replaced, on all their ballots on the panel
-		await scoreRepo.deleteScores(trx, { ballots: current.map(ballot => ballot.id), tags: ['rank', 'point', 'winloss'] });
+		// Every score the judge gives is replaced, on all their ballots on the panel. Classic never
+		// cleared an old Best PO pick, so changing it left both entries with one
+		await scoreRepo.deleteScores(trx, {
+			ballots: current.map(ballot => ballot.id),
+			tags: ['rank', 'point', 'winloss', ...(rules.scoring.bestPO ? ['best_po'] : [])],
+		});
 
 		await scoreRepo.createScores(trx, [
 			...(rules.scoring.winloss
@@ -119,6 +125,7 @@ export async function saveBallot(
 					value: points.get(student.id) ?? 0,
 				})))
 				: []),
+			...(bestPO ? [{ ballot: bestPO, tag: 'best_po', value: 1 }] : []),
 		]);
 
 		if (winningEntry) {
