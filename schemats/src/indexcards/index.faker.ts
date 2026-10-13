@@ -7,10 +7,18 @@
  */
 import { faker } from '@faker-js/faker';
 
+import { BallotStatus } from './schemas';
 import type {
 	ActiveCircuitsResponseSchema,
+	BallotContext,
+	BallotFeedback,
+	BallotProgress,
+	BallotReview,
 	ClaimResponse,
+	CongressBallotContext,
 	CurrentBallot,
+	DebateBallotContext,
+	DebateBallotReview,
 	Fine,
 	GetTournResultSets200,
 	HomepageAd,
@@ -20,6 +28,8 @@ import type {
 	JudgeLiveDoc,
 	JudgeRecord,
 	LoginResponse,
+	MockTrialBallotContext,
+	OtherBallotContext,
 	ParadigmDetailsSchema,
 	ParadigmSearchResult,
 	PersonTournSummary,
@@ -156,6 +166,1020 @@ export const getRestJudgesUnlinkedSearchResponseMock =
 				undefined,
 			]),
 		}));
+
+export const getRestJudgesBallotContextResponseDebateBallotContextMock = (
+	overrideResponse: Partial<DebateBallotContext> = {},
+): DebateBallotContext => ({
+	...{
+		eventType: faker.helpers.arrayElement(['debate'] as const),
+		status: faker.helpers.arrayElement(Object.values(BallotStatus)),
+		chair: faker.datatype.boolean(),
+		chairLabel: faker.helpers.arrayElement([
+			faker.string.alpha({ length: { min: 10, max: 20 } }),
+			null,
+		]),
+		tz: faker.string.alpha({ length: { min: 10, max: 31 } }),
+		Tourn: { id: faker.number.int({ min: 0, max: 9007199254740991 }) },
+		Event: {
+			abbr: faker.helpers.arrayElement([
+				faker.string.alpha({ length: { min: 10, max: 20 } }),
+				null,
+			]),
+		},
+		Round: {
+			id: faker.number.int({ min: 0, max: 9007199254740991 }),
+			name: faker.helpers.arrayElement([
+				faker.number.int({
+					min: -9007199254740991,
+					max: 9007199254740991,
+				}),
+				null,
+			]),
+			label: faker.helpers.arrayElement([
+				faker.string.alpha({ length: { min: 10, max: 20 } }),
+				null,
+			]),
+			notes: faker.helpers.arrayElement([
+				faker.string.alpha({ length: { min: 10, max: 20 } }),
+				null,
+			]),
+		},
+		flight: faker.helpers.arrayElement([
+			faker.number.int({ min: 0, max: 9007199254740991 }),
+			null,
+		]),
+		Room: faker.helpers.arrayElement([
+			{
+				name: faker.string.alpha({ length: { min: 10, max: 127 } }),
+				url: faker.helpers.arrayElement([
+					faker.string.alpha({ length: { min: 10, max: 255 } }),
+					null,
+				]),
+			},
+			null,
+		]),
+		Judge: {
+			code: faker.helpers.arrayElement([
+				faker.string.alpha({ length: { min: 8, max: 8 } }),
+				null,
+			]),
+			first: faker.helpers.arrayElement([
+				faker.string.alpha({ length: { min: 10, max: 63 } }),
+				null,
+			]),
+			middle: faker.helpers.arrayElement([
+				faker.string.alpha({ length: { min: 10, max: 63 } }),
+				null,
+			]),
+			last: faker.helpers.arrayElement([
+				faker.string.alpha({ length: { min: 10, max: 63 } }),
+				null,
+			]),
+		},
+		topic: faker.helpers.arrayElement([
+			{
+				label: faker.helpers.arrayElement([
+					'Topic',
+					'Motion',
+					'Resolution',
+				] as const),
+				text: faker.string.alpha({ length: { min: 10, max: 20 } }),
+			},
+			null,
+		]),
+		rules: Array.from(
+			{ length: faker.number.int({ min: 1, max: 10 }) },
+			(_, i) => i + 1,
+		).map(() => faker.string.alpha({ length: { min: 10, max: 20 } })),
+		ballotHeader: faker.helpers.arrayElement([
+			faker.string.alpha({ length: { min: 10, max: 20 } }),
+			null,
+		]),
+		roundStart: faker.date.past().toISOString().slice(0, 19) + 'Z',
+		decisionDeadline: faker.helpers.arrayElement([
+			faker.date.past().toISOString().slice(0, 19) + 'Z',
+			null,
+		]),
+		onlineMode: faker.helpers.arrayElement([
+			faker.helpers.arrayElement([
+				'sync',
+				'async',
+				'nsda_campus',
+				'nsda_campus_observers',
+				'public_jitsi',
+				'public_jitsi_observers',
+			] as const),
+			null,
+		]),
+		scoring: {
+			winloss: faker.helpers.arrayElement([
+				{
+					lpw: faker.helpers.arrayElement([
+						faker.helpers.arrayElement([
+							'forbid',
+							'confirm',
+						] as const),
+						null,
+					]),
+				},
+				undefined,
+			]),
+			points: faker.helpers.arrayElement([
+				{
+					min: faker.number.float({ fractionDigits: 2 }),
+					max: faker.number.float({ fractionDigits: 2 }),
+					step: faker.number.float({ min: 0, fractionDigits: 2 }),
+					ties: faker.datatype.boolean(),
+					team: faker.datatype.boolean(),
+					ranksAgree: faker.datatype.boolean(),
+					rubric: faker.helpers.arrayElement([{}, undefined]),
+				},
+				undefined,
+			]),
+			ranks: faker.helpers.arrayElement([{}, undefined]),
+			feedback: faker.helpers.arrayElement([
+				{
+					rfd: faker.helpers.arrayElement([
+						faker.string.alpha({ length: { min: 10, max: 20 } }),
+						null,
+					]),
+					minWords: {
+						rfd: faker.helpers.arrayElement([
+							faker.number.int({ min: 0, max: 9007199254740991 }),
+							null,
+						]),
+						comments: faker.helpers.arrayElement([
+							faker.number.int({ min: 0, max: 9007199254740991 }),
+							null,
+						]),
+					},
+					editableUntil: faker.helpers.arrayElement([
+						faker.date.past().toISOString().slice(0, 19) + 'Z',
+						null,
+					]),
+				},
+				undefined,
+			]),
+		},
+		Entries: Array.from(
+			{ length: faker.number.int({ min: 1, max: 10 }) },
+			(_, i) => i + 1,
+		).map(() => ({
+			ballot: faker.number.int({ min: 0, max: 9007199254740991 }),
+			entry: faker.number.int({ min: 0, max: 9007199254740991 }),
+			code: faker.helpers.arrayElement([
+				faker.string.alpha({ length: { min: 10, max: 20 } }),
+				null,
+			]),
+			side: faker.number.int({
+				min: -9007199254740991,
+				max: 9007199254740991,
+			}),
+			notes: faker.helpers.arrayElement([
+				faker.string.alpha({ length: { min: 10, max: 20 } }),
+				null,
+			]),
+			doubled: faker.number.int({ min: 0, max: 9007199254740991 }),
+			comments: faker.helpers.arrayElement([
+				faker.string.alpha({ length: { min: 10, max: 20 } }),
+				null,
+			]),
+			points: faker.helpers.arrayElement([
+				faker.number.float({ fractionDigits: 2 }),
+				null,
+			]),
+			Students: Array.from(
+				{ length: faker.number.int({ min: 1, max: 10 }) },
+				(_, i) => i + 1,
+			).map(() => ({
+				id: faker.number.int({ min: 0, max: 9007199254740991 }),
+				first: faker.helpers.arrayElement([
+					faker.helpers.arrayElement([
+						faker.string.alpha({ length: { min: 10, max: 20 } }),
+						null,
+					]),
+					undefined,
+				]),
+				middle: faker.helpers.arrayElement([
+					faker.helpers.arrayElement([
+						faker.string.alpha({ length: { min: 10, max: 20 } }),
+						null,
+					]),
+					undefined,
+				]),
+				last: faker.helpers.arrayElement([
+					faker.helpers.arrayElement([
+						faker.string.alpha({ length: { min: 10, max: 20 } }),
+						null,
+					]),
+					undefined,
+				]),
+				pronoun: faker.helpers.arrayElement([
+					faker.string.alpha({ length: { min: 10, max: 20 } }),
+					null,
+				]),
+				points: faker.helpers.arrayElement([
+					faker.number.float({ fractionDigits: 2 }),
+					null,
+				]),
+			})),
+		})),
+		otherJudges: Array.from(
+			{ length: faker.number.int({ min: 1, max: 10 }) },
+			(_, i) => i + 1,
+		).map(() => ({
+			first: faker.helpers.arrayElement([
+				faker.string.alpha({ length: { min: 10, max: 63 } }),
+				null,
+			]),
+			middle: faker.helpers.arrayElement([
+				faker.string.alpha({ length: { min: 10, max: 63 } }),
+				null,
+			]),
+			last: faker.helpers.arrayElement([
+				faker.string.alpha({ length: { min: 10, max: 63 } }),
+				null,
+			]),
+			chair: faker.datatype.boolean(),
+			pronoun: faker.helpers.arrayElement([
+				faker.string.alpha({ length: { min: 10, max: 20 } }),
+				null,
+			]),
+		})),
+		timers: faker.helpers.arrayElement([
+			{
+				speech: faker.number.float({ min: 0, fractionDigits: 2 }),
+				prep: faker.helpers.arrayElement([
+					faker.number.float({ min: 0, fractionDigits: 2 }),
+					null,
+				]),
+			},
+			null,
+		]),
+		pointScale: Array.from(
+			{ length: faker.number.int({ min: 1, max: 10 }) },
+			(_, i) => i + 1,
+		).map(() => ({
+			points: faker.helpers.arrayElement([
+				faker.string.alpha({ length: { min: 10, max: 20 } }),
+				null,
+			]),
+			description: faker.string.alpha({ length: { min: 10, max: 20 } }),
+		})),
+		speechTimes: Array.from(
+			{ length: faker.number.int({ min: 1, max: 10 }) },
+			(_, i) => i + 1,
+		).map(() => ({
+			speech: faker.string.alpha({ length: { min: 10, max: 20 } }),
+			time: faker.helpers.arrayElement([
+				faker.string.alpha({ length: { min: 10, max: 20 } }),
+				null,
+			]),
+		})),
+		ballotTopics: faker.helpers.arrayElement([
+			faker.string.alpha({ length: { min: 10, max: 20 } }),
+			null,
+		]),
+		docShare: faker.helpers.arrayElement([faker.internet.url(), null]),
+		logo: faker.helpers.arrayElement([faker.internet.url(), null]),
+		debate: {
+			affLabel: faker.string.alpha({ length: { min: 10, max: 20 } }),
+			negLabel: faker.string.alpha({ length: { min: 10, max: 20 } }),
+			sides: faker.helpers.arrayElement([
+				'locked',
+				'pick',
+				'flip',
+			] as const),
+			flipStatus: faker.helpers.arrayElement([
+				faker.helpers.arrayElement([
+					'winner',
+					'loser',
+					'anyone',
+					'done',
+				] as const),
+				null,
+			]),
+			winner: faker.helpers.arrayElement([
+				faker.number.int({ min: 0, max: 9007199254740991 }),
+				null,
+			]),
+		},
+	},
+	...overrideResponse,
+});
+
+export const getRestJudgesBallotContextResponseMockTrialBallotContextMock = (
+	overrideResponse: Partial<MockTrialBallotContext> = {},
+): MockTrialBallotContext => ({
+	...{
+		eventType: faker.helpers.arrayElement(['mock_trial'] as const),
+		status: faker.helpers.arrayElement(Object.values(BallotStatus)),
+		chair: faker.datatype.boolean(),
+		chairLabel: faker.helpers.arrayElement([
+			faker.string.alpha({ length: { min: 10, max: 20 } }),
+			null,
+		]),
+		tz: faker.string.alpha({ length: { min: 10, max: 31 } }),
+		Tourn: { id: faker.number.int({ min: 0, max: 9007199254740991 }) },
+		Event: {
+			abbr: faker.helpers.arrayElement([
+				faker.string.alpha({ length: { min: 10, max: 20 } }),
+				null,
+			]),
+		},
+		Round: {
+			id: faker.number.int({ min: 0, max: 9007199254740991 }),
+			name: faker.helpers.arrayElement([
+				faker.number.int({
+					min: -9007199254740991,
+					max: 9007199254740991,
+				}),
+				null,
+			]),
+			label: faker.helpers.arrayElement([
+				faker.string.alpha({ length: { min: 10, max: 20 } }),
+				null,
+			]),
+			notes: faker.helpers.arrayElement([
+				faker.string.alpha({ length: { min: 10, max: 20 } }),
+				null,
+			]),
+		},
+		flight: faker.helpers.arrayElement([
+			faker.number.int({ min: 0, max: 9007199254740991 }),
+			null,
+		]),
+		Room: faker.helpers.arrayElement([
+			{
+				name: faker.string.alpha({ length: { min: 10, max: 127 } }),
+				url: faker.helpers.arrayElement([
+					faker.string.alpha({ length: { min: 10, max: 255 } }),
+					null,
+				]),
+			},
+			null,
+		]),
+		Judge: {
+			code: faker.helpers.arrayElement([
+				faker.string.alpha({ length: { min: 8, max: 8 } }),
+				null,
+			]),
+			first: faker.helpers.arrayElement([
+				faker.string.alpha({ length: { min: 10, max: 63 } }),
+				null,
+			]),
+			middle: faker.helpers.arrayElement([
+				faker.string.alpha({ length: { min: 10, max: 63 } }),
+				null,
+			]),
+			last: faker.helpers.arrayElement([
+				faker.string.alpha({ length: { min: 10, max: 63 } }),
+				null,
+			]),
+		},
+		topic: faker.helpers.arrayElement([
+			{
+				label: faker.helpers.arrayElement([
+					'Topic',
+					'Motion',
+					'Resolution',
+				] as const),
+				text: faker.string.alpha({ length: { min: 10, max: 20 } }),
+			},
+			null,
+		]),
+		rules: Array.from(
+			{ length: faker.number.int({ min: 1, max: 10 }) },
+			(_, i) => i + 1,
+		).map(() => faker.string.alpha({ length: { min: 10, max: 20 } })),
+		ballotHeader: faker.helpers.arrayElement([
+			faker.string.alpha({ length: { min: 10, max: 20 } }),
+			null,
+		]),
+		roundStart: faker.date.past().toISOString().slice(0, 19) + 'Z',
+		decisionDeadline: faker.helpers.arrayElement([
+			faker.date.past().toISOString().slice(0, 19) + 'Z',
+			null,
+		]),
+		onlineMode: faker.helpers.arrayElement([
+			faker.helpers.arrayElement([
+				'sync',
+				'async',
+				'nsda_campus',
+				'nsda_campus_observers',
+				'public_jitsi',
+				'public_jitsi_observers',
+			] as const),
+			null,
+		]),
+		scoring: {
+			winloss: faker.helpers.arrayElement([
+				{
+					lpw: faker.helpers.arrayElement([
+						faker.helpers.arrayElement([
+							'forbid',
+							'confirm',
+						] as const),
+						null,
+					]),
+				},
+				undefined,
+			]),
+			points: faker.helpers.arrayElement([
+				{
+					min: faker.number.float({ fractionDigits: 2 }),
+					max: faker.number.float({ fractionDigits: 2 }),
+					step: faker.number.float({ min: 0, fractionDigits: 2 }),
+					ties: faker.datatype.boolean(),
+					team: faker.datatype.boolean(),
+					ranksAgree: faker.datatype.boolean(),
+					rubric: faker.helpers.arrayElement([{}, undefined]),
+				},
+				undefined,
+			]),
+			ranks: faker.helpers.arrayElement([{}, undefined]),
+			feedback: faker.helpers.arrayElement([
+				{
+					rfd: faker.helpers.arrayElement([
+						faker.string.alpha({ length: { min: 10, max: 20 } }),
+						null,
+					]),
+					minWords: {
+						rfd: faker.helpers.arrayElement([
+							faker.number.int({ min: 0, max: 9007199254740991 }),
+							null,
+						]),
+						comments: faker.helpers.arrayElement([
+							faker.number.int({ min: 0, max: 9007199254740991 }),
+							null,
+						]),
+					},
+					editableUntil: faker.helpers.arrayElement([
+						faker.date.past().toISOString().slice(0, 19) + 'Z',
+						null,
+					]),
+				},
+				undefined,
+			]),
+		},
+		Entries: Array.from(
+			{ length: faker.number.int({ min: 1, max: 10 }) },
+			(_, i) => i + 1,
+		).map(() => ({
+			ballot: faker.number.int({ min: 0, max: 9007199254740991 }),
+			entry: faker.number.int({ min: 0, max: 9007199254740991 }),
+			code: faker.helpers.arrayElement([
+				faker.string.alpha({ length: { min: 10, max: 20 } }),
+				null,
+			]),
+			side: faker.number.int({
+				min: -9007199254740991,
+				max: 9007199254740991,
+			}),
+			notes: faker.helpers.arrayElement([
+				faker.string.alpha({ length: { min: 10, max: 20 } }),
+				null,
+			]),
+			doubled: faker.number.int({ min: 0, max: 9007199254740991 }),
+			comments: faker.helpers.arrayElement([
+				faker.string.alpha({ length: { min: 10, max: 20 } }),
+				null,
+			]),
+			points: faker.helpers.arrayElement([
+				faker.number.float({ fractionDigits: 2 }),
+				null,
+			]),
+			Students: Array.from(
+				{ length: faker.number.int({ min: 1, max: 10 }) },
+				(_, i) => i + 1,
+			).map(() => ({
+				id: faker.number.int({ min: 0, max: 9007199254740991 }),
+				first: faker.helpers.arrayElement([
+					faker.helpers.arrayElement([
+						faker.string.alpha({ length: { min: 10, max: 20 } }),
+						null,
+					]),
+					undefined,
+				]),
+				middle: faker.helpers.arrayElement([
+					faker.helpers.arrayElement([
+						faker.string.alpha({ length: { min: 10, max: 20 } }),
+						null,
+					]),
+					undefined,
+				]),
+				last: faker.helpers.arrayElement([
+					faker.helpers.arrayElement([
+						faker.string.alpha({ length: { min: 10, max: 20 } }),
+						null,
+					]),
+					undefined,
+				]),
+				pronoun: faker.helpers.arrayElement([
+					faker.string.alpha({ length: { min: 10, max: 20 } }),
+					null,
+				]),
+				points: faker.helpers.arrayElement([
+					faker.number.float({ fractionDigits: 2 }),
+					null,
+				]),
+			})),
+		})),
+		otherJudges: Array.from(
+			{ length: faker.number.int({ min: 1, max: 10 }) },
+			(_, i) => i + 1,
+		).map(() => ({
+			first: faker.helpers.arrayElement([
+				faker.string.alpha({ length: { min: 10, max: 63 } }),
+				null,
+			]),
+			middle: faker.helpers.arrayElement([
+				faker.string.alpha({ length: { min: 10, max: 63 } }),
+				null,
+			]),
+			last: faker.helpers.arrayElement([
+				faker.string.alpha({ length: { min: 10, max: 63 } }),
+				null,
+			]),
+			chair: faker.datatype.boolean(),
+			pronoun: faker.helpers.arrayElement([
+				faker.string.alpha({ length: { min: 10, max: 20 } }),
+				null,
+			]),
+		})),
+		timers: faker.helpers.arrayElement([
+			{
+				speech: faker.number.float({ min: 0, fractionDigits: 2 }),
+				prep: faker.helpers.arrayElement([
+					faker.number.float({ min: 0, fractionDigits: 2 }),
+					null,
+				]),
+			},
+			null,
+		]),
+		pointScale: Array.from(
+			{ length: faker.number.int({ min: 1, max: 10 }) },
+			(_, i) => i + 1,
+		).map(() => ({
+			points: faker.helpers.arrayElement([
+				faker.string.alpha({ length: { min: 10, max: 20 } }),
+				null,
+			]),
+			description: faker.string.alpha({ length: { min: 10, max: 20 } }),
+		})),
+		speechTimes: Array.from(
+			{ length: faker.number.int({ min: 1, max: 10 }) },
+			(_, i) => i + 1,
+		).map(() => ({
+			speech: faker.string.alpha({ length: { min: 10, max: 20 } }),
+			time: faker.helpers.arrayElement([
+				faker.string.alpha({ length: { min: 10, max: 20 } }),
+				null,
+			]),
+		})),
+		ballotTopics: faker.helpers.arrayElement([
+			faker.string.alpha({ length: { min: 10, max: 20 } }),
+			null,
+		]),
+		docShare: faker.helpers.arrayElement([faker.internet.url(), null]),
+		logo: faker.helpers.arrayElement([faker.internet.url(), null]),
+	},
+	...overrideResponse,
+});
+
+export const getRestJudgesBallotContextResponseCongressBallotContextMock = (
+	overrideResponse: Partial<CongressBallotContext> = {},
+): CongressBallotContext => ({
+	...{
+		eventType: faker.helpers.arrayElement(['congress'] as const),
+		status: faker.helpers.arrayElement(Object.values(BallotStatus)),
+		chair: faker.datatype.boolean(),
+		chairLabel: faker.helpers.arrayElement([
+			faker.string.alpha({ length: { min: 10, max: 20 } }),
+			null,
+		]),
+		tz: faker.string.alpha({ length: { min: 10, max: 31 } }),
+		Tourn: { id: faker.number.int({ min: 0, max: 9007199254740991 }) },
+		Event: {
+			abbr: faker.helpers.arrayElement([
+				faker.string.alpha({ length: { min: 10, max: 20 } }),
+				null,
+			]),
+		},
+		Round: {
+			id: faker.number.int({ min: 0, max: 9007199254740991 }),
+			name: faker.helpers.arrayElement([
+				faker.number.int({
+					min: -9007199254740991,
+					max: 9007199254740991,
+				}),
+				null,
+			]),
+			label: faker.helpers.arrayElement([
+				faker.string.alpha({ length: { min: 10, max: 20 } }),
+				null,
+			]),
+			notes: faker.helpers.arrayElement([
+				faker.string.alpha({ length: { min: 10, max: 20 } }),
+				null,
+			]),
+		},
+		flight: faker.helpers.arrayElement([
+			faker.number.int({ min: 0, max: 9007199254740991 }),
+			null,
+		]),
+		Room: faker.helpers.arrayElement([
+			{
+				name: faker.string.alpha({ length: { min: 10, max: 127 } }),
+				url: faker.helpers.arrayElement([
+					faker.string.alpha({ length: { min: 10, max: 255 } }),
+					null,
+				]),
+			},
+			null,
+		]),
+		Judge: {
+			code: faker.helpers.arrayElement([
+				faker.string.alpha({ length: { min: 8, max: 8 } }),
+				null,
+			]),
+			first: faker.helpers.arrayElement([
+				faker.string.alpha({ length: { min: 10, max: 63 } }),
+				null,
+			]),
+			middle: faker.helpers.arrayElement([
+				faker.string.alpha({ length: { min: 10, max: 63 } }),
+				null,
+			]),
+			last: faker.helpers.arrayElement([
+				faker.string.alpha({ length: { min: 10, max: 63 } }),
+				null,
+			]),
+		},
+		topic: faker.helpers.arrayElement([
+			{
+				label: faker.helpers.arrayElement([
+					'Topic',
+					'Motion',
+					'Resolution',
+				] as const),
+				text: faker.string.alpha({ length: { min: 10, max: 20 } }),
+			},
+			null,
+		]),
+		rules: Array.from(
+			{ length: faker.number.int({ min: 1, max: 10 }) },
+			(_, i) => i + 1,
+		).map(() => faker.string.alpha({ length: { min: 10, max: 20 } })),
+		ballotHeader: faker.helpers.arrayElement([
+			faker.string.alpha({ length: { min: 10, max: 20 } }),
+			null,
+		]),
+		roundStart: faker.date.past().toISOString().slice(0, 19) + 'Z',
+		decisionDeadline: faker.helpers.arrayElement([
+			faker.date.past().toISOString().slice(0, 19) + 'Z',
+			null,
+		]),
+		onlineMode: faker.helpers.arrayElement([
+			faker.helpers.arrayElement([
+				'sync',
+				'async',
+				'nsda_campus',
+				'nsda_campus_observers',
+				'public_jitsi',
+				'public_jitsi_observers',
+			] as const),
+			null,
+		]),
+		scoring: {
+			winloss: faker.helpers.arrayElement([
+				{
+					lpw: faker.helpers.arrayElement([
+						faker.helpers.arrayElement([
+							'forbid',
+							'confirm',
+						] as const),
+						null,
+					]),
+				},
+				undefined,
+			]),
+			points: faker.helpers.arrayElement([
+				{
+					min: faker.number.float({ fractionDigits: 2 }),
+					max: faker.number.float({ fractionDigits: 2 }),
+					step: faker.number.float({ min: 0, fractionDigits: 2 }),
+					ties: faker.datatype.boolean(),
+					team: faker.datatype.boolean(),
+					ranksAgree: faker.datatype.boolean(),
+					rubric: faker.helpers.arrayElement([{}, undefined]),
+				},
+				undefined,
+			]),
+			ranks: faker.helpers.arrayElement([{}, undefined]),
+			feedback: faker.helpers.arrayElement([
+				{
+					rfd: faker.helpers.arrayElement([
+						faker.string.alpha({ length: { min: 10, max: 20 } }),
+						null,
+					]),
+					minWords: {
+						rfd: faker.helpers.arrayElement([
+							faker.number.int({ min: 0, max: 9007199254740991 }),
+							null,
+						]),
+						comments: faker.helpers.arrayElement([
+							faker.number.int({ min: 0, max: 9007199254740991 }),
+							null,
+						]),
+					},
+					editableUntil: faker.helpers.arrayElement([
+						faker.date.past().toISOString().slice(0, 19) + 'Z',
+						null,
+					]),
+				},
+				undefined,
+			]),
+		},
+		Entries: Array.from(
+			{ length: faker.number.int({ min: 1, max: 10 }) },
+			(_, i) => i + 1,
+		).map(() => ({
+			ballot: faker.number.int({ min: 0, max: 9007199254740991 }),
+			entry: faker.number.int({ min: 0, max: 9007199254740991 }),
+			code: faker.helpers.arrayElement([
+				faker.string.alpha({ length: { min: 10, max: 20 } }),
+				null,
+			]),
+			side: faker.number.int({
+				min: -9007199254740991,
+				max: 9007199254740991,
+			}),
+			notes: faker.helpers.arrayElement([
+				faker.string.alpha({ length: { min: 10, max: 20 } }),
+				null,
+			]),
+			doubled: faker.number.int({ min: 0, max: 9007199254740991 }),
+			comments: faker.helpers.arrayElement([
+				faker.string.alpha({ length: { min: 10, max: 20 } }),
+				null,
+			]),
+			points: faker.helpers.arrayElement([
+				faker.number.float({ fractionDigits: 2 }),
+				null,
+			]),
+			Students: Array.from(
+				{ length: faker.number.int({ min: 1, max: 10 }) },
+				(_, i) => i + 1,
+			).map(() => ({
+				id: faker.number.int({ min: 0, max: 9007199254740991 }),
+				first: faker.helpers.arrayElement([
+					faker.helpers.arrayElement([
+						faker.string.alpha({ length: { min: 10, max: 20 } }),
+						null,
+					]),
+					undefined,
+				]),
+				middle: faker.helpers.arrayElement([
+					faker.helpers.arrayElement([
+						faker.string.alpha({ length: { min: 10, max: 20 } }),
+						null,
+					]),
+					undefined,
+				]),
+				last: faker.helpers.arrayElement([
+					faker.helpers.arrayElement([
+						faker.string.alpha({ length: { min: 10, max: 20 } }),
+						null,
+					]),
+					undefined,
+				]),
+				pronoun: faker.helpers.arrayElement([
+					faker.string.alpha({ length: { min: 10, max: 20 } }),
+					null,
+				]),
+				points: faker.helpers.arrayElement([
+					faker.number.float({ fractionDigits: 2 }),
+					null,
+				]),
+			})),
+		})),
+		otherJudges: Array.from(
+			{ length: faker.number.int({ min: 1, max: 10 }) },
+			(_, i) => i + 1,
+		).map(() => ({
+			first: faker.helpers.arrayElement([
+				faker.string.alpha({ length: { min: 10, max: 63 } }),
+				null,
+			]),
+			middle: faker.helpers.arrayElement([
+				faker.string.alpha({ length: { min: 10, max: 63 } }),
+				null,
+			]),
+			last: faker.helpers.arrayElement([
+				faker.string.alpha({ length: { min: 10, max: 63 } }),
+				null,
+			]),
+			chair: faker.datatype.boolean(),
+			pronoun: faker.helpers.arrayElement([
+				faker.string.alpha({ length: { min: 10, max: 20 } }),
+				null,
+			]),
+		})),
+		timers: faker.helpers.arrayElement([
+			{
+				speech: faker.number.float({ min: 0, fractionDigits: 2 }),
+				prep: faker.helpers.arrayElement([
+					faker.number.float({ min: 0, fractionDigits: 2 }),
+					null,
+				]),
+			},
+			null,
+		]),
+		pointScale: Array.from(
+			{ length: faker.number.int({ min: 1, max: 10 }) },
+			(_, i) => i + 1,
+		).map(() => ({
+			points: faker.helpers.arrayElement([
+				faker.string.alpha({ length: { min: 10, max: 20 } }),
+				null,
+			]),
+			description: faker.string.alpha({ length: { min: 10, max: 20 } }),
+		})),
+		speechTimes: Array.from(
+			{ length: faker.number.int({ min: 1, max: 10 }) },
+			(_, i) => i + 1,
+		).map(() => ({
+			speech: faker.string.alpha({ length: { min: 10, max: 20 } }),
+			time: faker.helpers.arrayElement([
+				faker.string.alpha({ length: { min: 10, max: 20 } }),
+				null,
+			]),
+		})),
+		ballotTopics: faker.helpers.arrayElement([
+			faker.string.alpha({ length: { min: 10, max: 20 } }),
+			null,
+		]),
+		docShare: faker.helpers.arrayElement([faker.internet.url(), null]),
+		logo: faker.helpers.arrayElement([faker.internet.url(), null]),
+	},
+	...overrideResponse,
+});
+
+export const getRestJudgesBallotContextResponseOtherBallotContextMock = (
+	overrideResponse: Partial<OtherBallotContext> = {},
+): OtherBallotContext => ({
+	...{
+		eventType: faker.helpers.arrayElement(['other'] as const),
+		judge: faker.number.int({ min: 0, max: 9007199254740991 }),
+		panel: faker.number.int({ min: 0, max: 9007199254740991 }),
+		tourn: faker.number.int({ min: 0, max: 9007199254740991 }),
+		supported: false,
+	},
+	...overrideResponse,
+});
+
+export const getRestJudgesBallotContextResponseMock = (): BallotContext =>
+	faker.helpers.arrayElement([
+		{ ...getRestJudgesBallotContextResponseDebateBallotContextMock() },
+		{ ...getRestJudgesBallotContextResponseMockTrialBallotContextMock() },
+		{ ...getRestJudgesBallotContextResponseCongressBallotContextMock() },
+		{ ...getRestJudgesBallotContextResponseOtherBallotContextMock() },
+	]);
+
+export const getRestJudgesBallotSaveResponseDebateBallotReviewMock = (
+	overrideResponse: Partial<DebateBallotReview> = {},
+): DebateBallotReview => ({
+	...{
+		eventType: faker.helpers.arrayElement(['debate'] as const),
+		saved: faker.datatype.boolean(),
+		winner: faker.helpers.arrayElement([
+			faker.number.int({ min: 0, max: 9007199254740991 }),
+			null,
+		]),
+		lowPointWin: faker.datatype.boolean(),
+		Entries: Array.from(
+			{ length: faker.number.int({ min: 1, max: 10 }) },
+			(_, i) => i + 1,
+		).map(() => ({
+			ballot: faker.number.int({ min: 0, max: 9007199254740991 }),
+			entry: faker.number.int({ min: 0, max: 9007199254740991 }),
+			code: faker.helpers.arrayElement([
+				faker.string.alpha({ length: { min: 10, max: 20 } }),
+				null,
+			]),
+			sideLabel: faker.string.alpha({ length: { min: 10, max: 20 } }),
+			Students: Array.from(
+				{ length: faker.number.int({ min: 1, max: 10 }) },
+				(_, i) => i + 1,
+			).map(() => ({
+				id: faker.number.int({ min: 0, max: 9007199254740991 }),
+				first: faker.helpers.arrayElement([
+					faker.helpers.arrayElement([
+						faker.string.alpha({ length: { min: 10, max: 20 } }),
+						null,
+					]),
+					undefined,
+				]),
+				last: faker.helpers.arrayElement([
+					faker.helpers.arrayElement([
+						faker.string.alpha({ length: { min: 10, max: 20 } }),
+						null,
+					]),
+					undefined,
+				]),
+				points: faker.helpers.arrayElement([
+					faker.number.float({ fractionDigits: 2 }),
+					null,
+				]),
+			})),
+		})),
+	},
+	...overrideResponse,
+});
+
+export const getRestJudgesBallotSaveResponseMock = (): BallotReview =>
+	faker.helpers.arrayElement([
+		{ ...getRestJudgesBallotSaveResponseDebateBallotReviewMock() },
+	]);
+
+export const getRestJudgesBallotStartResponseMock = (
+	overrideResponse: Partial<Extract<BallotProgress, object>> = {},
+): BallotProgress => ({
+	status: faker.helpers.arrayElement(Object.values(BallotStatus)),
+	Entries: Array.from(
+		{ length: faker.number.int({ min: 1, max: 10 }) },
+		(_, i) => i + 1,
+	).map(() => ({
+		ballot: faker.number.int({ min: 0, max: 9007199254740991 }),
+		side: faker.number.int({
+			min: -9007199254740991,
+			max: 9007199254740991,
+		}),
+	})),
+	flipStatus: faker.helpers.arrayElement([
+		faker.helpers.arrayElement([
+			'winner',
+			'loser',
+			'anyone',
+			'done',
+		] as const),
+		null,
+	]),
+	...overrideResponse,
+});
+
+export const getRestJudgesBallotStatusResponseMock = (
+	overrideResponse: Partial<Extract<BallotProgress, object>> = {},
+): BallotProgress => ({
+	status: faker.helpers.arrayElement(Object.values(BallotStatus)),
+	Entries: Array.from(
+		{ length: faker.number.int({ min: 1, max: 10 }) },
+		(_, i) => i + 1,
+	).map(() => ({
+		ballot: faker.number.int({ min: 0, max: 9007199254740991 }),
+		side: faker.number.int({
+			min: -9007199254740991,
+			max: 9007199254740991,
+		}),
+	})),
+	flipStatus: faker.helpers.arrayElement([
+		faker.helpers.arrayElement([
+			'winner',
+			'loser',
+			'anyone',
+			'done',
+		] as const),
+		null,
+	]),
+	...overrideResponse,
+});
+
+export const getRestJudgesBallotFeedbackResponseMock = (
+	overrideResponse: Partial<Extract<BallotFeedback, object>> = {},
+): BallotFeedback => ({
+	rfd: faker.helpers.arrayElement([
+		faker.helpers.arrayElement([
+			faker.string.alpha({ length: { min: 10, max: 20 } }),
+			null,
+		]),
+		undefined,
+	]),
+	Entries: faker.helpers.arrayElement([
+		Array.from(
+			{ length: faker.number.int({ min: 1, max: 10 }) },
+			(_, i) => i + 1,
+		).map(() => ({
+			ballot: faker.number.int({ min: 0, max: 9007199254740991 }),
+			comments: faker.helpers.arrayElement([
+				faker.string.alpha({ length: { min: 10, max: 20 } }),
+				null,
+			]),
+		})),
+		undefined,
+	]),
+	...overrideResponse,
+});
 
 export const getRestTournsResponseMock = (): Tourn[] =>
 	Array.from(
@@ -705,6 +1729,112 @@ export const getUserTournsFinesResponseMock = (): Fine[] =>
 			null,
 		]),
 		leviedAt: faker.date.past().toISOString().slice(0, 19) + 'Z',
+	}));
+
+export const getUserTournsBallotsResponseMock = (): CurrentBallot[] =>
+	Array.from(
+		{ length: faker.number.int({ min: 1, max: 10 }) },
+		(_, i) => i + 1,
+	).map(() => ({
+		id: faker.number.int({ min: 0, max: 9007199254740991 }),
+		name: faker.helpers.arrayElement([
+			faker.number.int({ min: -9007199254740991, max: 9007199254740991 }),
+			null,
+		]),
+		label: faker.helpers.arrayElement([
+			faker.string.alpha({ length: { min: 10, max: 31 } }),
+			null,
+		]),
+		flipStatus: faker.helpers.arrayElement([
+			faker.helpers.arrayElement([
+				'done',
+				'winner',
+				'second',
+				'anyone',
+			] as const),
+			null,
+		]),
+		flight: faker.helpers.arrayElement([
+			faker.number.int({ min: 0, max: 9007199254740991 }),
+			null,
+		]),
+		show_async: faker.datatype.boolean(),
+		onlineBallots: faker.datatype.boolean(),
+		legion: faker.datatype.boolean(),
+		start: faker.date.past().toISOString().slice(0, 19) + 'Z',
+		deadline: faker.date.past().toISOString().slice(0, 19) + 'Z',
+		roomId: faker.helpers.arrayElement([
+			faker.number.int({ min: 0, max: 9007199254740991 }),
+			null,
+		]),
+		roomName: faker.helpers.arrayElement([
+			faker.string.alpha({ length: { min: 10, max: 127 } }),
+			null,
+		]),
+		roomUrl: faker.helpers.arrayElement([
+			faker.helpers.arrayElement([
+				faker.string.alpha({ length: { min: 10, max: 255 } }),
+				null,
+			]),
+			null,
+		]),
+		roomNotes: faker.helpers.arrayElement([
+			faker.helpers.arrayElement([
+				faker.string.alpha({ length: { min: 10, max: 63 } }),
+				null,
+			]),
+			null,
+		]),
+		JudgeId: faker.number.int({ min: 0, max: 9007199254740991 }),
+		RoundId: faker.number.int({ min: 0, max: 9007199254740991 }),
+		status: faker.helpers.arrayElement([
+			'not_started',
+			'started',
+			'scored',
+		] as const),
+		startText: faker.helpers.arrayElement([
+			faker.string.alpha({ length: { min: 10, max: 127 } }),
+			null,
+		]),
+		ballotText: faker.helpers.arrayElement([
+			faker.string.alpha({ length: { min: 10, max: 127 } }),
+			null,
+		]),
+		chair: faker.datatype.boolean(),
+		audited: faker.datatype.boolean(),
+		TournTz: faker.string.alpha({ length: { min: 10, max: 31 } }),
+		eventType: faker.helpers.arrayElement([
+			'debate',
+			'speech',
+			'mock_trial',
+			'congress',
+			'wsdc',
+			'wudc',
+			'attendee',
+			'academic',
+		] as const),
+		onlineMode: faker.helpers.arrayElement([
+			faker.string.alpha({ length: { min: 10, max: 20 } }),
+			null,
+		]),
+		Entries: Array.from(
+			{ length: faker.number.int({ min: 1, max: 10 }) },
+			(_, i) => i + 1,
+		).map(() => ({
+			id: faker.number.int({ min: 0, max: 9007199254740991 }),
+			code: faker.helpers.arrayElement([
+				faker.string.alpha({ length: { min: 10, max: 20 } }),
+				null,
+			]),
+			side: faker.helpers.arrayElement([
+				faker.string.alpha({ length: { min: 10, max: 20 } }),
+				null,
+			]),
+			speakerOrder: faker.helpers.arrayElement([
+				faker.number.int({ min: 0, max: 9007199254740991 }),
+				null,
+			]),
+		})),
 	}));
 
 export const getUserTournsBallotsCurrentResponseMock = (): CurrentBallot[] =>

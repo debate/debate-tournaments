@@ -7,5 +7,5 @@
  */
 
 export type UserTournsBallotsParams = {
-	audited?: boolean;
+	audited?: string;
 };

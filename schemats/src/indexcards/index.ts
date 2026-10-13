@@ -29,8 +29,16 @@ import type {
 
 import type {
 	ActiveCircuitsResponseSchema,
+	AuthSuBody,
 	BadRequestResponse,
+	BallotContext,
+	BallotFeedback,
+	BallotProgress,
+	BallotReview,
+	BallotSubmission,
+	BallotValidationProblem,
 	ClaimResponse,
+	ConflictResponse,
 	CurrentBallot,
 	ErrorResponseResponse,
 	Fine,
@@ -50,8 +58,10 @@ import type {
 	ParadigmSearchResult,
 	PersonTournSummary,
 	QuizOutput,
+	RegisterRequest,
 	RestCircuit,
 	RestCircuitsActiveParams,
+	RestJudgesBallotSaveParams,
 	RestJudgesUnlinkedSearchParams,
 	RestParadigmsParams,
 	RestQuizzesParams,
@@ -70,8 +80,37 @@ import type {
 	UserParadigm,
 	UserParadigmOutput,
 	UserStudentsClaimParams,
+	UserTournsBallotsParams,
 	UserTournsParams,
 } from './schemas';
+
+// https://stackoverflow.com/questions/49579094/typescript-conditional-types-filter-out-readonly-properties-pick-only-requir/49579497#49579497
+type IfEquals<X, Y, A = X, B = never> =
+	(<T>() => T extends X ? 1 : 2) extends <T>() => T extends Y ? 1 : 2 ? A : B;
+
+type WritableKeys<T> = {
+	[P in keyof T]-?: IfEquals<
+		{ [Q in P]: T[P] },
+		{ -readonly [Q in P]: T[P] },
+		P
+	>;
+}[keyof T];
+
+type UnionToIntersection<U> = (U extends any ? (k: U) => void : never) extends (
+	k: infer I,
+) => void
+	? I
+	: never;
+type DistributeReadOnlyOverUnions<T> = T extends any ? NonReadonly<T> : never;
+
+type Writable<T> = Pick<T, WritableKeys<T>>;
+type NonReadonly<T> = [T] extends [UnionToIntersection<T>]
+	? {
+			[P in keyof Writable<T>]: T[P] extends object
+				? NonReadonly<NonNullable<T[P]>>
+				: T[P];
+		}
+	: DistributeReadOnlyOverUnions<T>;
 
 export type HTTPStatusCode1xx = 100 | 101 | 102 | 103;
 export type HTTPStatusCode2xx = 200 | 201 | 202 | 203 | 204 | 205 | 206 | 207;
@@ -1125,6 +1164,1145 @@ export const prefetchRestJudgesUnlinkedSearchQuery = async <
 	await queryClient.prefetchQuery(queryOptions);
 
 	return queryClient;
+};
+
+export type restJudgesBallotContextResponse200 = {
+	data: BallotContext;
+	status: 200;
+};
+
+export type restJudgesBallotContextResponse400 = {
+	data: BadRequestResponse;
+	status: 400;
+};
+
+export type restJudgesBallotContextResponse401 = {
+	data: UnauthorizedResponse;
+	status: 401;
+};
+
+export type restJudgesBallotContextResponse403 = {
+	data: ForbiddenResponse;
+	status: 403;
+};
+
+export type restJudgesBallotContextResponse404 = {
+	data: NotFoundResponse;
+	status: 404;
+};
+
+export type restJudgesBallotContextResponse500 = {
+	data: ErrorResponseResponse;
+	status: 500;
+};
+
+export type restJudgesBallotContextResponseSuccess =
+	restJudgesBallotContextResponse200 & {
+		headers: Headers;
+	};
+export type restJudgesBallotContextResponseError = (
+	| restJudgesBallotContextResponse400
+	| restJudgesBallotContextResponse401
+	| restJudgesBallotContextResponse403
+	| restJudgesBallotContextResponse404
+	| restJudgesBallotContextResponse500
+) & {
+	headers: Headers;
+};
+
+export type restJudgesBallotContextResponse =
+	| restJudgesBallotContextResponseSuccess
+	| restJudgesBallotContextResponseError;
+
+export const getRestJudgesBallotContextUrl = (
+	judgeId: number,
+	panelId: number,
+) => {
+	return `${indexcardsApiBaseUrl()}/rest/judges/${judgeId}/panels/${panelId}/ballots`;
+};
+
+/**
+ * Everything needed to render this judge's ballot for this panel
+ * @summary Get ballot context
+ */
+export const restJudgesBallotContext = async (
+	judgeId: number,
+	panelId: number,
+	options?: RequestInit,
+	fetchFn?: typeof globalThis.fetch,
+): Promise<restJudgesBallotContextResponse> => {
+	const res = await (fetchFn ?? fetch)(
+		getRestJudgesBallotContextUrl(judgeId, panelId),
+		{
+			credentials: 'include',
+			...options,
+			method: 'GET',
+		},
+	);
+
+	const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+	const data: restJudgesBallotContextResponse['data'] = body
+		? JSON.parse(body)
+		: {};
+	return {
+		data,
+		status: res.status,
+		headers: res.headers,
+	} as restJudgesBallotContextResponse;
+};
+
+export const getRestJudgesBallotContextQueryKey = (
+	judgeId: number,
+	panelId: number,
+) => {
+	return [
+		`${indexcardsApiBaseUrl()}/rest/judges/${judgeId}/panels/${panelId}/ballots`,
+	] as const;
+};
+
+export const getRestJudgesBallotContextQueryOptions = <
+	TData = Awaited<ReturnType<typeof restJudgesBallotContext>>,
+	TError =
+		| BadRequestResponse
+		| UnauthorizedResponse
+		| ForbiddenResponse
+		| NotFoundResponse
+		| ErrorResponseResponse,
+>(
+	judgeId: number,
+	panelId: number,
+	options?: {
+		query?: Partial<
+			CreateQueryOptions<
+				Awaited<ReturnType<typeof restJudgesBallotContext>>,
+				TError,
+				TData
+			>
+		>;
+		fetch?: RequestInit;
+		fetcher?: typeof globalThis.fetch;
+	},
+) => {
+	const {
+		query: queryOptions,
+		fetch: fetchOptions,
+		fetcher: fetcherFn,
+	} = options ?? {};
+
+	const queryKey =
+		queryOptions?.queryKey ??
+		getRestJudgesBallotContextQueryKey(judgeId, panelId);
+
+	const queryFn: QueryFunction<
+		Awaited<ReturnType<typeof restJudgesBallotContext>>
+	> = ({ signal }) =>
+		restJudgesBallotContext(
+			judgeId,
+			panelId,
+			{ signal, ...fetchOptions },
+			fetcherFn,
+		);
+
+	return {
+		queryKey,
+		queryFn,
+		enabled:
+			judgeId !== null &&
+			judgeId !== undefined &&
+			panelId !== null &&
+			panelId !== undefined,
+		...queryOptions,
+	} as CreateQueryOptions<
+		Awaited<ReturnType<typeof restJudgesBallotContext>>,
+		TError,
+		TData
+	> & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type RestJudgesBallotContextQueryResult = NonNullable<
+	Awaited<ReturnType<typeof restJudgesBallotContext>>
+>;
+export type RestJudgesBallotContextQueryError =
+	| BadRequestResponse
+	| UnauthorizedResponse
+	| ForbiddenResponse
+	| NotFoundResponse
+	| ErrorResponseResponse;
+
+/**
+ * @summary Get ballot context
+ */
+
+export function createRestJudgesBallotContext<
+	TData = Awaited<ReturnType<typeof restJudgesBallotContext>>,
+	TError =
+		| BadRequestResponse
+		| UnauthorizedResponse
+		| ForbiddenResponse
+		| NotFoundResponse
+		| ErrorResponseResponse,
+>(
+	judgeId: () => number,
+	panelId: () => number,
+	options?: () => {
+		query?: Partial<
+			CreateQueryOptions<
+				Awaited<ReturnType<typeof restJudgesBallotContext>>,
+				TError,
+				TData
+			>
+		>;
+		fetch?: RequestInit;
+		fetcher?: typeof globalThis.fetch;
+	},
+	queryClient?: () => QueryClient,
+): CreateQueryResult<TData, TError> & {
+	queryKey: DataTag<QueryKey, TData, TError>;
+} {
+	const query = createQuery(
+		() =>
+			getRestJudgesBallotContextQueryOptions(
+				judgeId(),
+				panelId(),
+				options?.(),
+			),
+		queryClient,
+	) as CreateQueryResult<TData, TError> & {
+		queryKey: DataTag<QueryKey, TData, TError>;
+	};
+
+	return query;
+}
+
+/**
+ * @summary Get ballot context
+ */
+export const prefetchRestJudgesBallotContextQuery = async <
+	TData = Awaited<ReturnType<typeof restJudgesBallotContext>>,
+	TError =
+		| BadRequestResponse
+		| UnauthorizedResponse
+		| ForbiddenResponse
+		| NotFoundResponse
+		| ErrorResponseResponse,
+>(
+	queryClient: QueryClient,
+	judgeId: number,
+	panelId: number,
+	options?: {
+		query?: Partial<
+			CreateQueryOptions<
+				Awaited<ReturnType<typeof restJudgesBallotContext>>,
+				TError,
+				TData
+			>
+		>;
+		fetch?: RequestInit;
+		fetcher?: typeof globalThis.fetch;
+	},
+): Promise<QueryClient> => {
+	const queryOptions = getRestJudgesBallotContextQueryOptions(
+		judgeId,
+		panelId,
+		options,
+	);
+
+	await queryClient.prefetchQuery(queryOptions);
+
+	return queryClient;
+};
+
+export type restJudgesBallotSaveResponse200 = {
+	data: BallotReview;
+	status: 200;
+};
+
+export type restJudgesBallotSaveResponse400 = {
+	data: BadRequestResponse;
+	status: 400;
+};
+
+export type restJudgesBallotSaveResponse401 = {
+	data: UnauthorizedResponse;
+	status: 401;
+};
+
+export type restJudgesBallotSaveResponse403 = {
+	data: ForbiddenResponse;
+	status: 403;
+};
+
+export type restJudgesBallotSaveResponse404 = {
+	data: NotFoundResponse;
+	status: 404;
+};
+
+export type restJudgesBallotSaveResponse409 = {
+	data: ConflictResponse;
+	status: 409;
+};
+
+export type restJudgesBallotSaveResponse422 = {
+	data: BallotValidationProblem;
+	status: 422;
+};
+
+export type restJudgesBallotSaveResponse500 = {
+	data: ErrorResponseResponse;
+	status: 500;
+};
+
+export type restJudgesBallotSaveResponseSuccess =
+	restJudgesBallotSaveResponse200 & {
+		headers: Headers;
+	};
+export type restJudgesBallotSaveResponseError = (
+	| restJudgesBallotSaveResponse400
+	| restJudgesBallotSaveResponse401
+	| restJudgesBallotSaveResponse403
+	| restJudgesBallotSaveResponse404
+	| restJudgesBallotSaveResponse409
+	| restJudgesBallotSaveResponse422
+	| restJudgesBallotSaveResponse500
+) & {
+	headers: Headers;
+};
+
+export type restJudgesBallotSaveResponse =
+	| restJudgesBallotSaveResponseSuccess
+	| restJudgesBallotSaveResponseError;
+
+export const getRestJudgesBallotSaveUrl = (
+	judgeId: number,
+	panelId: number,
+	params?: RestJudgesBallotSaveParams,
+) => {
+	const normalizedParams = new URLSearchParams();
+
+	Object.entries(params || {}).forEach(([key, value]) => {
+		if (value !== undefined) {
+			normalizedParams.append(
+				key,
+				value === null ? 'null' : String(value),
+			);
+		}
+	});
+
+	const stringifiedParams = normalizedParams.toString();
+
+	return stringifiedParams.length > 0
+		? `${indexcardsApiBaseUrl()}/rest/judges/${judgeId}/panels/${panelId}/ballots?${stringifiedParams}`
+		: `${indexcardsApiBaseUrl()}/rest/judges/${judgeId}/panels/${panelId}/ballots`;
+};
+
+/**
+ * Validates the ballot and writes its scores, which the judge then reviews and confirms. With dryRun, only validates
+ * @summary Save ballot
+ */
+export const restJudgesBallotSave = async (
+	judgeId: number,
+	panelId: number,
+	ballotSubmission?: NonReadonly<BallotSubmission>,
+	params?: RestJudgesBallotSaveParams,
+	options?: RequestInit,
+	fetchFn?: typeof globalThis.fetch,
+): Promise<restJudgesBallotSaveResponse> => {
+	const res = await (fetchFn ?? fetch)(
+		getRestJudgesBallotSaveUrl(judgeId, panelId, params),
+		{
+			credentials: 'include',
+			...options,
+			method: 'PUT',
+			headers: {
+				'Content-Type': 'application/json',
+				...options?.headers,
+			},
+			body: JSON.stringify(ballotSubmission),
+		},
+	);
+
+	const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+	const data: restJudgesBallotSaveResponse['data'] = body
+		? JSON.parse(body)
+		: {};
+	return {
+		data,
+		status: res.status,
+		headers: res.headers,
+	} as restJudgesBallotSaveResponse;
+};
+
+export const getRestJudgesBallotSaveMutationOptions = <
+	TError =
+		| BadRequestResponse
+		| UnauthorizedResponse
+		| ForbiddenResponse
+		| NotFoundResponse
+		| ConflictResponse
+		| BallotValidationProblem
+		| ErrorResponseResponse,
+	TContext = unknown,
+>(options?: {
+	mutation?: CreateMutationOptions<
+		Awaited<ReturnType<typeof restJudgesBallotSave>>,
+		TError,
+		{
+			judgeId: number;
+			panelId: number;
+			data?: NonReadonly<BallotSubmission>;
+			params?: RestJudgesBallotSaveParams;
+		},
+		TContext
+	>;
+	fetch?: RequestInit;
+	fetcher?: typeof globalThis.fetch;
+}): CreateMutationOptions<
+	Awaited<ReturnType<typeof restJudgesBallotSave>>,
+	TError,
+	{
+		judgeId: number;
+		panelId: number;
+		data?: NonReadonly<BallotSubmission>;
+		params?: RestJudgesBallotSaveParams;
+	},
+	TContext
+> => {
+	const mutationKey = ['restJudgesBallotSave'];
+	const {
+		mutation: mutationOptions,
+		fetch: fetchOptions,
+		fetcher: fetcherFn,
+	} = options
+		? options.mutation &&
+			'mutationKey' in options.mutation &&
+			options.mutation.mutationKey
+			? options
+			: { ...options, mutation: { ...options.mutation, mutationKey } }
+		: { mutation: { mutationKey }, fetch: undefined };
+
+	const mutationFn: MutationFunction<
+		Awaited<ReturnType<typeof restJudgesBallotSave>>,
+		{
+			judgeId: number;
+			panelId: number;
+			data?: NonReadonly<BallotSubmission>;
+			params?: RestJudgesBallotSaveParams;
+		}
+	> = (props) => {
+		const { judgeId, panelId, data, params } = props ?? {};
+
+		return restJudgesBallotSave(
+			judgeId,
+			panelId,
+			data,
+			params,
+			fetchOptions,
+			fetcherFn,
+		);
+	};
+
+	return { mutationFn, ...mutationOptions };
+};
+
+export type RestJudgesBallotSaveMutationResult = NonNullable<
+	Awaited<ReturnType<typeof restJudgesBallotSave>>
+>;
+export type RestJudgesBallotSaveMutationBody =
+	| NonReadonly<BallotSubmission>
+	| undefined;
+export type RestJudgesBallotSaveMutationError =
+	| BadRequestResponse
+	| UnauthorizedResponse
+	| ForbiddenResponse
+	| NotFoundResponse
+	| ConflictResponse
+	| BallotValidationProblem
+	| ErrorResponseResponse;
+
+/**
+ * @summary Save ballot
+ */
+export const createRestJudgesBallotSave = <
+	TError =
+		| BadRequestResponse
+		| UnauthorizedResponse
+		| ForbiddenResponse
+		| NotFoundResponse
+		| ConflictResponse
+		| BallotValidationProblem
+		| ErrorResponseResponse,
+	TContext = unknown,
+>(
+	options?: () => {
+		mutation?: CreateMutationOptions<
+			Awaited<ReturnType<typeof restJudgesBallotSave>>,
+			TError,
+			{
+				judgeId: number;
+				panelId: number;
+				data?: NonReadonly<BallotSubmission>;
+				params?: RestJudgesBallotSaveParams;
+			},
+			TContext
+		>;
+		fetch?: RequestInit;
+		fetcher?: typeof globalThis.fetch;
+	},
+	queryClient?: () => QueryClient,
+): CreateMutationResult<
+	Awaited<ReturnType<typeof restJudgesBallotSave>>,
+	TError,
+	{
+		judgeId: number;
+		panelId: number;
+		data?: NonReadonly<BallotSubmission>;
+		params?: RestJudgesBallotSaveParams;
+	},
+	TContext
+> => {
+	return createMutation(
+		() => ({ ...getRestJudgesBallotSaveMutationOptions(options?.()) }),
+		queryClient,
+	);
+};
+
+export type restJudgesBallotStartResponse200 = {
+	data: BallotProgress;
+	status: 200;
+};
+
+export type restJudgesBallotStartResponse400 = {
+	data: BadRequestResponse;
+	status: 400;
+};
+
+export type restJudgesBallotStartResponse401 = {
+	data: UnauthorizedResponse;
+	status: 401;
+};
+
+export type restJudgesBallotStartResponse403 = {
+	data: ForbiddenResponse;
+	status: 403;
+};
+
+export type restJudgesBallotStartResponse404 = {
+	data: NotFoundResponse;
+	status: 404;
+};
+
+export type restJudgesBallotStartResponse500 = {
+	data: ErrorResponseResponse;
+	status: 500;
+};
+
+export type restJudgesBallotStartResponseSuccess =
+	restJudgesBallotStartResponse200 & {
+		headers: Headers;
+	};
+export type restJudgesBallotStartResponseError = (
+	| restJudgesBallotStartResponse400
+	| restJudgesBallotStartResponse401
+	| restJudgesBallotStartResponse403
+	| restJudgesBallotStartResponse404
+	| restJudgesBallotStartResponse500
+) & {
+	headers: Headers;
+};
+
+export type restJudgesBallotStartResponse =
+	| restJudgesBallotStartResponseSuccess
+	| restJudgesBallotStartResponseError;
+
+export const getRestJudgesBallotStartUrl = (
+	judgeId: number,
+	panelId: number,
+) => {
+	return `${indexcardsApiBaseUrl()}/rest/judges/${judgeId}/panels/${panelId}/ballots/start`;
+};
+
+/**
+ * Marks the ballot as started by the judge, if it isn't already. Does nothing for someone entering it for the judge
+ * @summary Start ballot
+ */
+export const restJudgesBallotStart = async (
+	judgeId: number,
+	panelId: number,
+	options?: RequestInit,
+	fetchFn?: typeof globalThis.fetch,
+): Promise<restJudgesBallotStartResponse> => {
+	const res = await (fetchFn ?? fetch)(
+		getRestJudgesBallotStartUrl(judgeId, panelId),
+		{
+			credentials: 'include',
+			...options,
+			method: 'POST',
+		},
+	);
+
+	const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+	const data: restJudgesBallotStartResponse['data'] = body
+		? JSON.parse(body)
+		: {};
+	return {
+		data,
+		status: res.status,
+		headers: res.headers,
+	} as restJudgesBallotStartResponse;
+};
+
+export const getRestJudgesBallotStartMutationOptions = <
+	TError =
+		| BadRequestResponse
+		| UnauthorizedResponse
+		| ForbiddenResponse
+		| NotFoundResponse
+		| ErrorResponseResponse,
+	TContext = unknown,
+>(options?: {
+	mutation?: CreateMutationOptions<
+		Awaited<ReturnType<typeof restJudgesBallotStart>>,
+		TError,
+		{ judgeId: number; panelId: number },
+		TContext
+	>;
+	fetch?: RequestInit;
+	fetcher?: typeof globalThis.fetch;
+}): CreateMutationOptions<
+	Awaited<ReturnType<typeof restJudgesBallotStart>>,
+	TError,
+	{ judgeId: number; panelId: number },
+	TContext
+> => {
+	const mutationKey = ['restJudgesBallotStart'];
+	const {
+		mutation: mutationOptions,
+		fetch: fetchOptions,
+		fetcher: fetcherFn,
+	} = options
+		? options.mutation &&
+			'mutationKey' in options.mutation &&
+			options.mutation.mutationKey
+			? options
+			: { ...options, mutation: { ...options.mutation, mutationKey } }
+		: { mutation: { mutationKey }, fetch: undefined };
+
+	const mutationFn: MutationFunction<
+		Awaited<ReturnType<typeof restJudgesBallotStart>>,
+		{ judgeId: number; panelId: number }
+	> = (props) => {
+		const { judgeId, panelId } = props ?? {};
+
+		return restJudgesBallotStart(judgeId, panelId, fetchOptions, fetcherFn);
+	};
+
+	return { mutationFn, ...mutationOptions };
+};
+
+export type RestJudgesBallotStartMutationResult = NonNullable<
+	Awaited<ReturnType<typeof restJudgesBallotStart>>
+>;
+
+export type RestJudgesBallotStartMutationError =
+	| BadRequestResponse
+	| UnauthorizedResponse
+	| ForbiddenResponse
+	| NotFoundResponse
+	| ErrorResponseResponse;
+
+/**
+ * @summary Start ballot
+ */
+export const createRestJudgesBallotStart = <
+	TError =
+		| BadRequestResponse
+		| UnauthorizedResponse
+		| ForbiddenResponse
+		| NotFoundResponse
+		| ErrorResponseResponse,
+	TContext = unknown,
+>(
+	options?: () => {
+		mutation?: CreateMutationOptions<
+			Awaited<ReturnType<typeof restJudgesBallotStart>>,
+			TError,
+			{ judgeId: number; panelId: number },
+			TContext
+		>;
+		fetch?: RequestInit;
+		fetcher?: typeof globalThis.fetch;
+	},
+	queryClient?: () => QueryClient,
+): CreateMutationResult<
+	Awaited<ReturnType<typeof restJudgesBallotStart>>,
+	TError,
+	{ judgeId: number; panelId: number },
+	TContext
+> => {
+	return createMutation(
+		() => ({ ...getRestJudgesBallotStartMutationOptions(options?.()) }),
+		queryClient,
+	);
+};
+
+export type restJudgesBallotStatusResponse200 = {
+	data: BallotProgress;
+	status: 200;
+};
+
+export type restJudgesBallotStatusResponse400 = {
+	data: BadRequestResponse;
+	status: 400;
+};
+
+export type restJudgesBallotStatusResponse401 = {
+	data: UnauthorizedResponse;
+	status: 401;
+};
+
+export type restJudgesBallotStatusResponse403 = {
+	data: ForbiddenResponse;
+	status: 403;
+};
+
+export type restJudgesBallotStatusResponse404 = {
+	data: NotFoundResponse;
+	status: 404;
+};
+
+export type restJudgesBallotStatusResponse500 = {
+	data: ErrorResponseResponse;
+	status: 500;
+};
+
+export type restJudgesBallotStatusResponseSuccess =
+	restJudgesBallotStatusResponse200 & {
+		headers: Headers;
+	};
+export type restJudgesBallotStatusResponseError = (
+	| restJudgesBallotStatusResponse400
+	| restJudgesBallotStatusResponse401
+	| restJudgesBallotStatusResponse403
+	| restJudgesBallotStatusResponse404
+	| restJudgesBallotStatusResponse500
+) & {
+	headers: Headers;
+};
+
+export type restJudgesBallotStatusResponse =
+	| restJudgesBallotStatusResponseSuccess
+	| restJudgesBallotStatusResponseError;
+
+export const getRestJudgesBallotStatusUrl = (
+	judgeId: number,
+	panelId: number,
+) => {
+	return `${indexcardsApiBaseUrl()}/rest/judges/${judgeId}/panels/${panelId}/ballots/status`;
+};
+
+/**
+ * Polled while the ballot is open, to notice it was confirmed elsewhere or a coin flip moved the sides. Lost access returns 403 or 404
+ * @summary Get ballot status
+ */
+export const restJudgesBallotStatus = async (
+	judgeId: number,
+	panelId: number,
+	options?: RequestInit,
+	fetchFn?: typeof globalThis.fetch,
+): Promise<restJudgesBallotStatusResponse> => {
+	const res = await (fetchFn ?? fetch)(
+		getRestJudgesBallotStatusUrl(judgeId, panelId),
+		{
+			credentials: 'include',
+			...options,
+			method: 'GET',
+		},
+	);
+
+	const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+	const data: restJudgesBallotStatusResponse['data'] = body
+		? JSON.parse(body)
+		: {};
+	return {
+		data,
+		status: res.status,
+		headers: res.headers,
+	} as restJudgesBallotStatusResponse;
+};
+
+export const getRestJudgesBallotStatusQueryKey = (
+	judgeId: number,
+	panelId: number,
+) => {
+	return [
+		`${indexcardsApiBaseUrl()}/rest/judges/${judgeId}/panels/${panelId}/ballots/status`,
+	] as const;
+};
+
+export const getRestJudgesBallotStatusQueryOptions = <
+	TData = Awaited<ReturnType<typeof restJudgesBallotStatus>>,
+	TError =
+		| BadRequestResponse
+		| UnauthorizedResponse
+		| ForbiddenResponse
+		| NotFoundResponse
+		| ErrorResponseResponse,
+>(
+	judgeId: number,
+	panelId: number,
+	options?: {
+		query?: Partial<
+			CreateQueryOptions<
+				Awaited<ReturnType<typeof restJudgesBallotStatus>>,
+				TError,
+				TData
+			>
+		>;
+		fetch?: RequestInit;
+		fetcher?: typeof globalThis.fetch;
+	},
+) => {
+	const {
+		query: queryOptions,
+		fetch: fetchOptions,
+		fetcher: fetcherFn,
+	} = options ?? {};
+
+	const queryKey =
+		queryOptions?.queryKey ??
+		getRestJudgesBallotStatusQueryKey(judgeId, panelId);
+
+	const queryFn: QueryFunction<
+		Awaited<ReturnType<typeof restJudgesBallotStatus>>
+	> = ({ signal }) =>
+		restJudgesBallotStatus(
+			judgeId,
+			panelId,
+			{ signal, ...fetchOptions },
+			fetcherFn,
+		);
+
+	return {
+		queryKey,
+		queryFn,
+		enabled:
+			judgeId !== null &&
+			judgeId !== undefined &&
+			panelId !== null &&
+			panelId !== undefined,
+		...queryOptions,
+	} as CreateQueryOptions<
+		Awaited<ReturnType<typeof restJudgesBallotStatus>>,
+		TError,
+		TData
+	> & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type RestJudgesBallotStatusQueryResult = NonNullable<
+	Awaited<ReturnType<typeof restJudgesBallotStatus>>
+>;
+export type RestJudgesBallotStatusQueryError =
+	| BadRequestResponse
+	| UnauthorizedResponse
+	| ForbiddenResponse
+	| NotFoundResponse
+	| ErrorResponseResponse;
+
+/**
+ * @summary Get ballot status
+ */
+
+export function createRestJudgesBallotStatus<
+	TData = Awaited<ReturnType<typeof restJudgesBallotStatus>>,
+	TError =
+		| BadRequestResponse
+		| UnauthorizedResponse
+		| ForbiddenResponse
+		| NotFoundResponse
+		| ErrorResponseResponse,
+>(
+	judgeId: () => number,
+	panelId: () => number,
+	options?: () => {
+		query?: Partial<
+			CreateQueryOptions<
+				Awaited<ReturnType<typeof restJudgesBallotStatus>>,
+				TError,
+				TData
+			>
+		>;
+		fetch?: RequestInit;
+		fetcher?: typeof globalThis.fetch;
+	},
+	queryClient?: () => QueryClient,
+): CreateQueryResult<TData, TError> & {
+	queryKey: DataTag<QueryKey, TData, TError>;
+} {
+	const query = createQuery(
+		() =>
+			getRestJudgesBallotStatusQueryOptions(
+				judgeId(),
+				panelId(),
+				options?.(),
+			),
+		queryClient,
+	) as CreateQueryResult<TData, TError> & {
+		queryKey: DataTag<QueryKey, TData, TError>;
+	};
+
+	return query;
+}
+
+/**
+ * @summary Get ballot status
+ */
+export const prefetchRestJudgesBallotStatusQuery = async <
+	TData = Awaited<ReturnType<typeof restJudgesBallotStatus>>,
+	TError =
+		| BadRequestResponse
+		| UnauthorizedResponse
+		| ForbiddenResponse
+		| NotFoundResponse
+		| ErrorResponseResponse,
+>(
+	queryClient: QueryClient,
+	judgeId: number,
+	panelId: number,
+	options?: {
+		query?: Partial<
+			CreateQueryOptions<
+				Awaited<ReturnType<typeof restJudgesBallotStatus>>,
+				TError,
+				TData
+			>
+		>;
+		fetch?: RequestInit;
+		fetcher?: typeof globalThis.fetch;
+	},
+): Promise<QueryClient> => {
+	const queryOptions = getRestJudgesBallotStatusQueryOptions(
+		judgeId,
+		panelId,
+		options,
+	);
+
+	await queryClient.prefetchQuery(queryOptions);
+
+	return queryClient;
+};
+
+export type restJudgesBallotFeedbackResponse200 = {
+	data: BallotFeedback;
+	status: 200;
+};
+
+export type restJudgesBallotFeedbackResponse400 = {
+	data: BadRequestResponse;
+	status: 400;
+};
+
+export type restJudgesBallotFeedbackResponse401 = {
+	data: UnauthorizedResponse;
+	status: 401;
+};
+
+export type restJudgesBallotFeedbackResponse403 = {
+	data: ForbiddenResponse;
+	status: 403;
+};
+
+export type restJudgesBallotFeedbackResponse404 = {
+	data: NotFoundResponse;
+	status: 404;
+};
+
+export type restJudgesBallotFeedbackResponse409 = {
+	data: ConflictResponse;
+	status: 409;
+};
+
+export type restJudgesBallotFeedbackResponse422 = {
+	data: BallotValidationProblem;
+	status: 422;
+};
+
+export type restJudgesBallotFeedbackResponse500 = {
+	data: ErrorResponseResponse;
+	status: 500;
+};
+
+export type restJudgesBallotFeedbackResponseSuccess =
+	restJudgesBallotFeedbackResponse200 & {
+		headers: Headers;
+	};
+export type restJudgesBallotFeedbackResponseError = (
+	| restJudgesBallotFeedbackResponse400
+	| restJudgesBallotFeedbackResponse401
+	| restJudgesBallotFeedbackResponse403
+	| restJudgesBallotFeedbackResponse404
+	| restJudgesBallotFeedbackResponse409
+	| restJudgesBallotFeedbackResponse422
+	| restJudgesBallotFeedbackResponse500
+) & {
+	headers: Headers;
+};
+
+export type restJudgesBallotFeedbackResponse =
+	| restJudgesBallotFeedbackResponseSuccess
+	| restJudgesBallotFeedbackResponseError;
+
+export const getRestJudgesBallotFeedbackUrl = (
+	judgeId: number,
+	panelId: number,
+) => {
+	return `${indexcardsApiBaseUrl()}/rest/judges/${judgeId}/panels/${panelId}/ballots/feedback`;
+};
+
+/**
+ * Saves the RFD and per-entry comments as drafts. A field left out stays as it is, and null or empty text deletes it. Editable after confirm until the tournament ends
+ * @summary Save ballot feedback
+ */
+export const restJudgesBallotFeedback = async (
+	judgeId: number,
+	panelId: number,
+	ballotFeedback?: BallotFeedback,
+	options?: RequestInit,
+	fetchFn?: typeof globalThis.fetch,
+): Promise<restJudgesBallotFeedbackResponse> => {
+	const res = await (fetchFn ?? fetch)(
+		getRestJudgesBallotFeedbackUrl(judgeId, panelId),
+		{
+			credentials: 'include',
+			...options,
+			method: 'PUT',
+			headers: {
+				'Content-Type': 'application/json',
+				...options?.headers,
+			},
+			body: JSON.stringify(ballotFeedback),
+		},
+	);
+
+	const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+	const data: restJudgesBallotFeedbackResponse['data'] = body
+		? JSON.parse(body)
+		: {};
+	return {
+		data,
+		status: res.status,
+		headers: res.headers,
+	} as restJudgesBallotFeedbackResponse;
+};
+
+export const getRestJudgesBallotFeedbackMutationOptions = <
+	TError =
+		| BadRequestResponse
+		| UnauthorizedResponse
+		| ForbiddenResponse
+		| NotFoundResponse
+		| ConflictResponse
+		| BallotValidationProblem
+		| ErrorResponseResponse,
+	TContext = unknown,
+>(options?: {
+	mutation?: CreateMutationOptions<
+		Awaited<ReturnType<typeof restJudgesBallotFeedback>>,
+		TError,
+		{ judgeId: number; panelId: number; data?: BallotFeedback },
+		TContext
+	>;
+	fetch?: RequestInit;
+	fetcher?: typeof globalThis.fetch;
+}): CreateMutationOptions<
+	Awaited<ReturnType<typeof restJudgesBallotFeedback>>,
+	TError,
+	{ judgeId: number; panelId: number; data?: BallotFeedback },
+	TContext
+> => {
+	const mutationKey = ['restJudgesBallotFeedback'];
+	const {
+		mutation: mutationOptions,
+		fetch: fetchOptions,
+		fetcher: fetcherFn,
+	} = options
+		? options.mutation &&
+			'mutationKey' in options.mutation &&
+			options.mutation.mutationKey
+			? options
+			: { ...options, mutation: { ...options.mutation, mutationKey } }
+		: { mutation: { mutationKey }, fetch: undefined };
+
+	const mutationFn: MutationFunction<
+		Awaited<ReturnType<typeof restJudgesBallotFeedback>>,
+		{ judgeId: number; panelId: number; data?: BallotFeedback }
+	> = (props) => {
+		const { judgeId, panelId, data } = props ?? {};
+
+		return restJudgesBallotFeedback(
+			judgeId,
+			panelId,
+			data,
+			fetchOptions,
+			fetcherFn,
+		);
+	};
+
+	return { mutationFn, ...mutationOptions };
+};
+
+export type RestJudgesBallotFeedbackMutationResult = NonNullable<
+	Awaited<ReturnType<typeof restJudgesBallotFeedback>>
+>;
+export type RestJudgesBallotFeedbackMutationBody = BallotFeedback | undefined;
+export type RestJudgesBallotFeedbackMutationError =
+	| BadRequestResponse
+	| UnauthorizedResponse
+	| ForbiddenResponse
+	| NotFoundResponse
+	| ConflictResponse
+	| BallotValidationProblem
+	| ErrorResponseResponse;
+
+/**
+ * @summary Save ballot feedback
+ */
+export const createRestJudgesBallotFeedback = <
+	TError =
+		| BadRequestResponse
+		| UnauthorizedResponse
+		| ForbiddenResponse
+		| NotFoundResponse
+		| ConflictResponse
+		| BallotValidationProblem
+		| ErrorResponseResponse,
+	TContext = unknown,
+>(
+	options?: () => {
+		mutation?: CreateMutationOptions<
+			Awaited<ReturnType<typeof restJudgesBallotFeedback>>,
+			TError,
+			{ judgeId: number; panelId: number; data?: BallotFeedback },
+			TContext
+		>;
+		fetch?: RequestInit;
+		fetcher?: typeof globalThis.fetch;
+	},
+	queryClient?: () => QueryClient,
+): CreateMutationResult<
+	Awaited<ReturnType<typeof restJudgesBallotFeedback>>,
+	TError,
+	{ judgeId: number; panelId: number; data?: BallotFeedback },
+	TContext
+> => {
+	return createMutation(
+		() => ({ ...getRestJudgesBallotFeedbackMutationOptions(options?.()) }),
+		queryClient,
+	);
 };
 
 export type restTournsResponse200 = {
@@ -3503,6 +4681,148 @@ export const createAuthLogout = <
 	);
 };
 
+export type authSuResponse204 = {
+	data: void;
+	status: 204;
+};
+
+export type authSuResponse400 = {
+	data: BadRequestResponse;
+	status: 400;
+};
+
+export type authSuResponse401 = {
+	data: UnauthorizedResponse;
+	status: 401;
+};
+
+export type authSuResponse500 = {
+	data: ErrorResponseResponse;
+	status: 500;
+};
+
+export type authSuResponseSuccess = authSuResponse204 & {
+	headers: Headers;
+};
+export type authSuResponseError = (
+	| authSuResponse400
+	| authSuResponse401
+	| authSuResponse500
+) & {
+	headers: Headers;
+};
+
+export type authSuResponse = authSuResponseSuccess | authSuResponseError;
+
+export const getAuthSuUrl = () => {
+	return `${indexcardsApiBaseUrl()}/auth/su`;
+};
+
+/**
+ * POST /auth/su is undocumented. Need to add .openapi to handler
+ * @summary Start Su session
+ */
+export const authSu = async (
+	authSuBody: AuthSuBody,
+	options?: RequestInit,
+	fetchFn?: typeof globalThis.fetch,
+): Promise<authSuResponse> => {
+	const res = await (fetchFn ?? fetch)(getAuthSuUrl(), {
+		credentials: 'include',
+		...options,
+		method: 'POST',
+		headers: { 'Content-Type': 'application/json', ...options?.headers },
+		body: JSON.stringify(authSuBody),
+	});
+
+	const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+	const data: authSuResponse['data'] = body ? JSON.parse(body) : undefined;
+	return { data, status: res.status, headers: res.headers } as authSuResponse;
+};
+
+export const getAuthSuMutationOptions = <
+	TError = BadRequestResponse | UnauthorizedResponse | ErrorResponseResponse,
+	TContext = unknown,
+>(options?: {
+	mutation?: CreateMutationOptions<
+		Awaited<ReturnType<typeof authSu>>,
+		TError,
+		{ data: AuthSuBody },
+		TContext
+	>;
+	fetch?: RequestInit;
+	fetcher?: typeof globalThis.fetch;
+}): CreateMutationOptions<
+	Awaited<ReturnType<typeof authSu>>,
+	TError,
+	{ data: AuthSuBody },
+	TContext
+> => {
+	const mutationKey = ['authSu'];
+	const {
+		mutation: mutationOptions,
+		fetch: fetchOptions,
+		fetcher: fetcherFn,
+	} = options
+		? options.mutation &&
+			'mutationKey' in options.mutation &&
+			options.mutation.mutationKey
+			? options
+			: { ...options, mutation: { ...options.mutation, mutationKey } }
+		: { mutation: { mutationKey }, fetch: undefined };
+
+	const mutationFn: MutationFunction<
+		Awaited<ReturnType<typeof authSu>>,
+		{ data: AuthSuBody }
+	> = (props) => {
+		const { data } = props ?? {};
+
+		return authSu(data, fetchOptions, fetcherFn);
+	};
+
+	return { mutationFn, ...mutationOptions };
+};
+
+export type AuthSuMutationResult = NonNullable<
+	Awaited<ReturnType<typeof authSu>>
+>;
+export type AuthSuMutationBody = AuthSuBody;
+export type AuthSuMutationError =
+	| BadRequestResponse
+	| UnauthorizedResponse
+	| ErrorResponseResponse;
+
+/**
+ * @summary Start Su session
+ */
+export const createAuthSu = <
+	TError = BadRequestResponse | UnauthorizedResponse | ErrorResponseResponse,
+	TContext = unknown,
+>(
+	options?: () => {
+		mutation?: CreateMutationOptions<
+			Awaited<ReturnType<typeof authSu>>,
+			TError,
+			{ data: AuthSuBody },
+			TContext
+		>;
+		fetch?: RequestInit;
+		fetcher?: typeof globalThis.fetch;
+	},
+	queryClient?: () => QueryClient,
+): CreateMutationResult<
+	Awaited<ReturnType<typeof authSu>>,
+	TError,
+	{ data: AuthSuBody },
+	TContext
+> => {
+	return createMutation(
+		() => ({ ...getAuthSuMutationOptions(options?.()) }),
+		queryClient,
+	);
+};
+
 export type authSuEndResponse204 = {
 	data: void;
 	status: 204;
@@ -3642,6 +4962,149 @@ export const createAuthSuEnd = <
 > => {
 	return createMutation(
 		() => ({ ...getAuthSuEndMutationOptions(options?.()) }),
+		queryClient,
+	);
+};
+
+export type authRegisterResponse200 = {
+	data: void;
+	status: 200;
+};
+
+export type authRegisterResponse401 = {
+	data: UnauthorizedResponse;
+	status: 401;
+};
+
+export type authRegisterResponse500 = {
+	data: ErrorResponseResponse;
+	status: 500;
+};
+
+export type authRegisterResponseSuccess = authRegisterResponse200 & {
+	headers: Headers;
+};
+export type authRegisterResponseError = (
+	| authRegisterResponse401
+	| authRegisterResponse500
+) & {
+	headers: Headers;
+};
+
+export type authRegisterResponse =
+	| authRegisterResponseSuccess
+	| authRegisterResponseError;
+
+export const getAuthRegisterUrl = () => {
+	return `${indexcardsApiBaseUrl()}/auth/register`;
+};
+
+/**
+ * Registers a new user.
+ * @summary Register
+ */
+export const authRegister = async (
+	registerRequest: RegisterRequest,
+	options?: RequestInit,
+	fetchFn?: typeof globalThis.fetch,
+): Promise<authRegisterResponse> => {
+	const res = await (fetchFn ?? fetch)(getAuthRegisterUrl(), {
+		credentials: 'include',
+		...options,
+		method: 'POST',
+		headers: { 'Content-Type': 'application/json', ...options?.headers },
+		body: JSON.stringify(registerRequest),
+	});
+
+	const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+	const data: authRegisterResponse['data'] = body
+		? JSON.parse(body)
+		: undefined;
+	return {
+		data,
+		status: res.status,
+		headers: res.headers,
+	} as authRegisterResponse;
+};
+
+export const getAuthRegisterMutationOptions = <
+	TError = UnauthorizedResponse | ErrorResponseResponse,
+	TContext = unknown,
+>(options?: {
+	mutation?: CreateMutationOptions<
+		Awaited<ReturnType<typeof authRegister>>,
+		TError,
+		{ data: RegisterRequest },
+		TContext
+	>;
+	fetch?: RequestInit;
+	fetcher?: typeof globalThis.fetch;
+}): CreateMutationOptions<
+	Awaited<ReturnType<typeof authRegister>>,
+	TError,
+	{ data: RegisterRequest },
+	TContext
+> => {
+	const mutationKey = ['authRegister'];
+	const {
+		mutation: mutationOptions,
+		fetch: fetchOptions,
+		fetcher: fetcherFn,
+	} = options
+		? options.mutation &&
+			'mutationKey' in options.mutation &&
+			options.mutation.mutationKey
+			? options
+			: { ...options, mutation: { ...options.mutation, mutationKey } }
+		: { mutation: { mutationKey }, fetch: undefined };
+
+	const mutationFn: MutationFunction<
+		Awaited<ReturnType<typeof authRegister>>,
+		{ data: RegisterRequest }
+	> = (props) => {
+		const { data } = props ?? {};
+
+		return authRegister(data, fetchOptions, fetcherFn);
+	};
+
+	return { mutationFn, ...mutationOptions };
+};
+
+export type AuthRegisterMutationResult = NonNullable<
+	Awaited<ReturnType<typeof authRegister>>
+>;
+export type AuthRegisterMutationBody = RegisterRequest;
+export type AuthRegisterMutationError =
+	| UnauthorizedResponse
+	| ErrorResponseResponse;
+
+/**
+ * @summary Register
+ */
+export const createAuthRegister = <
+	TError = UnauthorizedResponse | ErrorResponseResponse,
+	TContext = unknown,
+>(
+	options?: () => {
+		mutation?: CreateMutationOptions<
+			Awaited<ReturnType<typeof authRegister>>,
+			TError,
+			{ data: RegisterRequest },
+			TContext
+		>;
+		fetch?: RequestInit;
+		fetcher?: typeof globalThis.fetch;
+	},
+	queryClient?: () => QueryClient,
+): CreateMutationResult<
+	Awaited<ReturnType<typeof authRegister>>,
+	TError,
+	{ data: RegisterRequest },
+	TContext
+> => {
+	return createMutation(
+		() => ({ ...getAuthRegisterMutationOptions(options?.()) }),
 		queryClient,
 	);
 };
@@ -4175,6 +5638,227 @@ export const prefetchUserTournsFinesQuery = async <
 	},
 ): Promise<QueryClient> => {
 	const queryOptions = getUserTournsFinesQueryOptions(tournId, options);
+
+	await queryClient.prefetchQuery(queryOptions);
+
+	return queryClient;
+};
+
+export type userTournsBallotsResponse200 = {
+	data: CurrentBallot[];
+	status: 200;
+};
+
+export type userTournsBallotsResponse401 = {
+	data: UnauthorizedResponse;
+	status: 401;
+};
+
+export type userTournsBallotsResponse500 = {
+	data: ErrorResponseResponse;
+	status: 500;
+};
+
+export type userTournsBallotsResponseSuccess = userTournsBallotsResponse200 & {
+	headers: Headers;
+};
+export type userTournsBallotsResponseError = (
+	| userTournsBallotsResponse401
+	| userTournsBallotsResponse500
+) & {
+	headers: Headers;
+};
+
+export type userTournsBallotsResponse =
+	| userTournsBallotsResponseSuccess
+	| userTournsBallotsResponseError;
+
+export const getUserTournsBallotsUrl = (
+	tournId: number,
+	params?: UserTournsBallotsParams,
+) => {
+	const normalizedParams = new URLSearchParams();
+
+	Object.entries(params || {}).forEach(([key, value]) => {
+		if (value !== undefined) {
+			normalizedParams.append(
+				key,
+				value === null ? 'null' : String(value),
+			);
+		}
+	});
+
+	const stringifiedParams = normalizedParams.toString();
+
+	return stringifiedParams.length > 0
+		? `${indexcardsApiBaseUrl()}/user/tourns/${tournId}/ballots?${stringifiedParams}`
+		: `${indexcardsApiBaseUrl()}/user/tourns/${tournId}/ballots`;
+};
+
+/**
+ * Returns an array of Fines for the tourn.
+ * @summary Get Ballots
+ */
+export const userTournsBallots = async (
+	tournId: number,
+	params?: UserTournsBallotsParams,
+	options?: RequestInit,
+	fetchFn?: typeof globalThis.fetch,
+): Promise<userTournsBallotsResponse> => {
+	const res = await (fetchFn ?? fetch)(
+		getUserTournsBallotsUrl(tournId, params),
+		{
+			credentials: 'include',
+			...options,
+			method: 'GET',
+		},
+	);
+
+	const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+	const data: userTournsBallotsResponse['data'] = body
+		? JSON.parse(body)
+		: {};
+	return {
+		data,
+		status: res.status,
+		headers: res.headers,
+	} as userTournsBallotsResponse;
+};
+
+export const getUserTournsBallotsQueryKey = (
+	tournId: number,
+	params?: UserTournsBallotsParams,
+) => {
+	return [
+		`${indexcardsApiBaseUrl()}/user/tourns/${tournId}/ballots`,
+		...(params ? [params] : []),
+	] as const;
+};
+
+export const getUserTournsBallotsQueryOptions = <
+	TData = Awaited<ReturnType<typeof userTournsBallots>>,
+	TError = UnauthorizedResponse | ErrorResponseResponse,
+>(
+	tournId: number,
+	params?: UserTournsBallotsParams,
+	options?: {
+		query?: Partial<
+			CreateQueryOptions<
+				Awaited<ReturnType<typeof userTournsBallots>>,
+				TError,
+				TData
+			>
+		>;
+		fetch?: RequestInit;
+		fetcher?: typeof globalThis.fetch;
+	},
+) => {
+	const {
+		query: queryOptions,
+		fetch: fetchOptions,
+		fetcher: fetcherFn,
+	} = options ?? {};
+
+	const queryKey =
+		queryOptions?.queryKey ?? getUserTournsBallotsQueryKey(tournId, params);
+
+	const queryFn: QueryFunction<
+		Awaited<ReturnType<typeof userTournsBallots>>
+	> = ({ signal }) =>
+		userTournsBallots(
+			tournId,
+			params,
+			{ signal, ...fetchOptions },
+			fetcherFn,
+		);
+
+	return {
+		queryKey,
+		queryFn,
+		enabled: tournId !== null && tournId !== undefined,
+		...queryOptions,
+	} as CreateQueryOptions<
+		Awaited<ReturnType<typeof userTournsBallots>>,
+		TError,
+		TData
+	> & { queryKey: DataTag<QueryKey, TData, TError> };
+};
+
+export type UserTournsBallotsQueryResult = NonNullable<
+	Awaited<ReturnType<typeof userTournsBallots>>
+>;
+export type UserTournsBallotsQueryError =
+	| UnauthorizedResponse
+	| ErrorResponseResponse;
+
+/**
+ * @summary Get Ballots
+ */
+
+export function createUserTournsBallots<
+	TData = Awaited<ReturnType<typeof userTournsBallots>>,
+	TError = UnauthorizedResponse | ErrorResponseResponse,
+>(
+	tournId: () => number,
+	params?: () => UserTournsBallotsParams,
+	options?: () => {
+		query?: Partial<
+			CreateQueryOptions<
+				Awaited<ReturnType<typeof userTournsBallots>>,
+				TError,
+				TData
+			>
+		>;
+		fetch?: RequestInit;
+		fetcher?: typeof globalThis.fetch;
+	},
+	queryClient?: () => QueryClient,
+): CreateQueryResult<TData, TError> & {
+	queryKey: DataTag<QueryKey, TData, TError>;
+} {
+	const query = createQuery(
+		() =>
+			getUserTournsBallotsQueryOptions(
+				tournId(),
+				params?.(),
+				options?.(),
+			),
+		queryClient,
+	) as CreateQueryResult<TData, TError> & {
+		queryKey: DataTag<QueryKey, TData, TError>;
+	};
+
+	return query;
+}
+
+/**
+ * @summary Get Ballots
+ */
+export const prefetchUserTournsBallotsQuery = async <
+	TData = Awaited<ReturnType<typeof userTournsBallots>>,
+	TError = UnauthorizedResponse | ErrorResponseResponse,
+>(
+	queryClient: QueryClient,
+	tournId: number,
+	params?: UserTournsBallotsParams,
+	options?: {
+		query?: Partial<
+			CreateQueryOptions<
+				Awaited<ReturnType<typeof userTournsBallots>>,
+				TError,
+				TData
+			>
+		>;
+		fetch?: RequestInit;
+		fetcher?: typeof globalThis.fetch;
+	},
+): Promise<QueryClient> => {
+	const queryOptions = getUserTournsBallotsQueryOptions(
+		tournId,
+		params,
+		options,
+	);
 
 	await queryClient.prefetchQuery(queryOptions);
 
