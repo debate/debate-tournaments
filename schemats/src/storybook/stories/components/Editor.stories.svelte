@@ -27,7 +27,7 @@
 	play={async ({ canvasElement }) => {
 		const canvas = within(canvasElement);
 		await expect(await canvas.findByTitle('Undo')).toBeInTheDocument();
-		await expect(canvas.getByLabelText('Reason for decision')).toBeInTheDocument();
+		await expect(canvas.getByRole('textbox', { name: 'Reason for decision' })).toBeInTheDocument();
 	}}
 >
 	<Editor label="Reason for decision" placeholder="Minimum 50 words of RFD required" />

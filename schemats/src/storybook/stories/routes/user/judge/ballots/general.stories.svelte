@@ -8,6 +8,7 @@
 	const { Story } = defineMeta({
 		title: 'Routes/User/Judge/Ballot/General',
 		component: BallotLayout,
+		args: { judgeId: 1, panelId: 1 },
 		parameters: {
 			layout: 'fullscreen',
 		},

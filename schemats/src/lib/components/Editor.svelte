@@ -56,6 +56,8 @@
 			content,
 			editorProps: {
 				attributes: {
+					// A multiline textbox, so screen readers announce it as one
+					'role': 'textbox',
 					'aria-label': label,
 					// editor accepts multiline input
 					'aria-multiline': 'true',

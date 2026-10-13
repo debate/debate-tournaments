@@ -1,20 +1,25 @@
 <script lang='ts'>
 	import type { Snippet } from 'svelte';
 	import type { BallotContext, OtherBallotContext } from '@tabroom/types';
+	import { CLASSIC_URL } from '$app/env/public';
 	import WithSidebar from '$lib/layouts/WithSidebar.svelte';
 	import BallotSidebar from './BallotSidebar.svelte';
+	import Feedback from './Feedback.svelte';
 
 	type Props = {
 		context: Exclude<BallotContext, OtherBallotContext>;
-		// Regions filled in by the scoring, feedback and submit components.
-		// Each shows a placeholder until its component exists.
+		// The context carries no ids, but the feedback saves need them
+		judgeId: number;
+		panelId: number;
+		// Regions filled in by the scoring component, which has its own submit.
+		// Scoring shows a placeholder until the component exists.
 		errors?: Snippet;
 		scoring?: Snippet;
-		feedback?: Snippet;
-		actions?: Snippet;
 	};
 
-	let { context, errors, scoring, feedback, actions }: Props = $props();
+	let { context, judgeId, panelId, errors, scoring }: Props = $props();
+
+	const classicUrl = $derived(`${CLASSIC_URL}/user/judge/ballot.mhtml?panel_id=${panelId}&judge_id=${judgeId}`);
 
 	const judgeName = $derived(
 		[context.Judge.code, context.Judge.first, context.Judge.middle, context.Judge.last]
@@ -39,6 +44,12 @@
 
 <WithSidebar>
 	<div class='flex flex-col gap-3'>
+		<!-- lg:me-4 keeps it clear of the sidebar toggle, like the header below -->
+		<p class='my-0 rounded-md border border-warning bg-warning-soft px-3 py-2 text-sm text-text lg:me-4'>
+			This is the beta ballot. If you have any issues,
+			<a class='font-semibold underline hover:text-warning' href={classicUrl}>use the classic ballot</a>.
+		</p>
+
 		<!-- lg:pe-4 keeps the judge name clear of the sidebar toggle, which sits over the page's right edge -->
 		<header class='flex flex-col gap-1 border-b border-border pb-2 sm:flex-row sm:items-start lg:pe-4'>
 			<span class='sm:w-1/3'>
@@ -84,17 +95,17 @@
 			</p>
 		{/if}
 
-		{#if context.ballotHeader}
-			<div class='prose prose-sm max-w-none rounded-md border border-border p-3'>
-				{@html context.ballotHeader}
+		{#if context.topic}
+			<!-- Classic capitalizes only TOPIC, not Motion or Resolution -->
+			<div class='max-w-none text-center font-semibold [--tw-prose-body:var(--color-primary-strong)]'>
+				<span class:uppercase={context.topic.label === 'Topic'}>{context.topic.label}:</span>
+				{@html context.topic.text}
 			</div>
 		{/if}
 
-		{#if context.topic}
-			<!-- Classic capitalizes only TOPIC, not Motion or Resolution -->
-			<div class='prose prose-lg max-w-none text-center font-semibold [--tw-prose-body:var(--color-primary-strong)]'>
-				<span class:uppercase={context.topic.label === 'Topic'}>{context.topic.label}:</span>
-				{@html context.topic.text}
+		{#if context.ballotHeader}
+			<div class='prose prose-sm max-w-none rounded-md border border-border p-3'>
+				{@html context.ballotHeader}
 			</div>
 		{/if}
 
@@ -154,21 +165,12 @@
 			{/if}
 		</section>
 
-		<section aria-label='Feedback'>
-			{#if feedback}
-				{@render feedback()}
-			{:else}
-				{@render placeholder('Feedback')}
-			{/if}
-		</section>
-
-		<section aria-label='Submit'>
-			{#if actions}
-				{@render actions()}
-			{:else}
-				{@render placeholder('Submit')}
-			{/if}
-		</section>
+		<!-- Classic shows nothing here for Congress judges who aren't the chair, or mock trial without mock_trial_feedback -->
+		{#if context.scoring.feedback}
+			<section aria-label='Feedback'>
+				<Feedback {context} {judgeId} {panelId} />
+			</section>
+		{/if}
 
 		{#if context.ballotTopics}
 			<div class='mt-4 border-t-2 border-primary pt-3'>
