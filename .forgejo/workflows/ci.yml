@@ -66,7 +66,7 @@ jobs:
     runs-on: ubuntu-latest
     services:
       mariadb:
-        image: mariadb:12
+        image: registry.speechanddebate.org/docker.io/mariadb:12
         env:
           MARIADB_DATABASE: tabroom
           MARIADB_USER: tabroom
@@ -142,9 +142,9 @@ jobs:
     name: A11y Tests
     needs: [lint, typecheck]
     runs-on: ubuntu-latest
-    # browsers come preinstalled. Tag must match playwright in schemats/package.json
+    # browsers come preinstalled. Tag must match playwright in schemats/package.json and the mirror list in deathstar
     container:
-      image: mcr.microsoft.com/playwright:v1.63.0-noble
+      image: registry.speechanddebate.org/mcr.microsoft.com/playwright:v1.63.0-noble
 
     steps:
       - name: Checkout
