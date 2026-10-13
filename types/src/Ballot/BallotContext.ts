@@ -15,6 +15,15 @@ import { StudentSchema } from '../Student.js';
 // being present in `scoring` turns that kind of scoring on.
 // Fields are added one at a time, each with ballotRules support and tests.
 
+// The judge's comments for one entry, shared by scoring.feedback and the BallotFeedback body
+export const BallotFeedbackEntrySchema = z.object({
+	ballot: utils.id.meta({ description: 'The judge\'s ballot row for the entry' }),
+	comments: z.string().nullable().meta({ description: 'Comments for only this entry and its coaches (HTML)' }),
+}).strict().meta({
+	id: 'BallotFeedbackEntry',
+}) satisfies ZodOpenApiSchemaObject;
+export type BallotFeedbackEntry = z.infer<typeof BallotFeedbackEntrySchema>;
+
 export const BallotScoringSchema = z.object({
 	winloss: z.object({
 		lpw: z.enum(['forbid', 'confirm']).nullable().meta({ description: 'Whether low-point wins are forbidden or must be confirmed. null when the round has no points' }),
@@ -33,12 +42,13 @@ export const BallotScoringSchema = z.object({
 		ballot: utils.id.nullable().meta({ description: 'The saved Best PO entry\'s ballot row. null before one is saved' }),
 	}).strict().optional().meta({ description: 'Present when the judge picks the best presiding officer' }),
 	feedback: z.object({
+		showRfd: z.boolean().meta({ description: 'Whether the judge writes a reason for decision for everyone in the round' }),
 		rfd: z.string().nullable().meta({ description: 'Saved reason for decision, for everyone in the round (HTML)' }),
+		Entries: z.array(BallotFeedbackEntrySchema).meta({ description: 'Saved comments for each entry the judge writes comments for' }),
 		minWords: z.object({
 			rfd: z.int().positive().nullable().meta({ description: 'Words the reason for decision needs before the ballot can be submitted' }),
 			comments: z.int().positive().nullable().meta({ description: 'Words each entry\'s comments need before the ballot can be submitted' }),
 		}).strict(),
-		editableUntil: z.iso.datetime().nullable().meta({ description: 'When feedback stops being editable, in UTC' }),
 	}).strict().optional().meta({ description: 'Present when the judge writes feedback' }),
 }).strict().meta({
 	id: 'BallotScoring',
@@ -64,7 +74,6 @@ export const BallotEntrySchema = z.object({
 	side: z.int().meta({ description: '1 for Aff, 2 for Neg' }),
 	notes: z.string().nullable().meta({ description: 'Accommodations note from the entry' }),
 	doubled: z.int().nonnegative().meta({ description: 'How many other entries in the same time slot share a student with this one' }),
-	comments: z.string().nullable().meta({ description: 'Saved comments for only this entry and its coaches (HTML)' }),
 	points: z.number().nullable().meta({ description: 'Saved team points' }),
 	Students: z.array(BallotStudentSchema).meta({ description: 'In speaking order' }),
 }).strict().meta({
@@ -100,6 +109,8 @@ const BallotBaseSchema = z.object({
 	tz: TournSchema.shape.tz.meta({ description: 'The tournament time zone, for showing times' }),
 	Tourn: z.object({
 		id: TournSchema.shape.id,
+		// TournSchema.end isn't nullable, but tourn.end is
+		end: TournSchema.shape.end.nullable().meta({ description: 'When the tournament ends, in UTC. Feedback can be edited until then' }),
 	}).strict(),
 	Event: z.object({
 		abbr: EventSchema.shape.abbr,

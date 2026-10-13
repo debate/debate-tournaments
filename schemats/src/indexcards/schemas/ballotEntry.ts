@@ -39,11 +39,6 @@ export interface BallotEntry {
 	 */
 	doubled: number;
 	/**
-	 * Saved comments for only this entry and its coaches (HTML)
-	 * @nullable
-	 */
-	comments: string | null;
-	/**
 	 * Saved team points
 	 * @nullable
 	 */

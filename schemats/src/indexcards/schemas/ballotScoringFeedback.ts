@@ -5,18 +5,21 @@
  * Tabroom.com data & operational API
  * OpenAPI spec version: 1.2.0
  */
+import type { BallotFeedbackEntry } from './ballotFeedbackEntry';
 import type { BallotScoringFeedbackMinWords } from './ballotScoringFeedbackMinWords';
 
 /**
  * Present when the judge writes feedback
  */
 export type BallotScoringFeedback = {
+	/** Whether the judge writes a reason for decision for everyone in the round */
+	showRfd: boolean;
 	/**
 	 * Saved reason for decision, for everyone in the round (HTML)
 	 * @nullable
 	 */
 	rfd: string | null;
+	/** Saved comments for each entry the judge writes comments for */
+	Entries: BallotFeedbackEntry[];
 	minWords: BallotScoringFeedbackMinWords;
-	/** When feedback stops being editable, in UTC */
-	editableUntil: string | null;
 };

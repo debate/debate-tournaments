@@ -10,7 +10,6 @@ const entry = (ballot: number, id: number, side: number, students: number[]): Ba
 	side,
 	notes: null,
 	doubled: 0,
-	comments: null,
 	points: null,
 	Students: students.map(student),
 });
@@ -21,7 +20,7 @@ const rules = (overrides: { scoring?: Partial<ValidateBallotRules['scoring']>, E
 	scoring: {
 		winloss: { lpw: 'confirm' },
 		points: { min: 20, max: 30, step: 0.5, ties: false, team: false, ranksAgree: false },
-		feedback: { rfd: null, minWords: { rfd: null, comments: null }, editableUntil: null },
+		feedback: { showRfd: true, rfd: null, Entries: [], minWords: { rfd: null, comments: null } },
 		...overrides.scoring,
 	},
 	Entries: overrides.Entries ?? [entry(11, 1, 1, [101]), entry(12, 2, 2, [201])],
@@ -253,8 +252,8 @@ describe('validateBallot', () => {
 	});
 
 	describe('reason for decision', () => {
-		const rfdRules = (rfd: string | null, min = 5) => rules({
-			scoring: { feedback: { rfd, minWords: { rfd: min, comments: null }, editableUntil: null } },
+		const rfdRules = (rfd: string | null, min = 5, showRfd = true) => rules({
+			scoring: { feedback: { showRfd, rfd, Entries: [], minWords: { rfd: min, comments: null } } },
 		});
 
 		it('requires the saved RFD to have the minimum words', () => {
@@ -275,15 +274,21 @@ describe('validateBallot', () => {
 			expect(validateBallot(rfdRules('<p>Aff won on framework.</p><p>Neg dropped it.</p>'), submission())).toEqual([]);
 		});
 
+		it('doesn\'t check the RFD when the ballot has none', () => {
+			expect(validateBallot(rfdRules(null, 5, false), submission())).toEqual([]);
+		});
 	});
 
 	describe('comments', () => {
 		const commentRules = (affComments: string | null, negComments: string | null, min = 3) => rules({
-			scoring: { feedback: { rfd: null, minWords: { rfd: null, comments: min }, editableUntil: null } },
-			Entries: [
-				{ ...entry(11, 1, 1, [101]), comments: affComments },
-				{ ...entry(12, 2, 2, [201]), comments: negComments },
-			],
+			scoring: {
+				feedback: {
+					showRfd: true,
+					rfd: null,
+					Entries: [{ ballot: 11, comments: affComments }, { ballot: 12, comments: negComments }],
+					minWords: { rfd: null, comments: min },
+				},
+			},
 		});
 
 		it('requires each entry\'s saved comments to have the minimum words', () => {

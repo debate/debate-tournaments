@@ -16,6 +16,7 @@ export const BallotErrorField = {
 	winner: 'winner',
 	points: 'points',
 	lowPointWin: 'lowPointWin',
+	bestPO: 'bestPO',
 	rfd: 'rfd',
 	comments: 'comments',
 } as const;

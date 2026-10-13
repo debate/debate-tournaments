@@ -44,7 +44,7 @@ export function validateBallot(rules: ValidateBallotRules, submission: DebateBal
 		errors.push({ field: 'bestPO', message: 'That Best PO isn\'t on your ballot.' });
 	}
 
-	if (feedback?.minWords.rfd) {
+	if (feedback?.showRfd && feedback.minWords.rfd) {
 		const words = countWords(feedback.rfd);
 		if (words < feedback.minWords.rfd) {
 			errors.push({
@@ -56,13 +56,14 @@ export function validateBallot(rules: ValidateBallotRules, submission: DebateBal
 
 	// Classic only checked comments_plz on speech ballots. Every event type checks it when set
 	if (feedback?.minWords.comments) {
-		for (const entry of rules.Entries) {
+		for (const entry of feedback.Entries) {
 			const words = countWords(entry.comments);
 			if (words < feedback.minWords.comments) {
+				const code = rules.Entries.find(other => other.ballot === entry.ballot)?.code;
 				errors.push({
 					field: 'comments',
 					ballot: entry.ballot,
-					message: `Please leave at least ${feedback.minWords.comments} words of feedback for ${entry.code}. (You left ${words})`,
+					message: `Please leave at least ${feedback.minWords.comments} words of feedback for ${code}. (You left ${words})`,
 				});
 			}
 		}

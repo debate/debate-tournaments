@@ -17,6 +17,8 @@ export interface DebateBallotSubmission {
 	lowPointWin: boolean;
 	/** Speaker points for every student on the ballot. Empty when the round has no points */
 	points: DebateBallotSubmissionPointsItem[];
+	/** The Best PO entry's ballot row. null or left out when the chair hasn't picked one or the judge doesn't pick Best PO */
+	bestPO?: number | null;
 	/** All of the judge's feedback, which replaces the autosaved drafts. An entry left out has no comments */
 	feedback: DebateBallotSubmissionFeedback;
 }

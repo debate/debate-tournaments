@@ -5,14 +5,11 @@ import { EntrySchema } from '../Entry.js';
 import { EventSchema } from '../Event.js';
 import { StudentSchema } from '../Student.js';
 import { ProblemSchema } from '../Problem.js';
-import { BallotEntrySchema } from './BallotContext.js';
+import { BallotFeedbackEntrySchema } from './BallotContext.js';
 
-// The judge's feedback, shaped like scoring.feedback.rfd and Entries[].comments in the context
+// The judge's feedback, shaped like scoring.feedback.rfd and scoring.feedback.Entries in the context
 const RfdSchema = z.string().nullable().meta({ description: 'Reason for decision, shared with everyone in the round (HTML)' });
-const FeedbackEntriesSchema = z.array(z.object({
-	ballot: BallotEntrySchema.shape.ballot,
-	comments: z.string().nullable().meta({ description: 'Comments for only this entry and its coaches (HTML)' }),
-}).strict()).meta({ description: 'Comments for each entry' });
+const FeedbackEntriesSchema = z.array(BallotFeedbackEntrySchema).meta({ description: 'Comments for each entry' });
 
 // Feedback drafts, autosaved through PUT .../ballots/feedback so the judge doesn't lose work.
 // In the body, a field left out stays as it is and null or empty text deletes it. The

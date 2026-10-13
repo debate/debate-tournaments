@@ -58,12 +58,18 @@ export async function saveBallot(
 		Entries: Entries.map(entry => ({ ballot: entry.ballot, comments: comments.get(entry.ballot) ?? null })),
 	};
 	const scoring = rules.scoring.feedback
-		? { ...rules.scoring, feedback: { ...rules.scoring.feedback, rfd: cleanText(feedback.rfd) } }
+		? {
+			...rules.scoring,
+			feedback: {
+				...rules.scoring.feedback,
+				rfd: cleanText(feedback.rfd),
+				Entries: feedback.Entries.map(entry => ({ ballot: entry.ballot, comments: cleanText(entry.comments) })),
+			},
+		}
 		: rules.scoring;
-	const withFeedback = Entries.map(entry => ({ ...entry, comments: cleanText(comments.get(entry.ballot)) }));
 
 	const errors = [
-		...validateBallot({ scoring, Entries: withFeedback }, submission),
+		...validateBallot({ scoring, Entries }, submission),
 		...feedbackErrors(Entries.map(entry => entry.ballot), submission.feedback),
 	];
 	if (errors.length > 0) return { result: 'invalid', errors };

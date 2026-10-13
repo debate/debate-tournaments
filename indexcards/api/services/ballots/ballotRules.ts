@@ -65,10 +65,7 @@ export type BallotRules = {
 	roundStart: Date;
 	decisionDeadline: Date | null;
 	onlineMode: DebateBallotContext['onlineMode'];
-	// As in the context, but feedback.editableUntil is a Date like the other times
-	scoring: Omit<BallotScoring, 'feedback'> & {
-		feedback?: Omit<NonNullable<BallotScoring['feedback']>, 'editableUntil'> & { editableUntil: Date | null };
-	};
+	scoring: BallotScoring;
 	Entries: DebateBallotContext['Entries'];
 	otherJudges: DebateBallotContext['otherJudges'];
 	timers: DebateBallotContext['timers'];
@@ -293,7 +290,6 @@ export function ballotEntries(input: Pick<BallotRulesInput, 'tourn' | 'event' | 
 				// Saved from a textarea through save_editor.mas, which can leave tags and entities
 				notes: isOn(entry.settings?.ballot_notes) ? plainText(String(entry.settings?.ballot_notes)).trim() || null : null,
 				doubled: new Set(doubled.filter(pair => pair.entry === entry.id).map(pair => pair.other)).size,
-				comments: scores.find(score => score.ballot === ballot.id && score.tag === 'comments')?.content ?? null,
 				points: team ? points[0]?.value ?? null : null,
 				Students: [...entryStudents]
 					.sort((a, b) => (ordered ? position(positions[a.id], ballot.side) - position(positions[b.id], ballot.side) : 0)
@@ -311,28 +307,38 @@ export function ballotEntries(input: Pick<BallotRulesInput, 'tourn' | 'event' | 
 }
 
 /**
- * Returns the feedback block: the saved reason for decision, the word minimums the ballot needs
- * before it can be submitted (rfd_plz, comments_plz), and when feedback stops being editable:
- * the end of the tourn, even after the ballot is confirmed. Classic saves the same reason for
- * decision on each of the judge's ballots, so any one of them has it. Undefined for Congress,
- * and for mock trial unless the event sets mock_trial_feedback (ballot.mhtml). */
-export function feedbackScoring({ tourn, event, scores }: Pick<BallotRulesInput, 'tourn' | 'event' | 'scores'>): BallotRules['scoring']['feedback'] {
+ * Returns the feedback block: the saved reason for decision, each entry's saved comments, and
+ * the word minimums the ballot needs before it can be submitted (rfd_plz, comments_plz).
+ * Classic saves the same reason for decision on each of the judge's ballots, so any one of
+ * them has it. The Congress chair writes comments for each entry but no reason for decision
+ * (congress_feedback.mas); other Congress judges comment on each speech instead. Undefined for
+ * them, and for mock trial unless the event sets mock_trial_feedback (ballot.mhtml). */
+export function feedbackScoring(input: Pick<BallotRulesInput, 'event' | 'ballots' | 'scores' | 'entries'>): BallotRules['scoring']['feedback'] {
+	const { event, ballots, scores, entries } = input;
+
 	const words = (value: Settings[string] | undefined) => {
 		const number = Math.floor(Number(value));
 		return isOn(value) && Number.isFinite(number) && number > 0 ? number : null;
 	};
 
-	// Congress never takes feedback on the ballot, and mock trial only with mock_trial_feedback
-	if (event.type === 'congress') return undefined;
+	if (event.type === 'congress' && !isChair(input)) return undefined;
 	if (event.type === 'mock_trial' && !isOn(event.settings?.mock_trial_feedback)) return undefined;
 
 	return {
+		showRfd: event.type !== 'congress',
 		rfd: scores.find(score => score.tag === 'rfd' && score.content)?.content ?? null,
+		// In side order, like the context's Entries
+		Entries: ballots
+			.filter(ballot => entries.some(entry => entry.id === ballot.entry))
+			.sort((a, b) => a.side - b.side)
+			.map(ballot => ({
+				ballot: ballot.id,
+				comments: scores.find(score => score.ballot === ballot.id && score.tag === 'comments')?.content ?? null,
+			})),
 		minWords: {
 			rfd: words(event.settings?.rfd_plz),
 			comments: words(event.settings?.comments_plz),
 		},
-		editableUntil: tourn.end,
 	};
 }
 

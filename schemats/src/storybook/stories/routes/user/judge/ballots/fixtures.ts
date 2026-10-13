@@ -8,13 +8,24 @@ type BallotBase = Omit<DebateBallotContext, 'eventType' | 'debate'>;
 export const hoursFromNow = (hours: number) =>
 	new Date(Date.now() + hours * 60 * 60 * 1000).toISOString();
 
+type Feedback = NonNullable<BallotBase['scoring']['feedback']>;
+
+// A feedback block with a reason for decision, nothing saved and an empty comments box for each entry
+export const feedbackFor = (Entries: { ballot: number }[], overrides: Partial<Feedback> = {}): Feedback => ({
+	showRfd: true,
+	rfd: null,
+	Entries: Entries.map(({ ballot }) => ({ ballot, comments: null })),
+	minWords: { rfd: null, comments: null },
+	...overrides,
+});
+
 export function baseContext(): BallotBase {
 	return {
 		status: 'started',
 		chair: false,
 		chairLabel: null,
 		tz: 'America/Chicago',
-		Tourn: { id: 1 },
+		Tourn: { id: 1, end: hoursFromNow(48) },
 		Event: { abbr: 'CX' },
 		Round: { id: 1, name: 3, label: null, notes: null },
 		flight: null,
@@ -31,11 +42,7 @@ export function baseContext(): BallotBase {
 		scoring: {
 			winloss: { lpw: 'forbid' },
 			points: { min: 26, max: 30, step: 0.1, ties: false, team: false, ranksAgree: false },
-			feedback: {
-				rfd: null,
-				minWords: { rfd: null, comments: null },
-				editableUntil: hoursFromNow(48),
-			},
+			feedback: feedbackFor([]),
 		},
 		Entries: [],
 		otherJudges: [],
@@ -49,43 +56,45 @@ export function baseContext(): BallotBase {
 }
 
 export function debateContext(overrides: Partial<DebateBallotContext> = {}): DebateBallotContext {
+	const base = baseContext();
+	const Entries: DebateBallotContext['Entries'] = [
+		{
+			ballot: 11,
+			entry: 101,
+			code: 'Northview AB',
+			side: 1,
+			notes: null,
+			doubled: 0,
+			points: null,
+			Students: [
+				{ id: 1001, first: 'Avery', middle: null, last: 'Brooks', pronoun: 'she/her', points: null },
+				{ id: 1002, first: 'Sam', middle: null, last: 'Delgado', pronoun: 'they/them', points: null },
+			],
+		},
+		{
+			ballot: 12,
+			entry: 102,
+			code: 'Central CD',
+			side: 2,
+			notes: null,
+			doubled: 0,
+			points: null,
+			Students: [
+				{ id: 1003, first: 'Jordan', middle: null, last: 'Chen', pronoun: null, points: null },
+				{ id: 1004, first: 'Riley', middle: null, last: 'Nakamura', pronoun: 'he/him', points: null },
+			],
+		},
+	];
+
 	return {
-		...baseContext(),
+		...base,
 		eventType: 'debate',
 		topic: {
 			label: 'Topic',
 			text: 'Resolved: The United States federal government should significantly strengthen its protection of domestic intellectual property rights.',
 		},
-		Entries: [
-			{
-				ballot: 11,
-				entry: 101,
-				code: 'Northview AB',
-				side: 1,
-				notes: null,
-				doubled: 0,
-				comments: null,
-				points: null,
-				Students: [
-					{ id: 1001, first: 'Avery', middle: null, last: 'Brooks', pronoun: 'she/her', points: null },
-					{ id: 1002, first: 'Sam', middle: null, last: 'Delgado', pronoun: 'they/them', points: null },
-				],
-			},
-			{
-				ballot: 12,
-				entry: 102,
-				code: 'Central CD',
-				side: 2,
-				notes: null,
-				doubled: 0,
-				comments: null,
-				points: null,
-				Students: [
-					{ id: 1003, first: 'Jordan', middle: null, last: 'Chen', pronoun: null, points: null },
-					{ id: 1004, first: 'Riley', middle: null, last: 'Nakamura', pronoun: 'he/him', points: null },
-				],
-			},
-		],
+		scoring: { ...base.scoring, feedback: feedbackFor(Entries) },
+		Entries,
 		pointScale: [
 			{ points: '30', description: 'Outstanding: top speaker at this tournament' },
 			{ points: '28-29', description: 'Excellent: should be in elims' },
@@ -105,6 +114,35 @@ export function debateContext(overrides: Partial<DebateBallotContext> = {}): Deb
 }
 
 export function mockTrialContext(overrides: Partial<MockTrialBallotContext> = {}): MockTrialBallotContext {
+	const Entries: MockTrialBallotContext['Entries'] = [
+		{
+			ballot: 21,
+			entry: 201,
+			code: 'Lincoln Mock Trial',
+			side: 1,
+			notes: null,
+			doubled: 0,
+			points: null,
+			Students: [
+				{ id: 2001, first: 'Casey', middle: null, last: 'Ortiz', pronoun: null, points: null },
+				{ id: 2002, first: 'Taylor', middle: null, last: 'Reed', pronoun: 'she/her', points: null },
+			],
+		},
+		{
+			ballot: 22,
+			entry: 202,
+			code: 'Westfield Mock Trial',
+			side: 2,
+			notes: null,
+			doubled: 0,
+			points: null,
+			Students: [
+				{ id: 2003, first: 'Jamie', middle: null, last: 'Park', pronoun: 'he/him', points: null },
+				{ id: 2004, first: 'Quinn', middle: null, last: 'Foster', pronoun: null, points: null },
+			],
+		},
+	];
+
 	return {
 		...baseContext(),
 		eventType: 'mock_trial',
@@ -112,44 +150,12 @@ export function mockTrialContext(overrides: Partial<MockTrialBallotContext> = {}
 		Round: { id: 2, name: 2, label: null, notes: null },
 		Room: { name: 'Courtroom 3B', url: null },
 		timers: null,
+		// As with mock_trial_feedback set
 		scoring: {
 			points: { min: 1, max: 10, step: 1, ties: true, team: false, ranksAgree: false },
-			feedback: {
-				rfd: null,
-				minWords: { rfd: null, comments: null },
-				editableUntil: hoursFromNow(48),
-			},
+			feedback: feedbackFor(Entries),
 		},
-		Entries: [
-			{
-				ballot: 21,
-				entry: 201,
-				code: 'Lincoln Mock Trial',
-				side: 1,
-				notes: null,
-				doubled: 0,
-				comments: null,
-				points: null,
-				Students: [
-					{ id: 2001, first: 'Casey', middle: null, last: 'Ortiz', pronoun: null, points: null },
-					{ id: 2002, first: 'Taylor', middle: null, last: 'Reed', pronoun: 'she/her', points: null },
-				],
-			},
-			{
-				ballot: 22,
-				entry: 202,
-				code: 'Westfield Mock Trial',
-				side: 2,
-				notes: null,
-				doubled: 0,
-				comments: null,
-				points: null,
-				Students: [
-					{ id: 2003, first: 'Jamie', middle: null, last: 'Park', pronoun: 'he/him', points: null },
-					{ id: 2004, first: 'Quinn', middle: null, last: 'Foster', pronoun: null, points: null },
-				],
-			},
-		],
+		Entries,
 		pointScale: [
 			{ points: '9-10', description: 'Excellent' },
 			{ points: '7-8', description: 'Above average' },
@@ -186,11 +192,7 @@ export function congressContext(overrides: Partial<CongressBallotContext> = {}):
 		scoring: {
 			points: { min: 1, max: 6, step: 1, ties: true, team: false, ranksAgree: true },
 			ranks: {},
-			feedback: {
-				rfd: null,
-				minWords: { rfd: null, comments: null },
-				editableUntil: hoursFromNow(48),
-			},
+			// Only the chair gets feedback, and the Congress stories show a judge who isn't
 		},
 		Entries: legislators.map(([code, first, last, pronoun], index) => ({
 			ballot: 31 + index,
@@ -199,7 +201,6 @@ export function congressContext(overrides: Partial<CongressBallotContext> = {}):
 			side: 0,
 			notes: null,
 			doubled: 0,
-			comments: null,
 			points: null,
 			Students: [{ id: 3001 + index, first, middle: null, last, pronoun, points: null }],
 		})),

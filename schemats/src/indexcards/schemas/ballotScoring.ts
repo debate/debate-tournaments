@@ -5,6 +5,7 @@
  * Tabroom.com data & operational API
  * OpenAPI spec version: 1.2.0
  */
+import type { BallotScoringBestPO } from './ballotScoringBestPO';
 import type { BallotScoringFeedback } from './ballotScoringFeedback';
 import type { BallotScoringPoints } from './ballotScoringPoints';
 import type { BallotScoringRanks } from './ballotScoringRanks';
@@ -17,6 +18,8 @@ export interface BallotScoring {
 	points?: BallotScoringPoints;
 	/** Present when the judge gives ranks */
 	ranks?: BallotScoringRanks;
+	/** Present when the judge picks the best presiding officer */
+	bestPO?: BallotScoringBestPO;
 	/** Present when the judge writes feedback */
 	feedback?: BallotScoringFeedback;
 }

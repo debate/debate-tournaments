@@ -16,6 +16,8 @@ export interface DebateBallotReview {
 	winner: number | null;
 	/** Whether the winner has fewer points than another entry */
 	lowPointWin: boolean;
+	/** The Best PO entry's ballot row. null when the chair didn't pick one or the judge doesn't pick Best PO */
+	bestPO: number | null;
 	/** In side order */
 	Entries: DebateBallotReviewEntriesItem[];
 }

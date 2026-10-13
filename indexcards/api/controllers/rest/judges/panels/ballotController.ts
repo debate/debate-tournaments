@@ -42,7 +42,7 @@ export async function getBallotContext(req: ValidatedRequest, res: Response) {
 			rules: rules.rules,
 			// classic falls back to UTC
 			tz: tourn.tz ?? 'UTC',
-			Tourn: { id: tourn.id },
+			Tourn: { id: tourn.id, end: tourn.end?.toISOString() ?? null },
 			Event: { abbr: event.abbr },
 			Round: { id: round.id, name: round.name, label: rules.roundLabel, notes: rules.roundNotes },
 			flight: rules.flight,
@@ -53,13 +53,7 @@ export async function getBallotContext(req: ValidatedRequest, res: Response) {
 			roundStart: rules.roundStart.toISOString(),
 			decisionDeadline: rules.decisionDeadline?.toISOString() ?? null,
 			onlineMode: rules.onlineMode,
-			scoring: {
-				...rules.scoring,
-				feedback: rules.scoring.feedback && {
-					...rules.scoring.feedback,
-					editableUntil: rules.scoring.feedback.editableUntil?.toISOString() ?? null,
-				},
-			},
+			scoring: rules.scoring,
 			Entries: rules.Entries,
 			otherJudges: rules.otherJudges,
 			timers: rules.timers,

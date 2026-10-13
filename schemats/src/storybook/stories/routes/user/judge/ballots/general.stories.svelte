@@ -1,7 +1,7 @@
 <script lang="ts" module>
 	import { defineMeta } from '@storybook/addon-svelte-csf';
 	import BallotLayout from '../../../../../../routes/user/judge/ballot/BallotLayout.svelte';
-	import { debateContext, hoursFromNow } from './fixtures';
+	import { debateContext, feedbackFor } from './fixtures';
 
 	// Layout elements every event type shares. Stories use a debate context
 	// as the carrier; event-specific differences go in that type's file.
@@ -44,11 +44,7 @@
 			winloss: { lpw: 'forbid' },
 			points: { min: 26, max: 30, step: 0.1, ties: false, team: false, ranksAgree: true },
 			ranks: {},
-			feedback: {
-				rfd: null,
-				minWords: { rfd: 100, comments: 50 },
-				editableUntil: hoursFromNow(48),
-			},
+			feedback: feedbackFor(notedEntries, { minWords: { rfd: 100, comments: 50 } }),
 		},
 		Entries: notedEntries.map((entry) => ({ ...entry, doubled: 1 })),
 		otherJudges: [

@@ -78,7 +78,7 @@ describe('GET /rest/judges/:judgeId/panels/:panelId/ballots', () => {
 			topic: { label: 'Resolution', text: 'Resolved: tests are good.' },
 			rules: ['No tied points.'],
 			tz: 'America/Chicago',
-			Tourn: { id: tourn.id },
+			Tourn: { id: tourn.id, end: '2026-10-04T23:00:00.000Z' },
 			Event: { abbr: 'LD' },
 			Round: { id: round.id, name: 3, label: null, notes: 'Bring timers' },
 			flight: 2,
@@ -92,18 +92,22 @@ describe('GET /rest/judges/:judgeId/panels/:panelId/ballots', () => {
 				winloss: { lpw: 'confirm' },
 				points: { min: 0, max: 30, step: 1, ties: false, team: false, ranksAgree: false },
 				feedback: {
+					showRfd: true,
 					rfd: '<p>Aff won the framework.</p>',
+					Entries: [
+						{ ballot: affBallot.id, comments: null },
+						{ ballot: negBallot.id, comments: '<p>Slow down.</p>' },
+					],
 					minWords: { rfd: 50, comments: 25 },
-					editableUntil: '2026-10-04T23:00:00.000Z',
 				},
 			},
 			Entries: [
 				{
-					ballot: affBallot.id, entry: aff.id, code: 'AFF1', side: 1, notes: null, doubled: 0, comments: null, points: null,
+					ballot: affBallot.id, entry: aff.id, code: 'AFF1', side: 1, notes: null, doubled: 0, points: null,
 					Students: [{ id: ana.id, first: 'Ana', middle: null, last: 'Adams', pronoun: null, points: 28 }],
 				},
 				{
-					ballot: negBallot.id, entry: neg.id, code: 'NEG2', side: 2, notes: null, doubled: 0, comments: '<p>Slow down.</p>', points: null,
+					ballot: negBallot.id, entry: neg.id, code: 'NEG2', side: 2, notes: null, doubled: 0, points: null,
 					Students: [{ id: ben.id, first: 'Ben', middle: null, last: 'Brown', pronoun: null, points: null }],
 				},
 			],

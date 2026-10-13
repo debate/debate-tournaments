@@ -12,4 +12,6 @@ export type CongressBallotContextTourn = {
 	 * @exclusiveMinimum 0
 	 */
 	id: number;
+	/** When the tournament ends, in UTC. Feedback can be edited until then */
+	end: string | null;
 };

@@ -523,14 +523,14 @@ describe('ballotEntries', () => {
 	it('lists the entries in side order with their students', () => {
 		expect(ballotEntries(input({ ballots: [ballot({ id: 12, entry: 2, side: 2 }), ballot()] }))).toEqual([
 			{
-				ballot: 11, entry: 1, code: 'AFF1', side: 1, notes: null, doubled: 0, comments: null, points: null,
+				ballot: 11, entry: 1, code: 'AFF1', side: 1, notes: null, doubled: 0, points: null,
 				Students: [
 					{ id: 101, first: 'Ana', middle: null, last: 'Adams', pronoun: null, points: null },
 					{ id: 102, first: 'Ben', middle: null, last: 'Brown', pronoun: null, points: null },
 				],
 			},
 			{
-				ballot: 12, entry: 2, code: 'NEG2', side: 2, notes: null, doubled: 0, comments: null, points: null,
+				ballot: 12, entry: 2, code: 'NEG2', side: 2, notes: null, doubled: 0, points: null,
 				Students: [
 					{ id: 201, first: 'Cai', middle: null, last: 'Chen', pronoun: null, points: null },
 					{ id: 202, first: 'Dee', middle: null, last: 'Diaz', pronoun: null, points: null },
@@ -660,27 +660,45 @@ describe('ballotEntries', () => {
 });
 
 describe('feedbackScoring', () => {
-	const end = new Date('2026-10-04T23:00:00Z');
-
-	it('has nothing saved and no minimums by default', () => {
-		expect(feedbackScoring({ tourn: tourn({}), event: event({}), scores: [] }))
-			.toMatchObject({ rfd: null, minWords: { rfd: null, comments: null } });
+	it('has a reason for decision, nothing saved and no minimums by default', () => {
+		expect(feedbackScoring(input())).toEqual({
+			showRfd: true,
+			rfd: null,
+			Entries: [{ ballot: 11, comments: null }, { ballot: 12, comments: null }],
+			minWords: { rfd: null, comments: null },
+		});
 	});
 
 	it('is the saved reason for decision from any of the judge\'s ballots', () => {
 		const scores = [score('rfd', { ballot: 12, content: '<p>Aff won on the framework.</p>' })];
 
-		expect(feedbackScoring({ tourn: tourn({}), event: event({}), scores })?.rfd).toBe('<p>Aff won on the framework.</p>');
+		expect(feedbackScoring(input({ scores }))?.rfd).toBe('<p>Aff won on the framework.</p>');
 	});
 
 	it('ignores an empty saved reason for decision', () => {
 		const scores = [score('rfd', { ballot: 11, content: '' }), score('rfd', { ballot: 12, content: '<p>Neg.</p>' })];
 
-		expect(feedbackScoring({ tourn: tourn({}), event: event({}), scores })?.rfd).toBe('<p>Neg.</p>');
+		expect(feedbackScoring(input({ scores }))?.rfd).toBe('<p>Neg.</p>');
+	});
+
+	it('has each entry\'s saved comments in side order', () => {
+		const ballots = [ballot({ id: 12, entry: 2, side: 2 }), ballot()];
+		const scores = [score('comments', { ballot: 12, content: '<p>Slow down.</p>' })];
+
+		expect(feedbackScoring(input({ ballots, scores }))?.Entries).toEqual([
+			{ ballot: 11, comments: null },
+			{ ballot: 12, comments: '<p>Slow down.</p>' },
+		]);
+	});
+
+	it('leaves out ballots with no entry', () => {
+		const ballots = [ballot(), ballot({ id: 13, entry: 99, side: 2 })];
+
+		expect(feedbackScoring(input({ ballots }))?.Entries.map(entry => entry.ballot)).toEqual([11]);
 	});
 
 	it('reads the word minimums', () => {
-		const feedback = feedbackScoring({ tourn: tourn({}), event: event({ rfd_plz: '50', comments_plz: '25' }), scores: [] });
+		const feedback = feedbackScoring(input({ event: event({ rfd_plz: '50', comments_plz: '25' }) }));
 
 		expect(feedback?.minWords).toEqual({ rfd: 50, comments: 25 });
 	});
@@ -690,43 +708,41 @@ describe('feedbackScoring', () => {
 		['""', ''],
 		['not a number', 'fifty'],
 	])('has no minimum when the setting is %s', (_label, value) => {
-		const feedback = feedbackScoring({ tourn: tourn({}), event: event({ rfd_plz: value, comments_plz: value }), scores: [] });
+		const feedback = feedbackScoring(input({ event: event({ rfd_plz: value, comments_plz: value }) }));
 
 		expect(feedback?.minWords).toEqual({ rfd: null, comments: null });
 	});
 
-	it('is editable until the tourn ends', () => {
-		const feedback = feedbackScoring({ tourn: factories.tourn.mock({ end, settings: {} }), event: event({}), scores: [] });
-
-		expect(feedback?.editableUntil).toEqual(end);
-	});
-
-	it('puts each entry\'s saved comments on the entry', () => {
-		const scores = [score('comments', { ballot: 12, content: '<p>Slow down.</p>' })];
-
-		expect(ballotEntries(input({ scores })).map(entry => entry.comments)).toEqual([null, '<p>Slow down.</p>']);
-	});
-
 	it('is included in the rules\' scoring', () => {
-		expect(ballotRules(input()).scoring.feedback).toMatchObject({ rfd: null });
+		expect(ballotRules(input()).scoring.feedback).toMatchObject({ showRfd: true, rfd: null });
 	});
 
-	it('is undefined for Congress', () => {
-		expect(feedbackScoring({ tourn: tourn({}), event: factories.event.mock({ type: 'congress' }), scores: [] })).toBeUndefined();
+	it('has comments but no reason for decision for the Congress chair', () => {
+		const feedback = feedbackScoring(input({
+			event: factories.event.mock({ type: 'congress' }),
+			ballots: [ballot({ chair: 1 }), ballot({ id: 12, entry: 2, side: 2, chair: 1 })],
+		}));
+
+		expect(feedback?.showRfd).toBe(false);
+		expect(feedback?.Entries.map(entry => entry.ballot)).toEqual([11, 12]);
+	});
+
+	it('is undefined for Congress judges who aren\'t the chair', () => {
+		expect(feedbackScoring(input({ event: factories.event.mock({ type: 'congress' }) }))).toBeUndefined();
 	});
 
 	it('is undefined for mock trial without mock_trial_feedback', () => {
-		expect(feedbackScoring({ tourn: tourn({}), event: factories.event.mock({ type: 'mock_trial' }), scores: [] })).toBeUndefined();
+		expect(feedbackScoring(input({ event: factories.event.mock({ type: 'mock_trial' }) }))).toBeUndefined();
 	});
 
 	it('is present for mock trial with mock_trial_feedback', () => {
 		const event = factories.event.mock({ type: 'mock_trial', settings: { mock_trial_feedback: '1' } });
 
-		expect(feedbackScoring({ tourn: tourn({}), event, scores: [] })).toBeDefined();
+		expect(feedbackScoring(input({ event }))?.showRfd).toBe(true);
 	});
 
 	it('is present for speech', () => {
-		expect(feedbackScoring({ tourn: tourn({}), event: factories.event.mock({ type: 'speech' }), scores: [] })).toBeDefined();
+		expect(feedbackScoring(input({ event: factories.event.mock({ type: 'speech' }) }))?.showRfd).toBe(true);
 	});
 });
 

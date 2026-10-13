@@ -182,7 +182,13 @@ export const getRestJudgesBallotContextResponseDebateBallotContextMock = (
 			null,
 		]),
 		tz: faker.string.alpha({ length: { min: 10, max: 31 } }),
-		Tourn: { id: faker.number.int({ min: 0, max: 9007199254740991 }) },
+		Tourn: {
+			id: faker.number.int({ min: 0, max: 9007199254740991 }),
+			end: faker.helpers.arrayElement([
+				faker.date.past().toISOString().slice(0, 19) + 'Z',
+				null,
+			]),
+		},
 		Event: {
 			abbr: faker.helpers.arrayElement([
 				faker.string.alpha({ length: { min: 10, max: 20 } }),
@@ -300,12 +306,37 @@ export const getRestJudgesBallotContextResponseDebateBallotContextMock = (
 				undefined,
 			]),
 			ranks: faker.helpers.arrayElement([{}, undefined]),
+			bestPO: faker.helpers.arrayElement([
+				{
+					ballot: faker.helpers.arrayElement([
+						faker.number.int({ min: 0, max: 9007199254740991 }),
+						null,
+					]),
+				},
+				undefined,
+			]),
 			feedback: faker.helpers.arrayElement([
 				{
+					showRfd: faker.datatype.boolean(),
 					rfd: faker.helpers.arrayElement([
 						faker.string.alpha({ length: { min: 10, max: 20 } }),
 						null,
 					]),
+					Entries: Array.from(
+						{ length: faker.number.int({ min: 1, max: 10 }) },
+						(_, i) => i + 1,
+					).map(() => ({
+						ballot: faker.number.int({
+							min: 0,
+							max: 9007199254740991,
+						}),
+						comments: faker.helpers.arrayElement([
+							faker.string.alpha({
+								length: { min: 10, max: 20 },
+							}),
+							null,
+						]),
+					})),
 					minWords: {
 						rfd: faker.helpers.arrayElement([
 							faker.number.int({ min: 0, max: 9007199254740991 }),
@@ -316,10 +347,6 @@ export const getRestJudgesBallotContextResponseDebateBallotContextMock = (
 							null,
 						]),
 					},
-					editableUntil: faker.helpers.arrayElement([
-						faker.date.past().toISOString().slice(0, 19) + 'Z',
-						null,
-					]),
 				},
 				undefined,
 			]),
@@ -343,10 +370,6 @@ export const getRestJudgesBallotContextResponseDebateBallotContextMock = (
 				null,
 			]),
 			doubled: faker.number.int({ min: 0, max: 9007199254740991 }),
-			comments: faker.helpers.arrayElement([
-				faker.string.alpha({ length: { min: 10, max: 20 } }),
-				null,
-			]),
 			points: faker.helpers.arrayElement([
 				faker.number.float({ fractionDigits: 2 }),
 				null,
@@ -483,7 +506,13 @@ export const getRestJudgesBallotContextResponseMockTrialBallotContextMock = (
 			null,
 		]),
 		tz: faker.string.alpha({ length: { min: 10, max: 31 } }),
-		Tourn: { id: faker.number.int({ min: 0, max: 9007199254740991 }) },
+		Tourn: {
+			id: faker.number.int({ min: 0, max: 9007199254740991 }),
+			end: faker.helpers.arrayElement([
+				faker.date.past().toISOString().slice(0, 19) + 'Z',
+				null,
+			]),
+		},
 		Event: {
 			abbr: faker.helpers.arrayElement([
 				faker.string.alpha({ length: { min: 10, max: 20 } }),
@@ -601,12 +630,37 @@ export const getRestJudgesBallotContextResponseMockTrialBallotContextMock = (
 				undefined,
 			]),
 			ranks: faker.helpers.arrayElement([{}, undefined]),
+			bestPO: faker.helpers.arrayElement([
+				{
+					ballot: faker.helpers.arrayElement([
+						faker.number.int({ min: 0, max: 9007199254740991 }),
+						null,
+					]),
+				},
+				undefined,
+			]),
 			feedback: faker.helpers.arrayElement([
 				{
+					showRfd: faker.datatype.boolean(),
 					rfd: faker.helpers.arrayElement([
 						faker.string.alpha({ length: { min: 10, max: 20 } }),
 						null,
 					]),
+					Entries: Array.from(
+						{ length: faker.number.int({ min: 1, max: 10 }) },
+						(_, i) => i + 1,
+					).map(() => ({
+						ballot: faker.number.int({
+							min: 0,
+							max: 9007199254740991,
+						}),
+						comments: faker.helpers.arrayElement([
+							faker.string.alpha({
+								length: { min: 10, max: 20 },
+							}),
+							null,
+						]),
+					})),
 					minWords: {
 						rfd: faker.helpers.arrayElement([
 							faker.number.int({ min: 0, max: 9007199254740991 }),
@@ -617,10 +671,6 @@ export const getRestJudgesBallotContextResponseMockTrialBallotContextMock = (
 							null,
 						]),
 					},
-					editableUntil: faker.helpers.arrayElement([
-						faker.date.past().toISOString().slice(0, 19) + 'Z',
-						null,
-					]),
 				},
 				undefined,
 			]),
@@ -644,10 +694,6 @@ export const getRestJudgesBallotContextResponseMockTrialBallotContextMock = (
 				null,
 			]),
 			doubled: faker.number.int({ min: 0, max: 9007199254740991 }),
-			comments: faker.helpers.arrayElement([
-				faker.string.alpha({ length: { min: 10, max: 20 } }),
-				null,
-			]),
 			points: faker.helpers.arrayElement([
 				faker.number.float({ fractionDigits: 2 }),
 				null,
@@ -762,7 +808,13 @@ export const getRestJudgesBallotContextResponseCongressBallotContextMock = (
 			null,
 		]),
 		tz: faker.string.alpha({ length: { min: 10, max: 31 } }),
-		Tourn: { id: faker.number.int({ min: 0, max: 9007199254740991 }) },
+		Tourn: {
+			id: faker.number.int({ min: 0, max: 9007199254740991 }),
+			end: faker.helpers.arrayElement([
+				faker.date.past().toISOString().slice(0, 19) + 'Z',
+				null,
+			]),
+		},
 		Event: {
 			abbr: faker.helpers.arrayElement([
 				faker.string.alpha({ length: { min: 10, max: 20 } }),
@@ -880,12 +932,37 @@ export const getRestJudgesBallotContextResponseCongressBallotContextMock = (
 				undefined,
 			]),
 			ranks: faker.helpers.arrayElement([{}, undefined]),
+			bestPO: faker.helpers.arrayElement([
+				{
+					ballot: faker.helpers.arrayElement([
+						faker.number.int({ min: 0, max: 9007199254740991 }),
+						null,
+					]),
+				},
+				undefined,
+			]),
 			feedback: faker.helpers.arrayElement([
 				{
+					showRfd: faker.datatype.boolean(),
 					rfd: faker.helpers.arrayElement([
 						faker.string.alpha({ length: { min: 10, max: 20 } }),
 						null,
 					]),
+					Entries: Array.from(
+						{ length: faker.number.int({ min: 1, max: 10 }) },
+						(_, i) => i + 1,
+					).map(() => ({
+						ballot: faker.number.int({
+							min: 0,
+							max: 9007199254740991,
+						}),
+						comments: faker.helpers.arrayElement([
+							faker.string.alpha({
+								length: { min: 10, max: 20 },
+							}),
+							null,
+						]),
+					})),
 					minWords: {
 						rfd: faker.helpers.arrayElement([
 							faker.number.int({ min: 0, max: 9007199254740991 }),
@@ -896,10 +973,6 @@ export const getRestJudgesBallotContextResponseCongressBallotContextMock = (
 							null,
 						]),
 					},
-					editableUntil: faker.helpers.arrayElement([
-						faker.date.past().toISOString().slice(0, 19) + 'Z',
-						null,
-					]),
 				},
 				undefined,
 			]),
@@ -923,10 +996,6 @@ export const getRestJudgesBallotContextResponseCongressBallotContextMock = (
 				null,
 			]),
 			doubled: faker.number.int({ min: 0, max: 9007199254740991 }),
-			comments: faker.helpers.arrayElement([
-				faker.string.alpha({ length: { min: 10, max: 20 } }),
-				null,
-			]),
 			points: faker.helpers.arrayElement([
 				faker.number.float({ fractionDigits: 2 }),
 				null,
@@ -1061,6 +1130,10 @@ export const getRestJudgesBallotSaveResponseDebateBallotReviewMock = (
 			null,
 		]),
 		lowPointWin: faker.datatype.boolean(),
+		bestPO: faker.helpers.arrayElement([
+			faker.number.int({ min: 0, max: 9007199254740991 }),
+			null,
+		]),
 		Entries: Array.from(
 			{ length: faker.number.int({ min: 1, max: 10 }) },
 			(_, i) => i + 1,
