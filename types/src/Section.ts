@@ -32,6 +32,8 @@ export const CurrentBallotSchema = z.object({
 	chair: z.boolean(),
 	audited: z.boolean(),
 	TournTz: TournSchema.shape.tz,
+	eventName: EventSchema.shape.name.meta({ description: 'The name of the event' }),
+	eventAbbr: EventSchema.shape.abbr.meta({ description: 'The abbreviation of the event' }),
 	eventType: EventSchema.shape.type,
 	onlineMode: EventSchema.shape.settings.shape.online_mode,
 	Entries: z.array(z.object({

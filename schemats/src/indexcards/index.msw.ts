@@ -1892,6 +1892,11 @@ export const getUserTournsBallotsResponseMock = (): CurrentBallot[] =>
 		chair: faker.datatype.boolean(),
 		audited: faker.datatype.boolean(),
 		TournTz: faker.string.alpha({ length: { min: 10, max: 31 } }),
+		eventName: faker.string.alpha({ length: { min: 10, max: 20 } }),
+		eventAbbr: faker.helpers.arrayElement([
+			faker.string.alpha({ length: { min: 10, max: 20 } }),
+			null,
+		]),
 		eventType: faker.helpers.arrayElement([
 			'debate',
 			'speech',
@@ -1998,6 +2003,11 @@ export const getUserTournsBallotsCurrentResponseMock = (): CurrentBallot[] =>
 		chair: faker.datatype.boolean(),
 		audited: faker.datatype.boolean(),
 		TournTz: faker.string.alpha({ length: { min: 10, max: 31 } }),
+		eventName: faker.string.alpha({ length: { min: 10, max: 20 } }),
+		eventAbbr: faker.helpers.arrayElement([
+			faker.string.alpha({ length: { min: 10, max: 20 } }),
+			null,
+		]),
 		eventType: faker.helpers.arrayElement([
 			'debate',
 			'speech',

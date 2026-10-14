@@ -50,6 +50,13 @@ export interface CurrentBallot {
 	audited: boolean;
 	/** @maxLength 31 */
 	TournTz: string;
+	/** The name of the event */
+	eventName: string;
+	/**
+	 * The abbreviation of the event
+	 * @nullable
+	 */
+	eventAbbr: string | null;
 	eventType: CurrentBallotEventType;
 	/** @nullable */
 	onlineMode: string | null;

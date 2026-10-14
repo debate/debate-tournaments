@@ -70,6 +70,8 @@ export async function getCurrent(req: Request,res: Response) {
 			chair: s.Ballots.some((b: { chair: number }) => b.chair),
 			audited: s.Ballots.some((b: { audit: number }) => b.audit),
 			TournTz: s.Judge.Category.Tourn.tz,
+			eventName: s.Judge.Category.Event.name,
+			eventAbbr: s.Judge.Category.Event.abbr,
 			eventType: s.Judge.Category.Event.type,
 			onlineMode: s.Judge.Category.Event.settings.online_mode,
 			JudgeId: s.Judge.id,
