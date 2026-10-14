@@ -121,13 +121,15 @@ const { dateOutput, timeOutput } = $derived(showDateRange({
 		{#if (tournSummary?.roles.includes('judge'))}
 		<TabItem open={(currBallots && currBallots.length > 0) ?? false} title="Assignments">
 			{#if currBallots && currBallots.length > 0}
-			{#each currBallots as ballot (ballot.id)}
-				<Ballot ballot={ballot}/>
-			{/each}
+				<div class="flex flex-col gap-2">
+					{#each currBallots as ballot (ballot.id)}
+						<Ballot ballot={ballot} />
+					{/each}
+				</div>
 			{:else}
-			<div>
-				As of now, you have no judging assignments.
-			</div>
+				<div>
+					As of now, you have no judging assignments.
+				</div>
 			{/if}
 		</TabItem>
 		<TabItem title="Past Ballots">{@render notImplemented()}</TabItem>
