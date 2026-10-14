@@ -1,6 +1,7 @@
 import { db } from '../../../data/database.js';
 import fineRepo from '../../../repos/fineRepo.js';
 import tournRepo from '../../../repos/tournRepo.js';
+import { NotFound } from '../../../helpers/problem.js';
 import { sql } from 'kysely';
 
 // The purpose of this function is to deliver a complete list of "things I care
@@ -224,6 +225,7 @@ export async function getPersonTourns(req, res){
 
 export async function getTournSummary(req,res){
 	const tourn = await tournRepo.getPersonTournSummary(db,req.actor.id,req.params.tournId);
+	if(!tourn) return NotFound(req, res, 'Tournament not found');
 	let roles = [];
 	let livedocs = [];
 	if(tourn.judges.length > 0)

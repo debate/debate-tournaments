@@ -79,14 +79,13 @@ export async function getCurrent(req: Request,res: Response) {
 			Entries: s.Entries.map((e: { id: string; code: string }) => {
 				let ballot = s.Ballots.find((b: { entry: string }) => b.entry === e.id)
 				let side = null;
-				if (s.settings.flip_status === undefined || s.settings.flip_status === 'done'){
-					if (ballot.side) {
-						if (ballot.side === 1){
-							side = s.Event.settings.aff_label ?? "Aff";
-						}
-						if (ballot.side === 2){
-							side = s.Event.settings.neg_label ?? "Neg";
-						}
+				if (!s.settings.flip_status || s.settings.flip_status === 'done'){
+					const eventSettings = s.Judge.Category.Event.settings;
+					if (ballot.side === 1){
+						side = eventSettings.aff_label ?? "Aff";
+					}
+					if (ballot.side === 2){
+						side = eventSettings.neg_label ?? "Neg";
 					}
 				}
 				let speakerOrder = ballot.speakerOrder ? JSON.parse(ballot.speakerOrder) : null;

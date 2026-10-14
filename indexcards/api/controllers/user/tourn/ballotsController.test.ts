@@ -91,4 +91,40 @@ describe('getCurrent', () => {
 		expect(returnedBallot.deadline).toBeDefined();
 		expect(returnedBallot.status).toBe('not_started');
 	});
+	it('should label sides unless a flip is incomplete', async () => {
+		const panel = (flipStatus: string | null) => ({
+			Round: {
+				start: new Date().toISOString(),
+				end: new Date(Date.now() + 3600000).toISOString(),
+				published: true,
+				flighted: 0,
+				settings: { judges_ballots_visible: 1 },
+			},
+			Ballots: [
+				{ audit: 0, entry: 1, side: 1, speakerOrder: null },
+				{ audit: 0, entry: 2, side: 2, speakerOrder: null },
+			],
+			Judge: {
+				Category: {
+					Tourn: { settings: { legion: 0 } },
+					Event: { type: 'debate', settings: { online_mode: 'sync', aff_label: 'Pro', neg_label: null } },
+				},
+			},
+			Room: { id: 1, name: 'Room A' },
+			settings: { flip_status: flipStatus, show_async: 0 },
+			scored: false,
+			id: 1,
+			flight: 1,
+			Entries: [{ id: 1, code: 'AA' }, { id: 2, code: 'BB' }],
+		});
+		vi.spyOn(panelRepo, 'getCurrentBallots').mockResolvedValueOnce([panel(null), panel('done'), panel('winner')]);
+
+		const { req, res } = createPersonContext({ id: 123, first: 'Test', last: 'User', email: 'test@example.com', site_admin: 0 }, {});
+		await con.getCurrent(req, res);
+
+		expect(res).not.toBeProblemResponse();
+		const sides = (res.body as Array<{ Entries: { side: string | null }[] }>)
+			.map(ballot => ballot.Entries.map(entry => entry.side));
+		expect(sides).toEqual([['Pro', 'Neg'], ['Pro', 'Neg'], [null, null]]);
+	});
 });
