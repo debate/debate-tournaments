@@ -74,10 +74,6 @@ export async function createFull(overrides: FullTournOverrides = {}){
 		event: CreatedEvent.id,
 		timeslot: CreatedTimeslot.id,
 		...Round,
-		settings: {
-			judges_ballots_visible: 1,
-			...Round?.settings,
-		},
 	});
 	return {
 		Tourn: tourn,

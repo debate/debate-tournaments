@@ -13,6 +13,8 @@ export interface DebateBallotSubmission {
 	eventType: DebateBallotSubmissionEventType;
 	/** The winning entry's ballot row. null when the judge hasn't picked one */
 	winner: number | null;
+	/** The side the judge says the winner was on, 1 for Aff and 2 for Neg, checked against the winner's side. null when the judge hasn't picked one */
+	winnerSide: number | null;
 	/** The judge confirms the winner has fewer points */
 	lowPointWin: boolean;
 	/** Speaker points for every student on the ballot. Empty when the round has no points */

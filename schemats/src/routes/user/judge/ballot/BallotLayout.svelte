@@ -1,23 +1,84 @@
 <script lang='ts'>
-	import type { Snippet } from 'svelte';
-	import type { BallotContext, OtherBallotContext } from '@tabroom/types';
+	import type { Attachment } from 'svelte/attachments';
+	import type { BallotContext, BallotError, BallotReview, BallotValidationProblem, OtherBallotContext } from '@tabroom/types';
 	import { CLASSIC_URL } from '$app/env/public';
+	import { useQueryClient } from '@tanstack/svelte-query';
+	import { createRestJudgesBallotSave, getRestJudgesBallotContextQueryKey } from '$indexcards';
+	import { handleMutation } from '$lib/helpers/query';
 	import WithSidebar from '$lib/layouts/WithSidebar.svelte';
 	import BallotSidebar from './BallotSidebar.svelte';
-	import Feedback from './Feedback.svelte';
+	import ConfirmBallot from './ConfirmBallot.svelte';
+	import Feedback, { type FeedbackDraft } from './Feedback.svelte';
+	import DebateScoring from './scoring/DebateScoring.svelte';
+	import type { DebateScores } from './scoring/draft.svelte';
 
 	type Props = {
 		context: Exclude<BallotContext, OtherBallotContext>;
-		// The context carries no ids, but the feedback saves need them
+		// The context carries no ids, but the feedback and score saves need them
 		judgeId: number;
 		panelId: number;
-		// Regions filled in by the scoring component, which has its own submit.
-		// Scoring shows a placeholder until the component exists.
-		errors?: Snippet;
-		scoring?: Snippet;
 	};
 
-	let { context, judgeId, panelId, errors, scoring }: Props = $props();
+	let { context, judgeId, panelId }: Props = $props();
+
+	// What the judge has written, sent with the scores, which replace the autosaved drafts
+	// svelte-ignore state_referenced_locally
+	let feedback = $state<FeedbackDraft>({
+		rfd: context.scoring.feedback?.rfd ?? null,
+		Entries: (context.scoring.feedback?.Entries ?? []).map((entry) => ({ ...entry })),
+	});
+
+	// Why the server refused the last submit. The server is the only check; any edit clears them
+	let errors = $state<BallotError[]>([]);
+	const clearErrors = () => {
+		if (errors.length > 0) errors = [];
+	};
+	// The ballot as last saved, which the judge checks in the confirm popup
+	let review = $state<BallotReview | null>(null);
+	let confirmOpen = $state(false);
+	let submitting = $state(false);
+	// Confirmed scores are final (ballot.mhtml 1535-1567); feedback stays editable. Follows the
+	// context too: a reload first shows the persisted context from before confirming, then refetches
+	let justConfirmed = $state(false);
+	const confirmed = $derived(justConfirmed || context.status === 'confirmed');
+
+	const queryClient = useQueryClient();
+	function onconfirmed() {
+		justConfirmed = true;
+		// Refresh the stored context, so it isn't the unconfirmed one next time
+		queryClient.invalidateQueries({ queryKey: getRestJudgesBallotContextQueryKey(judgeId, panelId) });
+	}
+
+	const save = createRestJudgesBallotSave();
+
+	async function submitScores(scores: DebateScores) {
+		submitting = true;
+		review = null;
+
+		const saved = await handleMutation(save.mutateAsync({ judgeId, panelId, data: { ...scores, feedback } }), {
+			// A ballot that breaks its rules lists every problem; anything else gets the usual toast
+			Problem: (problem, callDefault) => {
+				const listed = (problem as Partial<BallotValidationProblem>).errors;
+				if (problem.status === 422 && listed) {
+					errors = listed;
+				} else {
+					callDefault(problem);
+				}
+			},
+		});
+		submitting = false;
+
+		if (saved) {
+			errors = [];
+			review = saved;
+			confirmOpen = true;
+		}
+	}
+
+	// Brings a new errors box into view
+	const reveal: Attachment<HTMLElement> = (element) => {
+		element.focus();
+	};
 
 	const classicUrl = $derived(`${CLASSIC_URL}/user/judge/ballot.mhtml?panel_id=${panelId}&judge_id=${judgeId}`);
 
@@ -115,7 +176,25 @@
 			</div>
 		{/each}
 
-		{@render errors?.()}
+		{#if errors.length > 0}
+			<!-- ballot.mhtml 1448-1465. Keyed so each refused submit brings it back into view -->
+			{#key errors}
+				<div
+					class='flex flex-col gap-2 rounded-md border-2 border-danger p-3 text-center'
+					{@attach reveal}
+					role='alert'
+					tabindex='-1'
+				>
+					<h6 class='my-0 font-semibold text-primary-strong'>Oh, drat. Your ballot had errors.</h6>
+					<ul class='my-0 list-none p-0 font-semibold text-danger'>
+						{#each errors as error, index (index)}
+							<li>{error.message}</li>
+						{/each}
+					</ul>
+					<p class='my-0 font-semibold text-primary-strong'>Please correct these before continuing.</p>
+				</div>
+			{/key}
+		{/if}
 
 		{#if pointsRules || notedEntries.length > 0}
 			<div class='flex flex-col gap-2 border-t border-border pt-3'>
@@ -144,31 +223,29 @@
 			</div>
 		{/if}
 
-		<section aria-label='Scoring'>
-			<!-- The heading over the debate sides column (ballot.mhtml 1674-1686) -->
-			{#if context.eventType === 'debate'}
-				<div class='text-center text-sm font-semibold'>
-					{#if context.debate.sides === 'flip'}
-						{context.debate.flipStatus === 'done' ? 'FLIP COMPLETE' : 'FLIP INCOMPLETE'}
-					{:else if context.debate.sides === 'pick'}
-						Select Side
-					{:else}
-						Sides Set
-					{/if}
-				</div>
-			{/if}
-
-			{#if scoring}
-				{@render scoring()}
+		<!-- input bubbles from every field, the feedback editor included, so any edit clears the errors -->
+		<section aria-label='Scoring' oninput={clearErrors}>
+			{#if confirmed}
+				<!-- ballot.mhtml 1535-1567 -->
+				<p class='my-0 rounded-md border border-success bg-success-soft p-3 text-center font-semibold' role='status'>
+					This ballot has been entered and confirmed already.
+					Changes to confirmed results require contacting the tournament staff.
+				</p>
+			{:else if context.eventType === 'debate'}
+				<DebateScoring {context} onsubmit={submitScores} {submitting} />
 			{:else}
 				{@render placeholder('Scoring')}
 			{/if}
 		</section>
 
+		{#if review}
+			<ConfirmBallot {judgeId} {onconfirmed} {panelId} {review} bind:open={confirmOpen} />
+		{/if}
+
 		<!-- Classic shows nothing here for Congress judges who aren't the chair, or mock trial without mock_trial_feedback -->
 		{#if context.scoring.feedback}
-			<section aria-label='Feedback'>
-				<Feedback {context} {judgeId} {panelId} />
+			<section aria-label='Feedback' oninput={clearErrors}>
+				<Feedback {context} {judgeId} {panelId} bind:feedback />
 			</section>
 		{/if}
 

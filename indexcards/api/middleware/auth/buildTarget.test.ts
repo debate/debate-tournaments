@@ -2,6 +2,7 @@ import eventRepo from '../../repos/eventRepo.js';
 import categoryRepo from '../../repos/categoryRepo.js';
 import { buildTarget, type Target } from './buildTarget.js';
 import { db } from '../../data/database.js';
+import factories from '../../../tests/factories/index.js';
 
 describe('buildTarget', () => {
 	let targetCache: Map<string, Target>;
@@ -56,5 +57,16 @@ describe('buildTarget', () => {
 			categoryId: 10,
 		});
 		expect(targetCache.get('event:456')).toEqual(result);
+	});
+	it('target for an unpublished round still has its event and tourn, so tab staff keep access', async () => {
+		const tourn = await factories.tourn.create();
+		const category = await factories.category.create({ tourn: tourn.id });
+		const event = await factories.event.create({ tourn: tourn.id, category: category.id });
+		const round = await factories.round.create({ event: event.id, published: 0 });
+		const panel = await factories.panel.create({ round: round.id });
+
+		const result = await buildTarget(db, 'panel', panel.id, targetCache);
+
+		expect(result).toMatchObject({ roundId: round.id, eventId: event.id, tournId: tourn.id });
 	});
 });

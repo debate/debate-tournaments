@@ -92,7 +92,8 @@ export async function buildTarget(db: Database, resource: string, resourceId: Re
 			break;
 		}
 		case 'round': {
-			const round = await roundRepo.getRound(db, resourceId);
+			// Who manages a round doesn't depend on whether it's published
+			const round = await roundRepo.getRound(db, resourceId, { unpublished: true });
 			if (round && round.event) {
 				target.eventId = round.event;
 				target ={

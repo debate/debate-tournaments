@@ -9,18 +9,37 @@ describe('/rest/judges/:judgeId/panels/:panelId', () => {
 	let otherUserkey: string;
 	let judgeId: number;
 	let panelId: number;
+	// The same judge's ballot on a round that isn't out to judges yet
+	let unpublishedPanelId: number;
 
 	beforeAll(async () => {
 		const person = await factories.person.create();
 		({ userkey: judgeUserkey } = await factories.session.create({ person: person.id }));
 		({ userkey: otherUserkey } = await factories.session.create());
 
-		const { Category, Round } = await factories.tourn.createFull();
+		const { Category, Event, Round } = await factories.tourn.createFull();
 		const judge = await factories.judge.create({ person: person.id, category: Category.id });
 		const panel = await factories.panel.create({ round: Round.id });
 		await factories.ballot.create({ judge: judge.id, panel: panel.id });
 		judgeId = judge.id;
 		panelId = panel.id;
+
+		const unpublishedRound = await factories.round.create({ event: Event.id, published: 0 });
+		const unpublishedPanel = await factories.panel.create({ round: unpublishedRound.id });
+		await factories.ballot.create({ judge: judge.id, panel: unpublishedPanel.id });
+		unpublishedPanelId = unpublishedPanel.id;
+	});
+
+	it.each([
+		['get', ''],
+		['get', '/status'],
+		['post', '/start'],
+		['post', '/confirm'],
+	] as const)('returns 404 to the judge on %s /ballots%s before the round is out to judges', async (method, path) => {
+		const res = await request(server)[method](url(judgeId, unpublishedPanelId) + path).asPerson(judgeUserkey);
+
+		expect(res).toBeProblemResponse(404);
+		expect(res.body.detail).toBe(`Judge ${judgeId} has no ballot on panel ${unpublishedPanelId}`);
 	});
 
 	const url = (judge: number | string, panel: number | string) => `/v1/rest/judges/${judge}/panels/${panel}/ballots`;

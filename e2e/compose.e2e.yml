@@ -28,6 +28,12 @@ configs:
         },
         "csrf": {
           "trusted_origins": ["https://e2e.tabroom.test"]
+        },
+        "features": {
+          "HIDE_DEV_ENDPOINTS": false
+        },
+        "classic": {
+          "url": "http://classic-e2e:8080"
         }
       }
 
@@ -93,6 +99,26 @@ services:
       retries: 20
       start_period: 10s
 
+  # Classic Tabroom stand-in for the pages indexcards calls (classic/server.ts). Runs from the
+  # e2e image, which has the indexcards code and config to reach the test database
+  classic-e2e:
+    build:
+      context: ..
+      dockerfile: ./e2e/Dockerfile
+    configs:
+      - source: indexcards
+        target: /config/config.json
+    # tsx is an indexcards devDependency, installed under indexcards/ rather than the root
+    command: ["../indexcards/node_modules/.bin/tsx", "classic/server.ts"]
+    depends_on:
+      tabroomdb-e2e:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:8080/healthz').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
   schemats:
     build:
       context: ..
@@ -124,6 +150,8 @@ services:
       nginx:
         condition: service_healthy
       indexcards:
+        condition: service_healthy
+      classic-e2e:
         condition: service_healthy
       schemats:
         condition: service_started

@@ -9,7 +9,7 @@ describe('getCurrent', () => {
 	it('should not return unpublished rounds', async () => {
 		// Mock data
 		const mockBallots = [
-			{ Round: { published: false } },
+			{ Round: { published: false, settings: { judges_ballots_visible: false } } },
 		];
 		vi.spyOn(panelRepo, 'getCurrentBallots').mockResolvedValueOnce(mockBallots);
 
@@ -28,6 +28,37 @@ describe('getCurrent', () => {
 		// Assertions
 		expect(res).not.toBeProblemResponse();
 		expect(res.body).toEqual([]);
+	});
+	it('returns published rounds, and unpublished rounds released to judges only', async () => {
+		// Classic's rule: published, or judges_ballots_visible ("Publish ballots but not schematic")
+		const panel = (id: number, published: boolean, judgesBallotsVisible: boolean) => ({
+			Round: {
+				start: new Date().toISOString(),
+				end: new Date(Date.now() + 3600000).toISOString(),
+				published,
+				flighted: 0,
+				settings: { judges_ballots_visible: judgesBallotsVisible },
+			},
+			Ballots: [{ audit: 0, entry: 1, side: 1, speakerOrder: null }],
+			Judge: { Category: { Tourn: { settings: { legion: 0 } }, Event: { type: 'debate', settings: { online_mode: 'sync' } } } },
+			Room: { id: 1, name: 'Room A' },
+			settings: { flip_status: null, show_async: 0 },
+			scored: false,
+			id,
+			flight: 1,
+			Entries: [{ id: 1, code: 'AA' }],
+		});
+		vi.spyOn(panelRepo, 'getCurrentBallots').mockResolvedValueOnce([
+			panel(1, true, false),
+			panel(2, false, true),
+			panel(3, false, false),
+		]);
+
+		const { req, res } = createPersonContext({ id: 123, first: 'Test', last: 'User', email: 'test@example.com', site_admin: 0 }, {});
+		await con.getCurrent(req, res);
+
+		expect(res).not.toBeProblemResponse();
+		expect((res.body as Array<{ id: number }>).map(ballot => ballot.id)).toEqual([1, 2]);
 	});
 	it('should correctly return a flighted round', async () => {
 		// Mock data

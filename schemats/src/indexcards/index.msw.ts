@@ -1240,6 +1240,32 @@ export const getRestJudgesBallotStatusResponseMock = (
 	...overrideResponse,
 });
 
+export const getRestJudgesBallotConfirmResponseMock = (
+	overrideResponse: Partial<Extract<BallotProgress, object>> = {},
+): BallotProgress => ({
+	status: faker.helpers.arrayElement(Object.values(BallotStatus)),
+	Entries: Array.from(
+		{ length: faker.number.int({ min: 1, max: 10 }) },
+		(_, i) => i + 1,
+	).map(() => ({
+		ballot: faker.number.int({ min: 0, max: 9007199254740991 }),
+		side: faker.number.int({
+			min: -9007199254740991,
+			max: 9007199254740991,
+		}),
+	})),
+	flipStatus: faker.helpers.arrayElement([
+		faker.helpers.arrayElement([
+			'winner',
+			'loser',
+			'anyone',
+			'done',
+		] as const),
+		null,
+	]),
+	...overrideResponse,
+});
+
 export const getRestJudgesBallotFeedbackResponseMock = (
 	overrideResponse: Partial<Extract<BallotFeedback, object>> = {},
 ): BallotFeedback => ({
@@ -3007,6 +3033,30 @@ export const getRestJudgesBallotStatusMockHandler = (
 	);
 };
 
+export const getRestJudgesBallotConfirmMockHandler = (
+	overrideResponse?:
+		| BallotProgress
+		| ((
+				info: Parameters<Parameters<typeof http.post>[1]>[0],
+		  ) => Promise<BallotProgress> | BallotProgress),
+	options?: RequestHandlerOptions,
+) => {
+	return http.post(
+		'*/rest/judges/:judgeId/panels/:panelId/ballots/confirm',
+		async (info: Parameters<Parameters<typeof http.post>[1]>[0]) => {
+			return HttpResponse.json(
+				overrideResponse !== undefined
+					? typeof overrideResponse === 'function'
+						? await overrideResponse(info)
+						: overrideResponse
+					: getRestJudgesBallotConfirmResponseMock(),
+				{ status: 200 },
+			);
+		},
+		options,
+	);
+};
+
 export const getRestJudgesBallotFeedbackMockHandler = (
 	overrideResponse?:
 		| BallotFeedback
@@ -3854,6 +3904,7 @@ export const getIndexCardsAPIMock = () => [
 	getRestJudgesBallotSaveMockHandler(),
 	getRestJudgesBallotStartMockHandler(),
 	getRestJudgesBallotStatusMockHandler(),
+	getRestJudgesBallotConfirmMockHandler(),
 	getRestJudgesBallotFeedbackMockHandler(),
 	getRestTournsMockHandler(),
 	getGetTournResultSetsMockHandler(),

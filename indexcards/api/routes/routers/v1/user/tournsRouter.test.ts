@@ -93,8 +93,16 @@ describe('GET /user/tourns/{tournId}/ballots/current', () => {
 
 		expect(res.body).toMatchSchema(z.array(CurrentBallotSchema));
 	});
-	it('Does not return ballots for unpublished rounds or rounds with judges_ballots_visible set to false', async () => {
-		const { Tourn } = await factories.person.createBallot({person: personId, Round: { published: 0 } });
+	// Classic's rule: published, or released to judges only (judges_ballots_visible, "Publish ballots but not schematic")
+	it.each([
+		['an unpublished round', 0, 0, 0],
+		['an unpublished round released to judges', 0, 1, 1],
+		['a published round', 1, 0, 1],
+	])('Returns %s only when judges can see it', async (_label, published, judgesBallotsVisible, count) => {
+		const { Tourn } = await factories.person.createBallot({
+			person: personId,
+			Round: { published, settings: { judges_ballots_visible: judgesBallotsVisible } },
+		});
 		const res = await request(server)
 			.get(`/v1/user/tourns/${Tourn.id}/ballots/current`)
 			.set('Accept', 'application/json')
@@ -103,18 +111,7 @@ describe('GET /user/tourns/{tournId}/ballots/current', () => {
 			.expect(200);
 
 		expect(res.body).toMatchSchema(z.array(CurrentBallotSchema));
-		expect(res.body).toHaveLength(0);
-
-		const { Tourn: Tourn2 } = await factories.person.createBallot({person: personId, Round: { settings: { judges_ballots_visible: 0 } } });
-		const res2 = await request(server)
-			.get(`/v1/user/tourns/${Tourn2.id}/ballots/current`)
-			.set('Accept', 'application/json')
-			.asPerson(userkey)
-			.expect('Content-Type', /json/)
-			.expect(200);
-
-		expect(res2.body).toMatchSchema(z.array(CurrentBallotSchema));
-		expect(res2.body).toHaveLength(0);
+		expect(res.body).toHaveLength(count);
 	});
 	it('Does not return audited ballots', async () => {
 		const { Tourn } = await factories.person.createBallot({person: personId, Ballot: { audit: 1 }, Event: { type: 'debate' } });

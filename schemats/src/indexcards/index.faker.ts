@@ -1237,6 +1237,32 @@ export const getRestJudgesBallotStatusResponseMock = (
 	...overrideResponse,
 });
 
+export const getRestJudgesBallotConfirmResponseMock = (
+	overrideResponse: Partial<Extract<BallotProgress, object>> = {},
+): BallotProgress => ({
+	status: faker.helpers.arrayElement(Object.values(BallotStatus)),
+	Entries: Array.from(
+		{ length: faker.number.int({ min: 1, max: 10 }) },
+		(_, i) => i + 1,
+	).map(() => ({
+		ballot: faker.number.int({ min: 0, max: 9007199254740991 }),
+		side: faker.number.int({
+			min: -9007199254740991,
+			max: 9007199254740991,
+		}),
+	})),
+	flipStatus: faker.helpers.arrayElement([
+		faker.helpers.arrayElement([
+			'winner',
+			'loser',
+			'anyone',
+			'done',
+		] as const),
+		null,
+	]),
+	...overrideResponse,
+});
+
 export const getRestJudgesBallotFeedbackResponseMock = (
 	overrideResponse: Partial<Extract<BallotFeedback, object>> = {},
 ): BallotFeedback => ({

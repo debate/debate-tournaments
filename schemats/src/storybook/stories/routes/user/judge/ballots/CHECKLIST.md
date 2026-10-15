@@ -4,11 +4,11 @@ Every element on the beta ballot page, in render order, for approval one at a ti
 Stories: `general.stories.svelte` (shared), `debate.stories.svelte`, `mock_trial.stories.svelte`. Add a story for each event-type difference as it's handled.
 
 ## Route and page state
-- [ ] **Route wiring**: `routes/user/judge/ballot/+page.svelte` loads the ballot context and renders `BallotLayout`; it only prints the ids today.
-- [ ] **Unsupported ballot**: `OtherBallotContext` sends the judge to the classic ballot.
+- [x] **Route wiring**: `routes/user/judge/ballot/+page.svelte` loads the ballot context (`RestJudgesBallotContext`) and renders `BallotLayout`, which opens with a notice: "This is the beta ballot. If you have any issues, use the classic ballot." A context that fails to load says so, with the classic link. Still behind `requireDevPages`. Stories: Page.
+- [x] **Unsupported ballot**: `OtherBallotContext` shows "This ballot uses features that are unsupported on the beta" with a link to the classic ballot (`ballot.mhtml?panel_id=&judge_id=` on `CLASSIC_URL`).
 - [ ] **Early exits**: "You are not authorized to enter ballots for that judge." (231–241, admins and tourn owners get through as `notme`); "That tournament does not have tiebreakers set. Please contact the tournament tab staff..." back to the judge's panels (243–247); "That judge does not have a ballot in that room." (280–283). Classic redirects to home with the message (11–14 for missing ids).
 - [ ] **Other ballot pages**: WSDC with point tiebreaks goes to `wsdc_ballot.mhtml` (39–41); tourns with `legion` go to `legion_ballot.mhtml` (45–47).
-- [ ] **Already confirmed**: every ballot audited replaces the form with "This ballot has been entered and confirmed already. Changes to confirmed results require contacting the tournament staff." Mock trial instead shows its scored message, or "You are not required to score this round; you can just preside." when there are no scores. 1535–1567.
+- [ ] **Already confirmed**: every ballot audited replaces the form with "This ballot has been entered and confirmed already. Changes to confirmed results require contacting the tournament staff." Mock trial instead shows its scored message, or "You are not required to score this round; you can just preside." when there are no scores. 1535–1567. Debate done: a confirmed ballot (`status: 'confirmed'`, or just confirmed in the popup) replaces the scoring region with classic's message; feedback stays editable. Story: Debate / Already Confirmed. Mock trial's messages still to do.
 - [ ] **PO points gate**: with `po_points_required`, no PO points yet and not chair, the form is replaced by "You must give points to a presiding officer" and its explanation. 390–1404.
 - [ ] **Mark started**: on load, set `started_by` and `judge_started` when not yet started, unless the viewer is acting for another judge (`notme`). 339–350.
 - [ ] **Access polling**: call `checkBallotAccess` on load and every 2 minutes; on `refresh`, leave the page with its message. Skipped for the Congress chair. 643–666.
@@ -22,11 +22,11 @@ Stories: `general.stories.svelte` (shared), `debate.stories.svelte`, `mock_trial
 ## Main column: text blocks
 - [x] **Chair label**: shown when `chair`; the event's `chairLabel`, else Parliamentarian (Congress) or Chair Judge, in capitals via CSS. The defaults are built in schemats so they can be translated. 1152–1162.
 - [x] **Round notes** (`Round.notes`): "Note: …", warning style. 1166–1170. Plain text from the round settings textarea, often a Zoom link plus a contact email. Beta keeps line breaks and links bare `http(s)://` URLs; classic collapsed both. Story: General / Round Notes.
+- [x] **Topic**: the event's topic ("TOPIC:"), else the published motion ("Motion:"), else the resolution ("Resolution:") + text, centered, bold, blue and larger like classic, with prose styles. 1330–1361. Above the ballot header, unlike classic. Big Questions is a separate item below.
 - [X] **Ballot header / bias statement**: bordered box, raw HTML. 1172–1178 and 1367, combined (see the notes log).
-- [x] **Topic**: the event's topic ("TOPIC:"), else the published motion ("Motion:"), else the resolution ("Resolution:") + text, centered, bold, blue and larger like classic, with prose styles. 1330–1361. Big Questions is a separate item below.
 - [x] **Rules**: `rules[]` (`ballot_rules_chair` for the chair, then `ballot_rules` unless chair + `chair_ballot_only`), HTML with prose styles. 1374–1386.
 - [ ] **Big Questions rules**: `bqd_rules`. 1372–1376.
-- [ ] **Errors slot**: empty for now; for "Oh, drat. Your ballot had errors." + the errors + "Please correct these before continuing." Classic fills it from the Congress equal-speech-count check ("Warning! Judge X has N scores for competitor Y while you have Z!", 392–448). 1448–1465.
+- [ ] **Errors slot**: "Oh, drat. Your ballot had errors." + the errors + "Please correct these before continuing.", focused when it appears. Filled only by the server's 422 `errors` (the page doesn't check the scores itself), and the only place errors show. Any edit to the scores or feedback clears it. Stories: Debate / Server Errors and Errors Clear On Edit. Still to do: classic also fills it from the Congress equal-speech-count check ("Warning! Judge X has N scores for competitor Y while you have Z!", 392–448). 1448–1465.
 - [x] **Points rules line**: shown when `scoring.points` and no `points.rubric`. "Points Rules: Range: min-max." + "Whole points only." + "Ties are OK."/"No ties." + "Ranks and points must agree." (`points.ranksAgree`) + "Winner must have higher points." (`winloss.lpw` forbid) + "Steps of X.", in classic's order. Range defaults by event type (0–6 Congress, 0–100 speech, 0–30 otherwise). 1468–1500.
 - [x] **Accommodations Note**: `code: note` per entry with `ballot_notes`, in the order the API sends. 1506–1530. The API converts the saved text to plain text (tags removed, entities decoded, line breaks kept) and the UI keeps the line breaks; classic printed the saved HTML. Story: General / Accommodation Note.
 
@@ -36,25 +36,33 @@ Stories: `general.stories.svelte` (shared), `debate.stories.svelte`, `mock_trial
 - [ ] **Tab panes**: recency (1276–1281), seating chart (1285–1294), feedback (1296–1309), speeches (1311–1325).
 
 ## Main column: regions (placeholders until the components exist)
-- [ ] **Scoring**: Aff/Neg columns, points and winner. 1570–2818. Covers the sides and flips, speaker order, entry columns, ranks and points, rubrics, winner, low-point win, outstanding rubric and PO ratings, and their validation.
+- [ ] **Scoring**: 1570–2818. Debate first, through the whole pipeline; other event types later.
+  - [x] **Debate** (`scoring/DebateScoring.svelte` on `Table.svelte`): one row per speaker, with the side and entry cells spanning the entry's speakers (classic stacked the speakers inside one cell). Columns: side (headed "Sides Set" or "FLIP COMPLETE/INCOMPLETE", which used to sit above the region), entry code with doubled daggers, speaker, points. Points inputs take min/max/step from `scoring.points` as spinner hints only. Then `WinnerSelect`, the low-point win checkbox and the submit. No checks on the page: the server's `validateBallot` is the only validation, and its errors go to the errors box. Stories: Scoring (every state), Debate / Server Errors, Errors Clear On Edit and Saved.
+  - [ ] Debate settings still sent to classic: pick sides (`sides: 'pick'`), speaker order (`no_side_constraints`), team points, ranks, subscores (`wsdc_categories`), rubrics, school/region/name columns, video, violation and no-show.
+  - [ ] Speech, Congress, mock trial, WUDC. When the entry columns show school codes, take `ballot_school_codes` out of `UNSUPPORTED_CATEGORY_SETTINGS` (`ballotRules.ts`); the feedback `entryLabel` already handles it.
 - [ ] **`lower_rules`** text below the scoring. 2719–2723.
-- [ ] **Doubled-entry footnote**: explains the dagger marks on doubled entries. 2821–2828.
+- [x] **Doubled-entry footnote**: "† These entries are doubled entered…" under the scoring table when any entry is doubled; the entry cell shows one dagger per doubling, like classic. 2821–2828. Story: Scoring / Doubled Entry.
 
-### Submit (2830–2891, hidden for a rubric with points outside speech)
-- [ ] **Offline warning**: "Warning: Your Browser Appears To Be Offline", shown when a feedback save fails. 2832–2847.
+### Scoring's submit (2830–2891, hidden for a rubric with points outside speech)
+Part of the scoring component, not a region of its own.
+- [ ] **Offline warning**: "Warning: Your Browser Appears To Be Offline", shown when a feedback save fails. 2832–2847. Drive it from `Feedback`'s bindable `saveFailed`.
 - [ ] **Low-Point Ranks checkbox**: `allow_lowpoints`. 2850–2869.
-- [ ] **Submit button**: "Save Scores" for mock trial, else "Submit Ballot"; hidden while a low-point win is pending and unconfirmed. 2874–2881, 1047–1051.
+- [ ] **Submit button**: "Save Scores" for mock trial, else "Submit Ballot". Classic hid it while a low-point win was pending and unconfirmed; the beta always shows it (see the low-point win item). 2874–2881, 1047–1051. Debate done: "Submit Ballot" is always shown and sends the scores as entered, with the feedback, to `PUT .../ballots` (`RestJudgesBallotSave`). A 200 opens the confirm popup. Mock trial's label is still to do.
+- [x] **Confirm popup** (`ConfirmBallot.svelte`): classic's "Is this correct?" page (`ballot_save.mhtml` 1950–2292) as a popup, listing the saved winner, low-point win and points. "No, re-enter" closes it, leaving the scores saved but unconfirmed like classic's re-enter. "Yes, confirm" calls `POST .../ballots/confirm` (`RestJudgesBallotConfirm`), which runs classic's `ballot_confirm.mhtml` for now. A 503 keeps the popup open with the error and a "Confirm on classic Tabroom" link. Stories: Debate / Confirm and Confirm Fails.
+- [x] **Low-point win** (debate): a "Low-Point Win?" checkbox beside the submit whenever the tournament allows confirmed low-point wins (`winloss.lpw` confirm), like classic's "Low-Point Ranks?" box (2850–2869), so the judge can mark one without a refused submit. No live prompt: classic's `#lpwbox` (2667–2702, 1018–1052) appeared as the points changed; the beta leaves it to the server, which refuses an unmarked low-point win, a marked one that isn't, or any with `forbid`. Story: Scoring / Low-Point Win Allowed.
 - [ ] **Signature line**: `dumb_signature_line` text. 2887–2891.
 
 ### Feedback (2892–3132; not for Congress, or mock trial without `mock_trial_feedback`)
-- [ ] **Heading**: "Feedback". 2901–2907.
-- [ ] **Edit-until notice**: "You can write & edit feedback until [tourn end]..." + submit ranks first, then edit under the Past tab. 2949–2962.
-- [ ] **Word minimums**: `comments_plz` "At least N words of feedback are required for each speaker before you may submit your ballot." (2964–2969); `rfd_plz` "A written RFD of at least N words is required...", with mock trial's "reason for verdict" wording (2971–2980).
-- [ ] **Box switcher**: tabs (Reason for Verdict / Rankings / Decision, then one per entry by code) under 4 ballots (2983–3013); a "Comments for" select at 4 or more, "Everyone (Reason for Rankings)" then entries, with names when `ballot_names` differs from the code (2910–2945).
-- [ ] **RFD box**: "These comments go to all participants in the round." (+ "Must be at least N words long." for debate with `rfd_plz`), Save Feedback button, textarea with the minimum as placeholder. 3015–3056.
-- [ ] **Per-entry boxes**: "These comments go only to CODE [school code / school / entry name / title / first names] & coaches", Save Feedback button, textarea with the minimum as placeholder. 3058–3132.
-- [ ] **Saving**: per box via `comment_save`, auto-save on box switch and once on load, "All comments and feedback were saved" / "Errors were encountered saving; is your network connection active?". 677–743, 798–810, 1069–1091.
-- [ ] **Rich text**: classic uses TinyMCE for these boxes. 537.
+`Feedback.svelte`, rendered by `BallotLayout` when the context has `scoring.feedback`. Stories: Feedback (each case below); every layout story shows it too.
+- [x] **Heading**: "Feedback". 2901–2907.
+- [x] **Edit-until notice**: "You can write & edit feedback until [tourn end]..." + submit ranks first, then edit under the Past tab. 2949–2962. The date reads "Sun, Oct 18 at 5:00 PM" in the tourn time zone (classic has no comma); hidden when the tourn has no end.
+- [x] **Word minimums**: `comments_plz` "At least N words of feedback are required for each speaker before you may submit your ballot." (2964–2969); `rfd_plz` "A written RFD of at least N words is required...", with mock trial's "reason for verdict" wording (2971–2980). The RFD one is hidden when there's no RFD box (Congress chair).
+- [x] **Box switcher**: tabs (Reason for Verdict / Rankings / Decision, then one per entry by code) at every entry count (2983–3013). Classic's "Comments for" select at 4 or more ballots (2910–2945) is left to `Tabs`, which will turn into a dropdown when the tabs don't fit.
+- [x] **RFD box**: "These comments go to all participants in the round." (+ "Must be at least N words long." for debate with `rfd_plz`), Save Feedback button, editor with the minimum as placeholder. 3015–3056.
+- [x] **Per-entry boxes**: "These comments go only to {entryLabel} & coaches", Save Feedback button, editor with the minimum as placeholder. 3058–3132. The API builds `entryLabel` from every setting classic uses (school code, school name, entry name, title, first names) and leaves out empty parts, which classic didn't. `ballot_school_codes` still sends the ballot to classic until the scoring block shows the school column; titles are speech only.
+- [x] **Saving**: all feedback at once through `PUT .../ballots/feedback` (`RestJudgesBallotFeedback`): 3s after the judge stops typing, on a box switch, on Save Feedback and when leaving the page. 677–743, 798–810, 1069–1091. "All comments and feedback were saved" shows only for Save Feedback (classic showed it on every autosave, before the save finished). A network error or 5xx shows "Errors were encountered saving; is your network connection active?" and sets `saveFailed` for the offline warning; other problems (tourn over, bad entry) get the usual problem toast. No save on load, which classic did with unchanged text.
+- [x] **Rich text**: the shared `Editor` (tiptap) instead of TinyMCE (537). Its toolbar has no lists, indent or link, which classic's had.
+- [ ] **Congress chair**: the beta shows the generic boxes without an RFD tab. Classic uses `congress_feedback.mas` instead: "General Feedback", a "Select a speaker:" select with "(PO)" marks, and a word-count toolbar. Belongs with the Congress tab strip.
 
 ### Below feedback
 - [ ] **Big Questions footer**: NSDA and Templeton logos, linked, new tab. 3144–3171.
@@ -81,7 +89,7 @@ Stories: `general.stories.svelte` (shared), `debate.stories.svelte`, `mock_trial
 ## Not built yet (in classic)
 - [ ] **Online room join** (`funclib/online_room.mas`): sync link priority (`override_link`, then `judge_url` for judges and tab, then `room.url`) with passwords; NSDA Campus JWT form POST; hybrid badge with `map_url`; `online_event_match`; join logging to `campus_log`. Needs an indexcards service plus an endpoint. 1114, 3436.
 - [ ] **Coin Flips row**: built in `BallotSidebar` for online flips (`debate.sides === 'flip'`): "Complete" in green once `flipStatus` is `done`, else "Incomplete" in orange. Stories: Debate / Flip Incomplete and Flip Complete. 3372–3388.
-- [ ] **Sides heading**: "Sides Set", "Select Side" or "FLIP COMPLETE"/"FLIP INCOMPLETE", centered at the top of `BallotLayout`'s scoring region for debate. Moves over the sides column when the scoring columns exist. 1674–1686.
+- [x] **Sides heading**: "Sides Set", "Select Side" or "FLIP COMPLETE"/"FLIP INCOMPLETE", as the header of the scoring table's side column. 1674–1686.
 - [ ] **Flip polling**: in the page, while `debate.sides === 'flip'`, poll `/status` every 2 minutes and reload the context when any `Entries` side or `flipStatus` differs from it (classic reloaded the page). 607–641.
 - [ ] **Prep Breakout Rooms**: online prep. 3423–3445.
 - [ ] **Pending / Completed ballots** lists: the person's other ballots in this tourn, published rounds only; pending link to the ballot, completed to `rfd_only.mhtml`. Classic builds both links with the wrong judge id (3644, 3684). Not in the context. 3599–3694.

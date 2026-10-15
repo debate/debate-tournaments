@@ -57,6 +57,7 @@ import type {
 	ParadigmDetailsSchema,
 	ParadigmSearchResult,
 	PersonTournSummary,
+	ProblemSchema,
 	QuizOutput,
 	RegisterRequest,
 	RestCircuit,
@@ -2093,6 +2094,209 @@ export const prefetchRestJudgesBallotStatusQuery = async <
 	await queryClient.prefetchQuery(queryOptions);
 
 	return queryClient;
+};
+
+export type restJudgesBallotConfirmResponse200 = {
+	data: BallotProgress;
+	status: 200;
+};
+
+export type restJudgesBallotConfirmResponse400 = {
+	data: BadRequestResponse;
+	status: 400;
+};
+
+export type restJudgesBallotConfirmResponse401 = {
+	data: UnauthorizedResponse;
+	status: 401;
+};
+
+export type restJudgesBallotConfirmResponse403 = {
+	data: ForbiddenResponse;
+	status: 403;
+};
+
+export type restJudgesBallotConfirmResponse404 = {
+	data: NotFoundResponse;
+	status: 404;
+};
+
+export type restJudgesBallotConfirmResponse409 = {
+	data: ConflictResponse;
+	status: 409;
+};
+
+export type restJudgesBallotConfirmResponse500 = {
+	data: ErrorResponseResponse;
+	status: 500;
+};
+
+export type restJudgesBallotConfirmResponse503 = {
+	data: ProblemSchema;
+	status: 503;
+};
+
+export type restJudgesBallotConfirmResponseSuccess =
+	restJudgesBallotConfirmResponse200 & {
+		headers: Headers;
+	};
+export type restJudgesBallotConfirmResponseError = (
+	| restJudgesBallotConfirmResponse400
+	| restJudgesBallotConfirmResponse401
+	| restJudgesBallotConfirmResponse403
+	| restJudgesBallotConfirmResponse404
+	| restJudgesBallotConfirmResponse409
+	| restJudgesBallotConfirmResponse500
+	| restJudgesBallotConfirmResponse503
+) & {
+	headers: Headers;
+};
+
+export type restJudgesBallotConfirmResponse =
+	| restJudgesBallotConfirmResponseSuccess
+	| restJudgesBallotConfirmResponseError;
+
+export const getRestJudgesBallotConfirmUrl = (
+	judgeId: number,
+	panelId: number,
+) => {
+	return `${indexcardsApiBaseUrl()}/rest/judges/${judgeId}/panels/${panelId}/ballots/confirm`;
+};
+
+/**
+ * Makes a saved ballot final and runs the round completion steps. Confirming a confirmed ballot does nothing
+ * @summary Confirm ballot
+ */
+export const restJudgesBallotConfirm = async (
+	judgeId: number,
+	panelId: number,
+	options?: RequestInit,
+	fetchFn?: typeof globalThis.fetch,
+): Promise<restJudgesBallotConfirmResponse> => {
+	const res = await (fetchFn ?? fetch)(
+		getRestJudgesBallotConfirmUrl(judgeId, panelId),
+		{
+			credentials: 'include',
+			...options,
+			method: 'POST',
+		},
+	);
+
+	const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+	const data: restJudgesBallotConfirmResponse['data'] = body
+		? JSON.parse(body)
+		: {};
+	return {
+		data,
+		status: res.status,
+		headers: res.headers,
+	} as restJudgesBallotConfirmResponse;
+};
+
+export const getRestJudgesBallotConfirmMutationOptions = <
+	TError =
+		| BadRequestResponse
+		| UnauthorizedResponse
+		| ForbiddenResponse
+		| NotFoundResponse
+		| ConflictResponse
+		| ErrorResponseResponse
+		| ProblemSchema,
+	TContext = unknown,
+>(options?: {
+	mutation?: CreateMutationOptions<
+		Awaited<ReturnType<typeof restJudgesBallotConfirm>>,
+		TError,
+		{ judgeId: number; panelId: number },
+		TContext
+	>;
+	fetch?: RequestInit;
+	fetcher?: typeof globalThis.fetch;
+}): CreateMutationOptions<
+	Awaited<ReturnType<typeof restJudgesBallotConfirm>>,
+	TError,
+	{ judgeId: number; panelId: number },
+	TContext
+> => {
+	const mutationKey = ['restJudgesBallotConfirm'];
+	const {
+		mutation: mutationOptions,
+		fetch: fetchOptions,
+		fetcher: fetcherFn,
+	} = options
+		? options.mutation &&
+			'mutationKey' in options.mutation &&
+			options.mutation.mutationKey
+			? options
+			: { ...options, mutation: { ...options.mutation, mutationKey } }
+		: { mutation: { mutationKey }, fetch: undefined };
+
+	const mutationFn: MutationFunction<
+		Awaited<ReturnType<typeof restJudgesBallotConfirm>>,
+		{ judgeId: number; panelId: number }
+	> = (props) => {
+		const { judgeId, panelId } = props ?? {};
+
+		return restJudgesBallotConfirm(
+			judgeId,
+			panelId,
+			fetchOptions,
+			fetcherFn,
+		);
+	};
+
+	return { mutationFn, ...mutationOptions };
+};
+
+export type RestJudgesBallotConfirmMutationResult = NonNullable<
+	Awaited<ReturnType<typeof restJudgesBallotConfirm>>
+>;
+
+export type RestJudgesBallotConfirmMutationError =
+	| BadRequestResponse
+	| UnauthorizedResponse
+	| ForbiddenResponse
+	| NotFoundResponse
+	| ConflictResponse
+	| ErrorResponseResponse
+	| ProblemSchema;
+
+/**
+ * @summary Confirm ballot
+ */
+export const createRestJudgesBallotConfirm = <
+	TError =
+		| BadRequestResponse
+		| UnauthorizedResponse
+		| ForbiddenResponse
+		| NotFoundResponse
+		| ConflictResponse
+		| ErrorResponseResponse
+		| ProblemSchema,
+	TContext = unknown,
+>(
+	options?: () => {
+		mutation?: CreateMutationOptions<
+			Awaited<ReturnType<typeof restJudgesBallotConfirm>>,
+			TError,
+			{ judgeId: number; panelId: number },
+			TContext
+		>;
+		fetch?: RequestInit;
+		fetcher?: typeof globalThis.fetch;
+	},
+	queryClient?: () => QueryClient,
+): CreateMutationResult<
+	Awaited<ReturnType<typeof restJudgesBallotConfirm>>,
+	TError,
+	{ judgeId: number; panelId: number },
+	TContext
+> => {
+	return createMutation(
+		() => ({ ...getRestJudgesBallotConfirmMutationOptions(options?.()) }),
+		queryClient,
+	);
 };
 
 export type restJudgesBallotFeedbackResponse200 = {

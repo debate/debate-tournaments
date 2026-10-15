@@ -12,7 +12,9 @@ export async function getCurrent(req: Request,res: Response) {
 	let ballots: CurrentBallot[] = [];
 
 	sections.forEach(s => {
-		if(!s.Round.published || !s.Round.settings.judges_ballots_visible) {
+		// Judges see a round once it's published, or released to judges only (classic's
+		// "Publish ballots but not schematic"), the same rule as the ballot routes' judgePolicy
+		if (!s.Round.published && !s.Round.settings.judges_ballots_visible) {
 			return;
 		}
 		if(s.Ballots.some((b: { audit: number }) => b.audit)){
