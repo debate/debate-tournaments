@@ -39,8 +39,7 @@
 		columnHelper.accessor('read_at',{
 			id: 'status',
 			header: '',
-			size: 10,
-			maxSize: 20,
+			size: 54,
 			enableResizing: false,
 			enableSorting: false,
 			cell: (info) => renderSnippet(statusCell, info.getValue()),

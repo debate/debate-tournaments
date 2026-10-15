@@ -18,4 +18,8 @@ indexcards/api/routes/openapi/openapi.json
 # Schemats config
 .env
 .mcp.json
-CLAUDE.md
+AGENTS.md
+
+# Agent tooling
+.claude/
+.intent/

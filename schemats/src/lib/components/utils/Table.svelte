@@ -15,8 +15,12 @@
 		columns,
 		onRowClick,
 		getRowClassName,
+		getRowId,
+		enableSorting = true,
 		enableColumnResizing = true,
 		columnResizeMode = 'onChange',
+		striped = true,
+		caption,
 		containerClass = 'bg-surface w-full',
 		tableClass = 'w-full text-sm border-collapse border border-border-strong rounded',
 		headerClass = 'text-left px-4 py-1 text-[11px] font-semibold bg-accent-soft border border-accent',
@@ -28,41 +32,65 @@
 
 	// svelte-ignore state_referenced_locally
 	const table = createAppTable({
+		getRowId,
+		enableSorting,
 		enableColumnResizing,
 		columnResizeMode,
 		get data() {
 			return data ?? [];
 		},
-		columns,
+		get columns() {
+			return columns;
+		},
 	});
 
-	// don't render footer is there are no footer rows
+	// Non-resizable columns are locked at their size; the rest share the remaining width.
+	// A 1% width resolves to max(1% of the table, min-width, min-content) in auto layout,
+	// so the column stays at its size and doesn't take a share of the extra space.
+	function isLockedWidth(column: { columnDef: { enableResizing?: boolean } }): boolean {
+		return column.columnDef.enableResizing === false;
+	}
+
+	// A shallow leaf column under grouped headers gets a chain of placeholders above its
+	// real header. The top placeholder spans the chain (rowSpan > 1) and stands in for the
+	// leaf header; the headers it covers report rowSpan 0 and aren't rendered.
+	function showsColumn(header: { isPlaceholder: boolean; rowSpan: number }): boolean {
+		return !header.isPlaceholder || header.rowSpan > 1;
+	}
+
+	// getFooterGroups() has a header for every column, so only render the
+	// footer when a column actually defines one
 	function hasDefinedFooters(t: typeof table): boolean {
-		t.getFooterGroups().forEach((fg) => {
-			if(fg.headers.length > 0) {
-				return true;
-			}
-		});
-		return false;
+		return t.getFooterGroups().some((fg) => fg.headers.some((h) => h.column.columnDef.footer));
 	}
 </script>
 
-<div class="tabroom-table {containerClass}">
+<div class={['tabroom-table', containerClass, striped && 'table-striped']}>
 	<div class="table-scroll-region">
 		<table
 			style:table-layout="auto"
-			style:width={table.getTotalSize()}
 			class={tableClass}
 		>
+			{#if caption}
+				<caption class="sr-only">{caption}</caption>
+			{/if}
 			<thead>
 				{#each table.getHeaderGroups() as headerGroup (headerGroup.id)}
 					<tr>
 						{#each headerGroup.headers as header (header.id)}
+							{#if header.rowSpan > 0}
+							<!-- only leaf columns set widths; a group header's width comes from its leaves -->
+							{@const isLeaf = header.column.columns.length === 0}
+							{@const locked = isLeaf && isLockedWidth(header.column)}
 							<th
-								style:width={header.getSize()}px
+								style:width={!isLeaf ? undefined : locked ? '1%' : `${header.getSize()}px`}
+								style:min-width={locked ? `${header.getSize()}px` : undefined}
 								class={`${headerClass} table-header-cell`}
+								colspan={header.colSpan > 1 ? header.colSpan : undefined}
+								rowspan={header.rowSpan > 1 ? header.rowSpan : undefined}
+								scope={header.colSpan > 1 ? 'colgroup' : 'col'}
 							>
-								{#if !header.isPlaceholder}
+								{#if showsColumn(header)}
 									{#if header.column.getCanSort()}
 										<button
 											class="table-sort-button"
@@ -92,19 +120,20 @@
 											<FlexRender {header} />
 										</div>
 									{/if}
-								{/if}
-								{#if header.column.getCanResize()}
-									<button
-										class="table-column-resizer"
-										class:table-column-resizer-active={header.column.getIsResizing()}
-										aria-label="Resize column"
-										ondblclick={() => header.column.resetSize()}
-										onmousedown={header.getResizeHandler()}
-										ontouchstart={header.getResizeHandler()}
-										type="button"
-									></button>
+									{#if header.column.getCanResize()}
+										<button
+											class="table-column-resizer"
+											class:table-column-resizer-active={header.column.getIsResizing()}
+											aria-label="Resize column"
+											ondblclick={() => header.column.resetSize()}
+											onmousedown={header.getResizeHandler()}
+											ontouchstart={header.getResizeHandler()}
+											type="button"
+										></button>
+									{/if}
 								{/if}
 							</th>
+							{/if}
 						{/each}
 					</tr>
 				{/each}
@@ -112,13 +141,13 @@
 			<tbody>
 				{#if props.isLoading }
 				<tr>
-					<td class="table-empty-cell" colspan={columns.length}>
+					<td class="table-empty-cell" colspan={table.getAllLeafColumns().length}>
 						<Spinner />
 					</td>
 				</tr>
 				{:else if props.isError}
 				<tr>
-					<td class="table-empty-cell" colspan={columns.length}>
+					<td class="table-empty-cell" colspan={table.getAllLeafColumns().length}>
 
 						<div class="table-error-stack">
 							{#if props.problem}
@@ -133,22 +162,34 @@
 				</tr>
 				{:else if data && data.length > 0}
 					{#each table.getRowModel().rows as row (row.id)}
-						<tr class={getRowClassName?.(row.original)} onclick={() => onRowClick?.(row.original)}>
+						<tr
+							class={[getRowClassName?.(row.original), onRowClick && 'table-row-clickable']}
+							onclick={onRowClick ? () => onRowClick(row.original) : undefined}
+						>
 							{#each row.getAllCells() as cell (cell.id)}
-								<td
-									style:width={cell.column.getSize()}
-									class={cellClass}
-								>
-									<div class="table-cell-content">
-										<FlexRender {cell} />
-									</div>
-								</td>
+								<!-- covered cells are merged into a spanning cell above or before them; rowspan="0" would span the whole tbody -->
+								{#if !cell.getIsCovered()}
+									{@const meta = cell.column.columnDef.meta}
+									<td
+										class={[cellClass, meta?.cellClass]}
+										colspan={cell.getColSpan() > 1 ? cell.getColSpan() : undefined}
+										rowspan={cell.getRowSpan() > 1 ? cell.getRowSpan() : undefined}
+									>
+										{#if meta?.truncate === false}
+											<FlexRender {cell} />
+										{:else}
+											<div class="table-cell-content">
+												<FlexRender {cell} />
+											</div>
+										{/if}
+									</td>
+								{/if}
 							{/each}
 						</tr>
 					{/each}
 				{:else}
 					<tr>
-						<td class="table-empty-cell" colspan={columns.length}>
+						<td class="table-empty-cell" colspan={table.getAllLeafColumns().length}>
 							{emptyMessage}
 						</td>
 					</tr>
@@ -159,10 +200,7 @@
 					{#each table.getFooterGroups() as footerGroup (footerGroup.id)}
 						<tr>
 							{#each footerGroup.headers as header (header.id)}
-								<th
-									style:width={header.getSize()}
-									class={footerClass}
-								>
+								<th class={footerClass} colspan={header.colSpan > 1 ? header.colSpan : undefined}>
 									{#if !header.isPlaceholder}
 										<div class="table-footer-content">
 											<FlexRender footer={header} />
@@ -192,11 +230,11 @@
 		box-sizing: border-box;
 	}
 
-	:global(.tabroom-table tbody tr:nth-of-type(2n)) {
+	:global(.tabroom-table.table-striped tbody tr:nth-of-type(2n)) {
 		background-color: var(--color-surface-alt);
 	}
 
-	:global(.tabroom-table tbody tr:hover) {
+	:global(.tabroom-table tbody tr.table-row-clickable:hover) {
 		background-color: var(--color-accent-soft);
 	}
 
