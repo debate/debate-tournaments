@@ -324,4 +324,59 @@ describe('Table.svelte', () => {
 			expect(container.querySelector('.table-empty-cell')).toHaveAttribute('colspan', '1');
 		});
 	});
+
+	describe('pagination and filtering', () => {
+		const manyRows: Row[] = Array.from({ length: 12 }, (_, i) => ({
+			id: i,
+			name: `Name ${i}`,
+			status: i % 2 ? 'read' : 'unread',
+		}));
+
+		it('shows every row when there is no page size', () => {
+			const { container } = render(TypedTable, { data: manyRows, columns });
+
+			expect(container.querySelectorAll('tbody tr')).toHaveLength(12);
+		});
+
+		it('shows one page of rows with a page size', () => {
+			const { container } = render(TypedTable, { data: manyRows, columns, pageSize: 5 });
+
+			expect(container.querySelectorAll('tbody tr')).toHaveLength(5);
+		});
+
+		it('filters by a hidden column', () => {
+			const { container } = render(TypedTable, {
+				data: manyRows,
+				columns,
+				columnVisibility: { status: false },
+				columnFilters: [{ id: 'status', value: 'unread' }],
+			});
+
+			expect(container.querySelectorAll('tbody tr')).toHaveLength(6);
+		});
+
+		it('shows the empty message when no rows match the filter', () => {
+			render(TypedTable, {
+				data: manyRows,
+				columns,
+				columnFilters: [{ id: 'name', value: 'nobody' }],
+				emptyMessage: 'No matches',
+			});
+
+			expect(screen.getByText('No matches')).toBeInTheDocument();
+		});
+	});
+
+	it('clips the content of locked columns to their size', () => {
+		const lockedColumns = columnHelper.columns([
+			columnHelper.accessor('status', { header: 'Status', size: 54, enableResizing: false }),
+			columnHelper.accessor('name', { header: 'Name' }),
+		]);
+
+		const { container } = render(TypedTable, { data, columns: lockedColumns });
+
+		const [statusCell, nameCell] = container.querySelectorAll('tbody tr:first-child td');
+		expect(statusCell.querySelector('.table-cell-content')).toHaveClass('table-cell-content-locked');
+		expect(nameCell.querySelector('.table-cell-content')).not.toHaveClass('table-cell-content-locked');
+	});
 });

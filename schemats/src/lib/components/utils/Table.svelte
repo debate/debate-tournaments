@@ -19,6 +19,8 @@
 		getRowId,
 		enableSorting = true,
 		columnVisibility = $bindable({}),
+		columnFilters = $bindable([]),
+		pageSize,
 		enableColumnResizing = true,
 		columnResizeMode = 'onChange',
 		striped = true,
@@ -29,6 +31,8 @@
 		cellClass = 'px-4 py-1 border border-border text-[12px] leading-4',
 		footerClass = 'text-left px-4 py-1 text-[11px] bg-surface-alt border border-border',
 		emptyMessage = 'No data available',
+		above,
+		below,
 		...props
 	}: TableProps<TData> = $props();
 
@@ -38,20 +42,32 @@
 		enableSorting,
 		enableColumnResizing,
 		columnResizeMode,
+		// Without a page size every row shows: manual pagination treats the data as the current page
+		manualPagination: pageSize === undefined,
+		initialState: {
+			pagination: { pageIndex: 0, pageSize: pageSize ?? 10 },
+		},
 		get data() {
 			return data ?? [];
 		},
 		get columns() {
 			return columns;
 		},
-		// the prop owns visibility, so a page can hide columns and anything that toggles them writes back to it
+		// The props own visibility and filters, so a page can set them and anything that
+		// changes them (a column menu, TableSearch) writes back to them
 		state: {
 			get columnVisibility() {
 				return columnVisibility;
 			},
+			get columnFilters() {
+				return columnFilters;
+			},
 		},
 		onColumnVisibilityChange: (updater) => {
 			columnVisibility = functionalUpdate(updater, columnVisibility);
+		},
+		onColumnFiltersChange: (updater) => {
+			columnFilters = functionalUpdate(updater, columnFilters);
 		},
 	});
 
@@ -77,6 +93,7 @@
 </script>
 
 <div class={['tabroom-table', containerClass, striped && 'table-striped']}>
+	{@render above?.(table)}
 	<div class="table-scroll-region">
 		<table
 			style:table-layout="auto"
@@ -171,7 +188,7 @@
 						</div>
 					</td>
 				</tr>
-				{:else if data && data.length > 0}
+				{:else if table.getRowModel().rows.length > 0}
 					{#each table.getRowModel().rows as row (row.id)}
 						<tr
 							class={[getRowClassName?.(row.original), onRowClick && 'table-row-clickable']}
@@ -189,7 +206,7 @@
 										{#if meta?.truncate === false}
 											<FlexRender {cell} />
 										{:else}
-											<div class="table-cell-content">
+											<div class={['table-cell-content', isLockedWidth(cell.column) && 'table-cell-content-locked']}>
 												<FlexRender {cell} />
 											</div>
 										{/if}
@@ -225,6 +242,7 @@
 			{/if}
 		</table>
 	</div>
+	{@render below?.(table)}
 </div>
 
 <style>
@@ -298,6 +316,13 @@
 		text-overflow: ellipsis;
 		white-space: nowrap;
 		min-width: 0;
+	}
+
+	/* Unwrapped text sets a minimum width for its column, so a locked column's content
+	   is taken out of the column's sizing (width: 0) and clipped to it (min-width: 100%) */
+	:global(.tabroom-table .table-cell-content-locked) {
+		width: 0;
+		min-width: 100%;
 	}
 
 	:global(.tabroom-table .table-sort-chevrons) {

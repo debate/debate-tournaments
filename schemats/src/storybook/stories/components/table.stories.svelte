@@ -6,6 +6,8 @@
 	import type { Problem } from '@tabroom/types';
 	import { renderSnippet, type RowSpanContext } from '@tanstack/svelte-table';
 	import Table from '../../../lib/components/utils/Table.svelte';
+	import TableSearch from '../../../lib/components/utils/TableSearch.svelte';
+	import TablePager from '../../../lib/components/utils/TablePager.svelte';
 	import { appFeatures, createAppColumnHelper } from '../../../lib/components/utils/table.hook';
 	import type { AppColumnMeta } from '../../../lib/components/utils/table.types';
 
@@ -81,6 +83,25 @@
 		}),
 		messageHelper.accessor('subject', { header: 'Subject', sortFn: 'alphanumeric' }),
 		messageHelper.accessor('tourn', { header: 'Tournament', sortFn: 'alphanumeric' }),
+	]);
+
+	// 25 tournaments, so a page size of 10 gives 3 pages
+	type Tourn = { id: string; name: string; state: string; districts: string };
+
+	const states = ['TX', 'CA', 'NY', 'MN', 'IA'];
+	const tourns: Tourn[] = Array.from({ length: 25 }, (_, i) => ({
+		id: String(i + 1),
+		name: i % 5 === 0 ? `District Tournament ${i + 1}` : `Invitational ${i + 1}`,
+		state: states[i % states.length],
+		districts: i % 5 === 0 ? 'Yes' : 'No',
+	}));
+
+	const tournHelper = createAppColumnHelper<Tourn>();
+	const tournColumns = tournHelper.columns([
+		tournHelper.accessor('name', { header: 'Tournament', sortFn: 'alphanumeric', meta: { filterOrder: 1 } }),
+		tournHelper.accessor('state', { header: 'State', meta: { filterOrder: 2 } }),
+		// Hidden: only for searching
+		tournHelper.accessor('districts', { header: 'District Tournament', meta: { filterOptions: ['Yes', 'No'] } }),
 	]);
 
 	type Note = { name: string; notes: string };
@@ -284,6 +305,45 @@
 >
 	{#snippet template()}
 		<Table columnVisibility={{ school: false }} columns={personColumns} data={people} />
+	{/snippet}
+</Story>
+
+<!-- TableSearch and TablePager go in Table's above/below snippets. The hidden District column is still searchable. -->
+<Story
+	name="Search and Pager"
+	play={async ({ canvasElement }) => {
+		const canvas = within(canvasElement);
+		const rows = () => canvasElement.querySelectorAll('tbody tr');
+
+		await expect(rows()).toHaveLength(10);
+		await expect(canvas.getByText('1-10 of 25')).toBeInTheDocument();
+		await userEvent.click(canvas.getByRole('button', { name: 'Next page' }));
+		await expect(canvas.getByText('Page 2 of 3')).toBeInTheDocument();
+
+		await userEvent.type(canvas.getByRole('searchbox', { name: 'Search Tournament' }), 'district');
+		await expect(rows()).toHaveLength(5);
+		await expect(canvas.getByText('1-5 of 5')).toBeInTheDocument();
+
+		await userEvent.selectOptions(canvas.getByRole('combobox', { name: 'Search by' }), 'District Tournament');
+		await userEvent.selectOptions(canvas.getByRole('combobox', { name: 'District Tournament value' }), 'No');
+		await expect(canvas.getByText('1-10 of 20')).toBeInTheDocument();
+	}}
+>
+	{#snippet template()}
+		<Table
+			columnVisibility={{ districts: false }}
+			columns={tournColumns}
+			data={tourns}
+			getRowId={(row) => row.id}
+			pageSize={10}
+		>
+			{#snippet above(table)}
+				<TableSearch {table} />
+			{/snippet}
+			{#snippet below(table)}
+				<TablePager {table} />
+			{/snippet}
+		</Table>
 	{/snippet}
 </Story>
 
