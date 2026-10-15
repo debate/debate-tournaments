@@ -6,7 +6,10 @@ import type { BallotError, DebateBallotSubmission } from '@tabroom/types';
 import { convert } from 'html-to-text';
 import type { BallotRules } from './ballotRules.js';
 
-export type ValidateBallotRules = Pick<BallotRules, 'scoring' | 'Entries'>;
+export type ValidateBallotRules = Pick<BallotRules, 'scoring' | 'Entries'> & {
+	// Names the sides in the winner side errors
+	debate: Pick<BallotRules['debate'], 'affLabel' | 'negLabel'>;
+};
 
 /**
  * Counts the words a reader sees in HTML: tags, link targets and images don't count, and
@@ -85,6 +88,15 @@ function validateWinner(rules: ValidateBallotRules, submission: DebateBallotSubm
 	const winner = rules.Entries.find(entry => entry.ballot === submission.winner);
 	if (!winner) {
 		errors.push({ field: 'winner', message: 'That winner isn\'t on your ballot.' });
+		return undefined;
+	}
+
+	// The judge also says which side the winner was on, to catch picking the wrong entry (ballot_save.mhtml 1279)
+	if (submission.winnerSide === null) {
+		errors.push({ field: 'winner', message: `Choose the side ${winner.code} was on.` });
+	} else if (submission.winnerSide !== winner.side) {
+		const side = winner.side === 2 ? rules.debate.negLabel : rules.debate.affLabel;
+		errors.push({ field: 'winner', message: `Your winner and your chosen side did not agree: ${winner.code} was ${side}.` });
 	}
 	return winner;
 }

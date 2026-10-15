@@ -36,6 +36,7 @@ type Panel = Awaited<ReturnType<typeof createPanel>>;
 const submission = (panel: Panel, overrides: Partial<DebateBallotSubmission> = {}): DebateBallotSubmission => ({
 	eventType: 'debate',
 	winner: panel.affBallot.id,
+	winnerSide: 1,
 	lowPointWin: false,
 	points: [
 		{ student: panel.ana.id, points: 29 },
@@ -114,6 +115,7 @@ describe('saveBallot', () => {
 		await save(panel, submission(panel));
 		const resaved = await save(panel, submission(panel, {
 			winner: panel.negBallot.id,
+			winnerSide: 2,
 			points: [{ student: panel.ana.id, points: 27 }, { student: panel.ben.id, points: 28 }],
 		}));
 

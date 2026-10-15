@@ -71,7 +71,7 @@ export async function saveBallot(
 		: rules.scoring;
 
 	const errors = [
-		...validateBallot({ scoring, Entries }, submission),
+		...validateBallot({ scoring, Entries, debate: rules.debate }, submission),
 		...feedbackErrors(Entries.map(entry => entry.ballot), submission.feedback),
 	];
 	if (errors.length > 0) return { result: 'invalid', errors };

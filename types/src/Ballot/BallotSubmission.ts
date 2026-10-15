@@ -33,6 +33,7 @@ export type BallotFeedback = z.infer<typeof BallotFeedbackSchema>;
 const BallotSubmissionBaseSchema = z.object({
 	eventType: EventSchema.shape.type.meta({ description: 'The type of event for this ballot' }),
 	winner: utils.id.nullable().meta({ description: 'The winning entry\'s ballot row. null when the judge hasn\'t picked one' }),
+	winnerSide: z.int().min(1).max(2).nullable().meta({ description: 'The side the judge says the winner was on, 1 for Aff and 2 for Neg, checked against the winner\'s side. null when the judge hasn\'t picked one' }),
 	lowPointWin: z.boolean().meta({ description: 'The judge confirms the winner has fewer points' }),
 	points: z.array(z.object({
 		student: StudentSchema.shape.id,

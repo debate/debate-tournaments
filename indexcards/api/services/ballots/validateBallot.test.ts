@@ -24,12 +24,14 @@ const rules = (overrides: { scoring?: Partial<ValidateBallotRules['scoring']>, E
 		...overrides.scoring,
 	},
 	Entries: overrides.Entries ?? [entry(11, 1, 1, [101]), entry(12, 2, 2, [201])],
+	debate: { affLabel: 'Aff', negLabel: 'Neg' },
 });
 
 // Aff wins 29 to 28. validateBallot checks feedback from the rules, so it's left empty here
 const submission = (overrides: Partial<DebateBallotSubmission> = {}): DebateBallotSubmission => ({
 	eventType: 'debate',
 	winner: 11,
+	winnerSide: 1,
 	lowPointWin: false,
 	points: [
 		{ student: 101, points: 29 },
@@ -67,7 +69,32 @@ describe('validateBallot', () => {
 		it('ignores the winner when the round doesn\'t count wins', () => {
 			const noWinloss = rules({ scoring: { winloss: undefined } });
 
-			expect(validateBallot(noWinloss, submission({ winner: null }))).toEqual([]);
+			expect(validateBallot(noWinloss, submission({ winner: null, winnerSide: null }))).toEqual([]);
+		});
+
+		it('requires the winner\'s side', () => {
+			expect(validateBallot(rules(), submission({ winnerSide: null }))).toEqual([{
+				field: 'winner',
+				message: 'Choose the side CODE1 was on.',
+			}]);
+		});
+
+		it('rejects a side the winner wasn\'t on, naming the event\'s side', () => {
+			expect(validateBallot(rules(), submission({ winnerSide: 2 }))).toEqual([{
+				field: 'winner',
+				message: 'Your winner and your chosen side did not agree: CODE1 was Aff.',
+			}]);
+
+			const proCon = { ...rules(), debate: { affLabel: 'Pro', negLabel: 'Con' } };
+			expect(validateBallot(proCon, submission({ winner: 12, winnerSide: 1, points: points(28, 29) }))).toEqual([{
+				field: 'winner',
+				message: 'Your winner and your chosen side did not agree: CODE2 was Con.',
+			}]);
+		});
+
+		it('still checks the points when the side is wrong', () => {
+			expect(validateBallot(rules(), submission({ winnerSide: 2, points: points(31, 28) })).map(error => error.field))
+				.toEqual(['winner', 'points']);
 		});
 	});
 

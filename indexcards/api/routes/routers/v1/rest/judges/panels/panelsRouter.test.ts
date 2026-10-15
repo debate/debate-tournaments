@@ -76,7 +76,8 @@ describe('/rest/judges/:judgeId/panels/:panelId', () => {
 		['get', '/status', 200],
 		['put', '', 400],
 		['post', '/start', 200],
-		['post', '/confirm', 501],
+		// Nothing saved yet, so there's nothing to confirm
+		['post', '/confirm', 409],
 		['put', '/feedback', 400],
 	];
 

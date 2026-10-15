@@ -151,7 +151,15 @@ export const ConfigSchema = z.object({
 		key: z.string(),
 		uri: z.string().default('https://campus.speechanddebate.org'),
 	}).optional(),
-	GEMINI_API_KEY: z.string().optional(), //only used in paradigmAnalyzer
+	/** Classic Tabroom, which the API calls for the steps it hasn't ported yet (confirming a ballot) */
+	classic: z.object({
+		/** Base URL indexcards can reach classic at. */
+		url: z.string().min(1).default('https://www.tabroom.com'),
+		/** Host header to send, when url isn't the public hostname. Production classic redirects requests for other hosts */
+		host: z.string().min(1).optional(),
+		/** Milliseconds to wait for classic before checking whether the call worked anyway */
+		timeout: z.int().min(1).default(30000),
+	}).prefault({}),
 	mail: z.object({
 		test: z.boolean().default(true),
 		from: z.string().default('live@www.tabroom.com'),

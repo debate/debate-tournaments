@@ -1,10 +1,9 @@
 import { Router } from 'express';
-import type { Request, Response } from 'express';
-import { NotImplemented } from '../../../../../../helpers/problem.js';
+import type { Request } from 'express';
 import { ValidateRequest } from '../../../../../../middleware/validation.js';
 import { requireAccess } from '../../../../../../middleware/auth/authorization.js';
-import { getBallotContext, getBallotStatus, saveFeedback, startBallot, submitBallot } from '../../../../../../controllers/rest/judges/panels/ballotController.js';
-import { BallotContextSchema, BallotFeedbackSchema, BallotProgressSchema, BallotReviewSchema, BallotSubmissionSchema, BallotValidationProblemSchema } from '@tabroom/types';
+import { confirmBallotScores, getBallotContext, getBallotStatus, saveFeedback, startBallot, submitBallot } from '../../../../../../controllers/rest/judges/panels/ballotController.js';
+import { BallotContextSchema, BallotFeedbackSchema, BallotProgressSchema, BallotReviewSchema, BallotSubmissionSchema, BallotValidationProblemSchema, ProblemSchema } from '@tabroom/types';
 import z from 'zod';
 
 // /v1/rest/judges/:judgeId/panels/:panelId/ballots
@@ -14,8 +13,6 @@ import z from 'zod';
 // Each route checks ballot/read or ballot/write; whether a change is allowed right now
 // (confirmed, side disagreement) is up to the service.
 const router = Router({ mergeParams: true });
-
-const notImplemented = (req: Request, res: Response) => NotImplemented(req, res);
 
 const ballot = (req: Request) => ({
 	judgeId: Number(req.params.judgeId),
@@ -151,20 +148,36 @@ router.route('/status').get(requireAccess('ballot', 'read', ballot), ValidateReq
 	},
 };
 
-// Replaces ballot_confirm.mhtml. Not built yet: after PUT / saves the ballot, the page sends
-// the judge to classic's user/judge/ballot_confirm.mhtml, which audits the ballots and runs
-// round_done.mas (notifications, backups, autoqueue). This comes with porting those.
-router.route('/confirm').post(requireAccess('ballot', 'write', ballot), ValidateRequest, notImplemented).openapi = {
+// Replaces ballot_confirm.mhtml. For now confirmBallotScores calls classic's ballot_confirm.mhtml
+// with the caller's session, which audits the ballots and runs round_done.mas (notifications,
+// backups, autoqueue), until those are ported.
+router.route('/confirm').post(requireAccess('ballot', 'write', ballot), ValidateRequest, confirmBallotScores).openapi = {
 	summary: 'Confirm ballot',
-	description: 'Makes the decision final and runs the round completion steps. Not built yet; confirm on classic',
+	description: 'Makes a saved ballot final and runs the round completion steps. Confirming a confirmed ballot does nothing',
 	path: '/rest/judges/{judgeId}/panels/{panelId}/ballots/confirm',
 	operationId: 'RestJudgesBallotConfirm',
-	tags: ['Judges'],
+	tags: ['Orval', 'Judges'],
 	requestParams: {
 		path: ballotParams,
 	},
 	responses: {
-		200: { description: 'Ballot confirmed' },
+		200: {
+			description: 'The ballot is confirmed',
+			content: {
+				'application/json': {
+					schema: BallotProgressSchema,
+				},
+			},
+		},
+		409: { $ref: '#/components/responses/Conflict' },
+		503: {
+			description: 'The ballot is saved but couldn\'t be confirmed; the judge can confirm it on classic',
+			content: {
+				'application/problem+json': {
+					schema: ProblemSchema,
+				},
+			},
+		},
 		...ballotErrors,
 	},
 };

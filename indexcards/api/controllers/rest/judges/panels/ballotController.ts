@@ -1,4 +1,4 @@
-import { Conflict, NotFound, UnprocessableEntity } from '../../../../helpers/problem.js';
+import { Conflict, NotFound, NotImplemented, ServiceUnavailable, UnprocessableEntity } from '../../../../helpers/problem.js';
 import type { Response } from 'express';
 import type { BallotContext, BallotFeedback, BallotProgress, BallotSubmission } from '@tabroom/types';
 import type { ValidatedRequest } from '../../../../middleware/validation.js';
@@ -7,6 +7,9 @@ import { db, type Database } from '../../../../data/database.js';
 import { ballotRules, ballotStatus, flipStatus } from '../../../../services/ballots/ballotRules.js';
 import { loadBallotInputs } from '../../../../services/ballots/loadBallotInputs.js';
 import { saveBallot, saveBallotFeedback } from '../../../../services/ballots/saveBallot.js';
+import config from '../../../../config.js';
+import logger from '../../../../helpers/logger.js';
+import sessionRepo from '../../../../repos/sessionRepo.js';
 import ballotRepo from '../../../../repos/ballotRepo.js';
 import judgeRepo from '../../../../repos/judgeRepo.js';
 import panelRepo from '../../../../repos/panelRepo.js';
@@ -94,6 +97,51 @@ export async function submitBallot(req: ValidatedRequest, res: Response) {
 		case 'saved':
 			return res.status(200).json(saved.review);
 	}
+}
+
+// Makes a saved ballot final (ballot_confirm.mhtml).
+// TEMPORARY: until ballot_confirm and round_done.mas (notifications, backups, autoqueue) are
+// ported, this calls classic's ballot_confirm.mhtml with the caller's own session, so classic
+// does all of it as if the judge had clicked confirm there. Classic answers with a page or a
+// redirect, so whether it worked is read from the ballot rows afterwards, not the response.
+export async function confirmBallotScores(req: ValidatedRequest, res: Response) {
+	getPerson(req);
+	const judgeId = Number(req.params.judgeId);
+	const panelId = Number(req.params.panelId);
+
+	const before = await ballotProgress(db, judgeId, panelId);
+	// Confirming twice, e.g. a double click, isn't an error
+	if (before.status === 'confirmed') return res.status(200).json(before);
+	if (before.status !== 'scored') return Conflict(req, res, 'Submit the ballot before confirming it');
+
+	// Classic only takes a session cookie, which is all the API accepts today
+	const session = req.auth.sessionId ? await sessionRepo.getSession(db, req.auth.sessionId) : undefined;
+	if (!session?.userkey) return NotImplemented(req, res, 'Confirming a ballot needs a login session');
+
+	const url = new URL('/user/judge/ballot_confirm.mhtml', config.classic.url);
+	url.searchParams.set('panel_id', String(panelId));
+	url.searchParams.set('judge_id', String(judgeId));
+
+	try {
+		await fetch(url, {
+			headers: {
+				cookie: `${config.cookie.name}=${session.userkey}`,
+				...(config.classic.host ? { host: config.classic.host } : {}),
+			},
+			// Classic reports errors by redirecting; the ballot rows say whether it worked
+			redirect: 'manual',
+			signal: AbortSignal.timeout(config.classic.timeout),
+		});
+	} catch (err) {
+		// A timeout may still have confirmed it, so check the rows either way
+		logger.warn(`Calling classic ballot_confirm for judge ${judgeId} on panel ${panelId} failed: ${err}`);
+	}
+
+	const after = await ballotProgress(db, judgeId, panelId);
+	if (after.status === 'confirmed') return res.status(200).json(after);
+
+	logger.warn(`Classic ballot_confirm didn't confirm judge ${judgeId}'s ballot on panel ${panelId}`);
+	return ServiceUnavailable(req, res, 'Your ballot was saved but couldn\'t be confirmed. Confirm it on classic Tabroom');
 }
 
 // Marks the ballot as opened by the judge. The page calls it when the ballot loads

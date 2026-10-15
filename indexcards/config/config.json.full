@@ -66,6 +66,10 @@
     "region": "us-east-1",
     "Bucket": "tabroom-files"
   },
+  "classic": {
+    "url": "https://www.tabroom.com",
+    "timeout": 30000
+  },
   "mail": {
     "test": true,
     "from": "live@www.tabroom.com",

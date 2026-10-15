@@ -146,6 +146,7 @@ describe('PUT /rest/judges/:judgeId/panels/:panelId/ballots', () => {
 	const body = (ballot: Awaited<ReturnType<typeof createBallot>>, overrides = {}) => ({
 		eventType: 'debate',
 		winner: ballot.negBallot.id,
+		winnerSide: 2,
 		lowPointWin: false,
 		points: [
 			{ student: ballot.ana.id, points: 27 },
@@ -200,6 +201,17 @@ describe('PUT /rest/judges/:judgeId/panels/:panelId/ballots', () => {
 		expect(res).toBeProblemResponse(422);
 		expect(res.body).toMatchSchema(BallotValidationProblemSchema);
 		expect(res.body.errors.map((error: { field: string }) => error.field)).toEqual(['winner', 'rfd', 'comments', 'comments']);
+	});
+
+	it('refuses a winner on the wrong side', async () => {
+		const ballot = await createBallot('debate', noMinimums);
+		const before = await scores(ballot);
+
+		const res = await request(server).put(url(ballot.judge.id, ballot.panel.id)).send(body(ballot, { winnerSide: 1 })).asPerson(ballot.userkey);
+
+		expect(res).toBeProblemResponse(422);
+		expect(res.body.errors).toEqual([{ field: 'winner', message: expect.stringMatching(/did not agree: .+ was Neg\.$/) }]);
+		expect(await scores(ballot)).toEqual(before);
 	});
 
 	it('rejects a body that doesn\'t match the schema', async () => {
