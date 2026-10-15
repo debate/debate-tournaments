@@ -160,6 +160,9 @@
 		await userEvent.click(await page.findByRole('button', { name: 'Yes, confirm' }));
 
 		await expect(await page.findByRole('link', { name: 'Confirm on classic Tabroom' })).toHaveAttribute('href', expect.stringMatching(/ballot_confirm\.mhtml\?panel_id=1&judge_id=1$/));
+
+		// The popup stays open; let its fade-in finish so the a11y check doesn't see it half transparent
+		await Promise.all(page.getByRole('dialog').getAnimations({ subtree: true }).map((animation) => animation.finished));
 	}}
 />
 
