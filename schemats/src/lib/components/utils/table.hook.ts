@@ -1,5 +1,6 @@
 import {
 	cellSpanningFeature,
+	columnVisibilityFeature,
 	createTableHook,
 	createSortedRowModel,
 	columnResizingFeature,
@@ -19,6 +20,7 @@ import type { AppColumnMeta } from './table.types';
 const appTableFeatures = tableFeatures({
 	columnSizingFeature,
 	columnResizingFeature,
+	columnVisibilityFeature,
 	cellSpanningFeature,
 	columnMeta: metaHelper<AppColumnMeta>(),
 	rowSortingFeature,

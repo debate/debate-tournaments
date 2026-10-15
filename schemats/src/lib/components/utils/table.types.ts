@@ -1,6 +1,7 @@
 import type {
 	ColumnDef,
 	ColumnResizeMode,
+	ColumnVisibilityState,
 	RowData,
 } from '@tanstack/svelte-table';
 import type { appFeatures } from './table.hook';
@@ -23,6 +24,8 @@ export type TableProps<TData extends RowData> = {
 	/** Stable row ids, so rows (and any inputs in them) keep their identity when data is reordered. Defaults to the row index. */
 	getRowId?: (_row: TData, _index: number) => string;
 	enableSorting?: boolean;
+	/** Columns to hide, by column id: `{ id: false }`. Columns not listed are shown. Bindable. */
+	columnVisibility?: ColumnVisibilityState;
 	enableColumnResizing?: boolean;
 	columnResizeMode?: ColumnResizeMode;
 	/** Stripe alternate body rows. Turn off when rows are grouped by spanned cells. */

@@ -5,6 +5,7 @@
 */
 	import {
 		FlexRender,
+		functionalUpdate,
 	} from '@tanstack/svelte-table';
 	import type { TableProps } from './table.types';
 	import { createAppTable } from './table.hook';
@@ -17,6 +18,7 @@
 		getRowClassName,
 		getRowId,
 		enableSorting = true,
+		columnVisibility = $bindable({}),
 		enableColumnResizing = true,
 		columnResizeMode = 'onChange',
 		striped = true,
@@ -41,6 +43,15 @@
 		},
 		get columns() {
 			return columns;
+		},
+		// the prop owns visibility, so a page can hide columns and anything that toggles them writes back to it
+		state: {
+			get columnVisibility() {
+				return columnVisibility;
+			},
+		},
+		onColumnVisibilityChange: (updater) => {
+			columnVisibility = functionalUpdate(updater, columnVisibility);
 		},
 	});
 
@@ -141,13 +152,13 @@
 			<tbody>
 				{#if props.isLoading }
 				<tr>
-					<td class="table-empty-cell" colspan={table.getAllLeafColumns().length}>
+					<td class="table-empty-cell" colspan={table.getVisibleLeafColumns().length}>
 						<Spinner />
 					</td>
 				</tr>
 				{:else if props.isError}
 				<tr>
-					<td class="table-empty-cell" colspan={table.getAllLeafColumns().length}>
+					<td class="table-empty-cell" colspan={table.getVisibleLeafColumns().length}>
 
 						<div class="table-error-stack">
 							{#if props.problem}
@@ -166,7 +177,7 @@
 							class={[getRowClassName?.(row.original), onRowClick && 'table-row-clickable']}
 							onclick={onRowClick ? () => onRowClick(row.original) : undefined}
 						>
-							{#each row.getAllCells() as cell (cell.id)}
+							{#each row.getVisibleCells() as cell (cell.id)}
 								<!-- covered cells are merged into a spanning cell above or before them; rowspan="0" would span the whole tbody -->
 								{#if !cell.getIsCovered()}
 									{@const meta = cell.column.columnDef.meta}
@@ -189,7 +200,7 @@
 					{/each}
 				{:else}
 					<tr>
-						<td class="table-empty-cell" colspan={table.getAllLeafColumns().length}>
+						<td class="table-empty-cell" colspan={table.getVisibleLeafColumns().length}>
 							{emptyMessage}
 						</td>
 					</tr>

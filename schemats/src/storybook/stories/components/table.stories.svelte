@@ -272,6 +272,21 @@
 	{/snippet}
 </Story>
 
+<!-- columnVisibility hides columns by id; the data and column definitions stay the same -->
+<Story
+	name="Hidden Columns"
+	play={async ({ canvasElement }) => {
+		const canvas = within(canvasElement);
+		await expect(canvas.queryByRole('columnheader', { name: /school/i })).not.toBeInTheDocument();
+		await expect(canvas.queryByText('Northview')).not.toBeInTheDocument();
+		await expect(canvas.getByRole('columnheader', { name: /name/i })).toBeInTheDocument();
+	}}
+>
+	{#snippet template()}
+		<Table columnVisibility={{ school: false }} columns={personColumns} data={people} />
+	{/snippet}
+</Story>
+
 <!-- Cells clip to one line by default; meta.truncate: false lets content wrap -->
 <Story name="Long Content">
 	{#snippet template()}

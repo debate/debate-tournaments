@@ -299,4 +299,29 @@ describe('Table.svelte', () => {
 			expect(clickable.container.querySelector('tbody tr')).toHaveClass('table-row-clickable');
 		});
 	});
+
+	describe('column visibility', () => {
+		it('does not render hidden columns', () => {
+			render(TypedTable, { data, columns, columnVisibility: { status: false } });
+
+			expect(screen.getByText('Name')).toBeInTheDocument();
+			expect(screen.queryByText('Status')).not.toBeInTheDocument();
+			expect(screen.queryByText('unread')).not.toBeInTheDocument();
+		});
+
+		it('shows a column again when it is no longer hidden', async () => {
+			const { rerender } = render(TypedTable, { data, columns, columnVisibility: { status: false } });
+
+			await rerender({ data, columns, columnVisibility: {} });
+
+			expect(screen.getByText('Status')).toBeInTheDocument();
+			expect(screen.getByText('unread')).toBeInTheDocument();
+		});
+
+		it('spans the empty message across the visible columns', () => {
+			const { container } = render(TypedTable, { data: [], columns, columnVisibility: { status: false } });
+
+			expect(container.querySelector('.table-empty-cell')).toHaveAttribute('colspan', '1');
+		});
+	});
 });
