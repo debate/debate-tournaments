@@ -20,6 +20,7 @@ export * from './src/Message.js';
 export * from './src/NSDACategory.js';
 export * from './src/Round.js';
 export * from './src/Tourn.js';
+export * from './src/Weekend.js';
 export * from './src/Section.js';
 export * from './src/Problem.js';
 export * from './src/ResultSet.js';
